@@ -1,0 +1,125 @@
+Blud
+================================================================================
+
+Blud is an open ended RPG in which the player controls a red blood cell named
+Blud. Blud lives in a small town named Ticker Town. Throughout the game Blud
+must reach various goals that will open new areas and new goals to accomplish.
+
+Story
+================================================================================
+
+The story starts out with:
+
+	There was once a young blood cell named Blud, but everyone called him... uh
+	they called him... Quick, player, what did they call him?
+
+		[         ]
+        A B C D E F G H I J K
+		L M N O P Q R S T U V
+		W X Y Z - . , ! ` & '
+        0 1 2 3 4 5 6 7 8 9
+
+        [ Okay ]
+
+Every time the player meets a new NPC they introduce themselves as "Hi, I'm Blud
+but all my friends call me Steve" or "The name is Blud, but you can call me
+Hank", etc.
+
+The player is introduced to his farm on the outskirts of Ticker Town, and then
+it is slowly revealed to the player that the various organs (towns) are all
+suffering from a lack of oxygen. In fact the heart (Ticker Town) is not not
+working very well at the moment, so the river that is used as a highway between
+towns is a mere trickle at the moment.
+
+The player then learns that they can take a ferry on the river to the Oxygen
+mines where they can obtain oxygen (basically think of oxygen as coal...) Taking
+oxygen back to Ticker Town will let them replenish it until it is working better
+and the flow of the river increases some, which then allows access to another
+town.
+
+Each town they encounter will need an oxygen gauge to be filled to restore it to
+full function. Simply going back and forth between the lungs and other towns is
+not sufficient though. Each new town will be progressively harder and require
+some new tool or ability to complete.
+
+The oxygen mines will also be a hazardous place. The player will learn there
+that the host body had been drowning. The lungs are full of water in many places
+and there are many dangerous creatures (viruses that have been breathed in).
+
+
+Ticker Town
+================================================================================
+
+The majority of the town is centered around a valley at the base of a large damn
+made out of cholesterol. A blood plasma river is slowed by the damn forming a
+large lake on the west side of town. The river then continues to flow east.
+
+Landmarks in the town:
+
+	- The river
+
+		The river is made up of blood plasma. It should be drawn as soupy
+		pinkish blue cells. A dock on the river is used with ferries that can be
+		used to take the player to other organs throughout the host's body.
+	- The damn
+
+		One of the long term goals of the game is to open up the damn to let
+		the river flow stronger. Initially the flow is only sufficient to take
+		the player to the lungs, where they can obtain oxygen.
+
+		Bringing oxygen to the various organs will improve their function. Some
+		require a small amount that can be taken easily by the character and
+		others will require a large amount to unlock the organ/town.
+
+	- Telegraph station
+
+		Allows communication with the various other organs/towns. Used for
+		obtaining quests, etc. Should be drawn to appear like the lines are
+		nerves.
+
+	- Farm
+
+		The player's home is on a large fairly open section of the game map and
+		the player is allowed to build things there including some sort of farm
+		similar to Harvest Moon with worms as livestock, and some sort of fungus
+		or bacteria as "plants".
+
+		The player must grow various crops and obtain and take care of livestock
+		in order to obtain different items needed to complete quests that will
+		allow them to unlock new areas and tools in the game.
+
+		Other items may be found or foraged in various parts of the game, or
+		awarded for completing difficult quests. In some cases this may mean a
+		zelda like dungeon, while in others it will be collecting items or
+		through interacting with NPCs.
+
+		Finally the farm provides a good way for the player to gain currency.
+
+
+oooooooooooooo/  |   |=|           /      |   |
+ooooooooooooo/   |  / = \          \      |   |                              |\_
+oooooooooooo/    |                  |     |   |                             /|
+ooooooooooo/     |                 /|_____|   |                        |\__/ |
+oooooooooo/      |---\            / |     \___/                       /|     |
+ooooooooo/       |    \---\   /---  |                           /|\__/ |
+oooooooo/        |___ |    |==|   | /                         _/ |     |
+ooooooo/        /    \|____|==|___|/                         / \ |
+oooooo/       /|___        /==\                              | | |
+ooooo/       |ooooo\______
+oooo/        |__ ooooooooo\    _____
+ooo/        /   \______ ooo\__/ooooo\        ______
+oo/        /           \oooooooooooo \__[ ]_/oooooo\
+/        /              \________ooooooo[ ]ooooooooo\_
+        /                        \oooooo[ ]ooooooooooo\_____
+       /                          \_____[ ]___oooooooooooooo\_______
+      /                                 [ ]   \__ooooooooooooooooooo\
+     /                                           \ooooooooooooooooooo\__________
+    /                                             \ooooooooooooooooooooooooooooo
+   /                                               \___ooooooooooooooooooooooooo
+  /                                                    \_ooooooooooooooooooooooo
+ /                                                       \___oooooooooo[  ]ooooo
+/                                                            \______ooo[  ]ooooo
+                                                                    \__[  ]ooooo
+                                                                       [  ]_____
+
+
