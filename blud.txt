@@ -50,8 +50,8 @@ and there are many dangerous creatures (viruses that have been breathed in).
 Ticker Town
 ================================================================================
 
-The majority of the town is centered around a valley at the base of a large damn
-made out of cholesterol. A blood plasma river is slowed by the damn forming a
+The majority of the town is centered around a valley at the base of a large dam
+made out of cholesterol. A blood plasma river is slowed by the dam forming a
 large lake on the west side of town. The river then continues to flow east.
 
 Landmarks in the town:
@@ -61,11 +61,11 @@ Landmarks in the town:
 		The river is made up of blood plasma. It should be drawn as soupy
 		pinkish blue cells. A dock on the river is used with ferries that can be
 		used to take the player to other organs throughout the host's body.
-	- The damn
+	- The dam
 
-		One of the long term goals of the game is to open up the damn to let
-		the river flow stronger. Initially the flow is only sufficient to take
-		the player to the lungs, where they can obtain oxygen.
+		One of the long term goals of the game is to open up the dam to let the
+		river flow stronger. Initially the flow is only sufficient to take the
+		player to the lungs, where they can obtain oxygen.
 
 		Bringing oxygen to the various organs will improve their function. Some
 		require a small amount that can be taken easily by the character and
