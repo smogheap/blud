@@ -61,6 +61,7 @@ Landmarks in the town:
 		The river is made up of blood plasma. It should be drawn as soupy
 		pinkish blue cells. A dock on the river is used with ferries that can be
 		used to take the player to other organs throughout the host's body.
+
 	- The dam
 
 		One of the long term goals of the game is to open up the dam to let the
@@ -123,3 +124,19 @@ oo/        /           \oooooooooooo \__[ ]_/oooooo\
                                                                        [  ]_____
 
 
+Rough Ideas
+================================================================================
+
+Town names:
+- Cape Kidney
+- Pancreas Port
+- Little Lymph
+- Stomachville
+- Fort Spleen
+- Sinus Trail
+- Thyroid Pass
+
+Trophies:
+- I'm a lover, not a fighter: finish the game with no combat
+- Bludy mess: finish the game with no farming
+- Rebel: always do things the hard way
