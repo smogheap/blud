@@ -128,13 +128,21 @@ Rough Ideas
 ================================================================================
 
 Town names:
-- Cape Kidney
+- Kidney Pass
 - Pancreas Port
 - Little Lymph
-- Stomachville
+- Stomach Valley
 - Fort Spleen
 - Sinus Trail
-- Thyroid Pass
+- Thyroid Heights
+- New Liver
+- Cape Esophagus
+- Gallbladder Gulch
+- Pineal Grand
+- Mt Adrenal
+- Tonsil Township
+- St Diaphragm
+- Las Vericose
 
 Trophies:
 - I'm a lover, not a fighter: finish the game with no combat
