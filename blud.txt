@@ -124,6 +124,43 @@ oo/        /           \oooooooooooo \__[ ]_/oooooo\
                                                                        [  ]_____
 
 
+Organs/Towns/Dungeons
+================================================================================
+
+Each organ will be either a dungeon, a town, or in many cases a combination of
+the two.
+
+Each organ must follow these rules:
+
+1) Getting to the organ must require an effort. In some cases this may be small.
+In other cases getting to the organ may require a tool or some item that is
+obtained somewhere else in the game.
+
+2) Each organ must provide a final prize. This may be a tool or new ability, or
+status with an NPC, etc, but whatever it is getting it must open gameplay paths
+to the user that were previously visible but closed. The obvious example is
+showing the user paths or items stuck behind an object they can't move, and then
+giving them a tool to move that object as a prize.
+
+3) Each organ must be solvable in multiple ways. One involving combat, and the
+other involving farming/items/dialog with NPCs.
+
+In each case one of these paths should be more obvious and significantly easier
+than the other, but both need to be present. The intent is to allow a non-combat
+or non-farming run of the entire game. This also provides an alternative route
+if a user feels stuck with the main route.
+
+It should be clear to the user which method is the intended way to solve it
+though.
+
+For example, the normal route for an organ may be to fight a new virus that is
+more challenging than previous enemies. If a user wants to avoid combat though
+or finds this fight too difficult then talking to a particular NPC will reveal
+that he is willing to fight them for you but will only do so if you give him a
+VERY hard to obtain item.
+
+
+
 Rough Ideas
 ================================================================================
 
