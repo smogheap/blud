@@ -1,0 +1,31 @@
+{
+	"name": "Bruce Blud",
+	"location": {
+		"x": 20,
+		"y": 50
+	},
+	"sprite": {
+		"_comment": "structure or link here for graphics, animations etc"
+	},
+	"movement": [
+		{
+			"direction": "random"
+		},
+		{
+			"sleep": 60
+		}
+	],
+	"dialogue": [
+		[
+			"Hello, I don't feel like coming up with",
+			"stuff to say, but you get the idea."
+		],
+		[
+			"You ... do get the idea, right?"
+		]
+	],
+	"quests":[
+		"cani",
+		"beantown"
+	]
+}

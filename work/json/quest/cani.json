@@ -1,0 +1,49 @@
+{
+	"name": "Can I, Can I?",
+	"description": [
+		"Bruce Blud needs to open a can of beans.",
+		"Bring him the legendary Axe of Archaea."
+	],
+	"location": "spleen",
+	"character": "bruce",
+	"prerequisite": [
+		"tutorial/fishing",
+		"spleen/residential"
+	],
+	"intro": [
+		"I got my favorite kind of beans here, but the tab",
+		"snapped off!  Be a dear and bring me something to",
+		"help open this.  The legendary Axe of Archaea",
+		"should do the trick!"
+	],
+	"requirement": [
+		[
+			{
+				"type": "item",
+				"item": "tool/archaea"
+			},
+			{
+				"type": "item",
+				"item": "tool/canopener"
+			}
+		],
+		{
+			"type": "talk",
+			"character": "bruce"
+		}
+	],
+	"finish": [
+		"That ... That's perfect!  You found it!",
+		"Gimme gimme gimme!  Oh can, you are SO OPEN!"
+	],
+	"reward": [
+		{
+			"type": "item",
+			"item": "tool/canlid"
+		},
+		{
+			"type": "money",
+			"amount": 100
+		}
+	]
+}
