@@ -114,7 +114,9 @@ window.addEventListener('load', function()
 			h = window.innerHeight;
 
 			for (var i = 1; ; i++) {
-				if (i * 16 * world.viewport.width < w) {
+				if ((i * 16 * world.viewport.width < w) &&
+					(i * 16 * world.viewport.height < h)
+				) {
 					world.scale = i;
 				} else {
 					break;
