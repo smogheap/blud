@@ -137,10 +137,7 @@ window.addEventListener('load', function()
 	var canvas		= document.createElement('canvas');
 	var ctx			= canvas.getContext('2d');
 
-	ctx.mozImageSmoothingEnabled		= false;
-	ctx.webkitImageSmoothingEnabled		= false;
-	ctx.msImageSmoothingEnabled			= false;
-	ctx.imageSmoothingEnabled			= false;
+	document.body.appendChild(canvas);
 
 	window.addEventListener('keydown', function(event)
 	{
@@ -161,8 +158,6 @@ window.addEventListener('load', function()
 			case 40:	delete buttons.down;	break;
 		}
 	});
-
-	document.body.appendChild(canvas);
 
 	var w = 0;
 	var h = 0;
@@ -190,6 +185,11 @@ window.addEventListener('load', function()
 			/* Restore the initial saved state, and save it again */
 			ctx.restore();
 			ctx.save();
+
+			ctx.mozImageSmoothingEnabled		= false;
+			ctx.webkitImageSmoothingEnabled		= false;
+			ctx.msImageSmoothingEnabled			= false;
+			ctx.imageSmoothingEnabled			= false;
 		}
 	};
 
