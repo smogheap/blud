@@ -18,6 +18,8 @@ function render(ctx)
 		world.images = {};
 	}
 
+	/* We need the same seed for every frame so the same tiles are used */
+	WRand.setSeed(12345);
 
 	// TODO Decide how many rows/columns to render
 
@@ -26,6 +28,7 @@ function render(ctx)
 		Render each row from the top down, so a row closer to the player can
 		draw over the row behind it.
 	*/
+
 	for (var y = 0, row; (row = world.rows[y]) && y < world.viewport.height; y++) {
 		for (var x = 0, tile; (tile = row.charAt(x)) && 1 == tile.length && x < world.viewport.width; x++) {
 			if (tile === ' ') {
@@ -37,6 +40,11 @@ function render(ctx)
 				world.images[tile] = loadImage('images/' + tile + '.png');
 			}
 
+			var img		= world.images[tile];
+			var vars	= (img.width / 16);
+			var off		= (WRand() % vars) * 16;
+
+
 			// TODO If this tile has alternate images pick one
 			// TODO Detect edges and pick the appropriate alternate based
 			//		on the edges
@@ -45,7 +53,7 @@ function render(ctx)
 			// TODO Draw the tile
 
 			ctx.drawImage(world.images[tile],
-					0, 0, 16, 16,
+					off, 0, 16, 16,
 					16 * world.scale * x,
 					16 * world.scale * y,
 					16 * world.scale, 16 * world.scale);
@@ -112,7 +120,8 @@ window.addEventListener('load', function()
 					break;
 				}
 			}
-console.log("Scaled to: " + world.scale);
+			w = world.scale * 16 * world.viewport.width;
+			h = world.scale * 16 * world.viewport.height;
 
 			canvas.setAttribute('width',  w);
 			canvas.setAttribute('height', h);
