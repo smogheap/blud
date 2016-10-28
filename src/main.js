@@ -1,3 +1,5 @@
+var buttons = {};
+
 function loadImage(src)
 {
 	var img = new Image();
@@ -61,7 +63,6 @@ function render(ctx)
 			// TODO Draw any items that are on this spot
 		}
 
-
 		for (var c = 0, character; character = world.characters[c]; c++) {
 			// TODO Is this character on this row? If the character is moving
 			//		then their position may be between rows now and shouldn't
@@ -69,6 +70,65 @@ function render(ctx)
 			//		row.
 
 			// TODO Draw the character
+			if (!character.images) {
+				character.images = {};
+			}
+
+			if (character.y !== y) {
+				continue;
+			}
+
+			var name;
+			var off		= 0;
+			var offx	= 0;
+			var offy	= 0;
+
+			// TODO Adjust for frame rate...
+			if (character.animation) {
+				/* Continue the previous animation */
+				name = character.animation.name;
+
+				off = character.animation.frame * 16;
+
+				character.animation.frame++;
+
+				offx = (character.animation.dx * 2 * character.animation.frame);
+				offy = (character.animation.dy * 2 * character.animation.frame);
+			} else {
+				if (buttons.up) {
+					name = 'north';
+					character.animation = { name: name, frame: 0, dx: 0, dy: -1 };
+				} else if (buttons.down) {
+					name = 'south';
+					character.animation = { name: name, frame: 0, dx: 0, dy: 1 };
+				} else if (buttons.left) {
+					name = 'west';
+					character.animation = { name: name, frame: 0, dx: -1, dy: 0 };
+				} else if (buttons.right) {
+					name = 'east';
+					character.animation = { name: name, frame: 0, dx: 1, dy: 0 };
+				} else {
+					name = 'standing';
+				}
+			}
+
+			if (!character.images[name]) {
+				character.images[name] = loadImage('images/' + character.name + '-' + name + '.png');
+			}
+
+			ctx.drawImage(character.images[name],
+				off, 0, 16, 16,
+				(16 * world.scale * character.x) + (offx * world.scale),
+				(16 * world.scale * character.y) + (offy * world.scale),
+				16 * world.scale, 16 * world.scale);
+
+			if (character.animation && character.animation.frame >= 8) {
+				/* The animation is complete */
+				character.x += character.animation.dx;
+				character.y += character.animation.dy;
+
+				delete character.animation;
+			}
 		}
 	}
 }
@@ -86,20 +146,20 @@ window.addEventListener('load', function()
 	window.addEventListener('keydown', function(event)
 	{
 		switch (event.keyCode) {
-			case 37:	window.buttons.left		= true; break;
-			case 38:	window.buttons.up		= true; break;
-			case 39:	window.buttons.right	= true; break;
-			case 40:	window.buttons.down		= true; break;
+			case 37:	buttons.left	= true; break;
+			case 38:	buttons.up		= true; break;
+			case 39:	buttons.right	= true; break;
+			case 40:	buttons.down	= true; break;
 		}
 	});
 
 	window.addEventListener('keyup', function(event)
 	{
 		switch (event.keyCode) {
-			case 37:	delete window.buttons.left;		break;
-			case 38:	delete window.buttons.up;		break;
-			case 39:	delete window.buttons.right;	break;
-			case 40:	delete window.buttons.down;		break;
+			case 37:	delete buttons.left;	break;
+			case 38:	delete buttons.up;		break;
+			case 39:	delete buttons.right;	break;
+			case 40:	delete buttons.down;	break;
 		}
 	});
 
