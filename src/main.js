@@ -168,16 +168,18 @@ window.addEventListener('load', function()
 			h = window.innerHeight;
 
 			for (var i = 1; ; i++) {
-				if ((i * 16 * world.viewport.width < w) &&
-					(i * 16 * world.viewport.height < h)
+				if ((i * 16 * world.viewport.width <= w) &&
+					(i * 16 * world.viewport.height <= h)
 				) {
 					world.scale = i;
 				} else {
 					break;
 				}
 			}
+
 			w = world.scale * 16 * world.viewport.width;
 			h = world.scale * 16 * world.viewport.height;
+console.log(world.scale, w, h, window.innerWidth, window.innerHeight);
 
 			canvas.setAttribute('width',  w);
 			canvas.setAttribute('height', h);
@@ -190,6 +192,10 @@ window.addEventListener('load', function()
 			ctx.webkitImageSmoothingEnabled		= false;
 			ctx.msImageSmoothingEnabled			= false;
 			ctx.imageSmoothingEnabled			= false;
+
+			/* Store the current actual size so we can detect when it changes */
+			w = window.innerWidth;
+			h = window.innerHeight;
 		}
 	};
 

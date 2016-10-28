@@ -1,7 +1,7 @@
 var world = {
 	viewport: {
-		width: 32,
-		height: 18
+		width:	30,
+		height:	16
 	},
 
 	rows: [
