@@ -2,6 +2,11 @@ function loadImage(src)
 {
 	var img = new Image();
 
+	img.mozImageSmoothingEnabled		= false;
+	img.webkitImageSmoothingEnabled		= false;
+	img.msImageSmoothingEnabled			= false;
+	img.imageSmoothingEnabled			= false;
+
 	img.src = src;
 
 	return(img);
@@ -21,8 +26,8 @@ function render(ctx)
 		Render each row from the top down, so a row closer to the player can
 		draw over the row behind it.
 	*/
-	for (var y = 0, row; row = world.rows[y]; y++) {
-		for (var x = 0, tile; (tile = row.charAt(x)) && 1 == tile.length; x++) {
+	for (var y = 0, row; (row = world.rows[y]) && y < world.viewport.height; y++) {
+		for (var x = 0, tile; (tile = row.charAt(x)) && 1 == tile.length && x < world.viewport.width; x++) {
 			if (tile === ' ') {
 				tile = 'x';
 			}
@@ -39,7 +44,11 @@ function render(ctx)
 
 			// TODO Draw the tile
 
-			ctx.drawImage(world.images[tile], x * 16, y * 16);
+			ctx.drawImage(world.images[tile],
+					0, 0, 16, 16,
+					16 * world.scale * x,
+					16 * world.scale * y,
+					16 * world.scale, 16 * world.scale);
 
 			// TODO Draw any items that are on this spot
 		}
@@ -60,6 +69,11 @@ window.addEventListener('load', function()
 {
 	var canvas		= document.createElement('canvas');
 	var ctx			= canvas.getContext('2d');
+
+	ctx.mozImageSmoothingEnabled		= false;
+	ctx.webkitImageSmoothingEnabled		= false;
+	ctx.msImageSmoothingEnabled			= false;
+	ctx.imageSmoothingEnabled			= false;
 
 	window.addEventListener('keydown', function(event)
 	{
@@ -90,6 +104,15 @@ window.addEventListener('load', function()
 		if (w != window.innerWidth || h != window.innerHeight) {
 			w = window.innerWidth;
 			h = window.innerHeight;
+
+			for (var i = 1; ; i++) {
+				if (i * 16 * world.viewport.width < w) {
+					world.scale = i;
+				} else {
+					break;
+				}
+			}
+console.log("Scaled to: " + world.scale);
 
 			canvas.setAttribute('width',  w);
 			canvas.setAttribute('height', h);

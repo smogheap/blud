@@ -1,4 +1,9 @@
 var world = {
+	viewport: {
+		width: 32,
+		height: 18
+	},
+
 	rows: [
 		"           oooo                                                                 ",
 		"             ooooooo                                                            ",
@@ -16,7 +21,26 @@ var world = {
 		"                                                          oo oooooooooo    ooooo",
 		"                                                              ooooooooo    ooooo",
 		"                                                                    ooo    ooooo",
-		"                                                                                "
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"      ooooooo                                                                   ",
+		"    ooooooooooooooo                                                             ",
+		"  ooooooooooooooooooooo                                                         ",
+		" oooooooooooooooooooooooooo      ooo                                            ",
+		"oooooooooooooooooooooooooooooooooooooooo                                        ",
+		"ooooooooooooooooooooooooooooooooooooo                                           ",
+		"ooooooooooooooooooooooooooooooooo                                               ",
+		"oooooooooooooooooooooooooooooo                                                  ",
+		"oooooooooooooooooooooooooooooooo                                                ",
+		"ooooooooooooooooooooooooooooooooooooo                                           "
 	],
 
 	characters: [
