@@ -14,7 +14,7 @@ function loadImage(src)
 	return(img);
 }
 
-function tick()
+function tick(ticks)
 {
 	for (var c = 0, character; character = world.characters[c]; c++) {
 		/*
@@ -45,20 +45,30 @@ function tick()
 			offx = (character.animation.dx * 2 * character.animation.frame);
 			offy = (character.animation.dy * 2 * character.animation.frame);
 		} else {
+			action = 'standing';
+
+			/*
+				If multiple directions are being pressed then prefer the one
+				that was not animated last.
+			*/
 			if (buttons.up) {
 				action = 'north';
 				character.animation = { name: action, frame: 0, dx: 0, dy: -1 };
-			} else if (buttons.down) {
+			}
+
+			if (buttons.down && (!character.animation || action === character.action)) {
 				action = 'south';
 				character.animation = { name: action, frame: 0, dx: 0, dy: 1 };
-			} else if (buttons.left) {
+			}
+
+			if (buttons.left && (!character.animation || action === character.action)) {
 				action = 'west';
 				character.animation = { name: action, frame: 0, dx: -1, dy: 0 };
-			} else if (buttons.right) {
+			}
+
+			if (buttons.right && (!character.animation || action === character.action)) {
 				action = 'east';
 				character.animation = { name: action, frame: 0, dx: 1, dy: 0 };
-			} else {
-				action = 'standing';
 			}
 		}
 
@@ -251,8 +261,7 @@ window.addEventListener('load', function()
 
 		while (frametime >= tickWait) {
 			// console.log('tick');
-			tick();
-			ticks++;
+			tick(ticks++);
 			frametime -= tickWait;
 			// frametime /= 1.5;
 		}
