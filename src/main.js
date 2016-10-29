@@ -14,8 +14,42 @@ function loadImage(src)
 	return(img);
 }
 
+function pollGamepads()
+{
+	var gamepads;
+
+	if (navigator.getGamepads) {
+		gamepads = navigator.getGamepads();
+	} else if (navigator.webkitGetGamepads) {
+		gamepads = navigator.webkitGetGamepads();
+	} else {
+		gamepads = [];
+	}
+
+	for (var i = 0, pad; pad = gamepads[i]; i++) {
+		buttons = {};
+
+		// console.log(pad);
+		if (pad.axes[0] < 0) {
+			buttons.left = true;
+		}
+		if (pad.axes[0] > 0) {
+			buttons.right = true;
+		}
+
+		if (pad.axes[1] < 0) {
+			buttons.up = true;
+		}
+		if (pad.axes[1] > 0) {
+			buttons.down = true;
+		}
+	}
+}
+
 function tick(ticks)
 {
+	pollGamepads();
+
 	for (var c = 0, character; character = world.characters[c]; c++) {
 		/*
 			Determine the row offset to use when rendering this character.
@@ -53,6 +87,7 @@ function tick(ticks)
 			*/
 			if (buttons.up) {
 				action = 'north';
+// action = 'south';
 				character.animation = { name: action, frame: 0, dx: 0, dy: -1 };
 			}
 
@@ -63,6 +98,7 @@ function tick(ticks)
 
 			if (buttons.left && (!character.animation || action === character.action)) {
 				action = 'west';
+// action = 'east';
 				character.animation = { name: action, frame: 0, dx: -1, dy: 0 };
 			}
 
@@ -193,6 +229,13 @@ window.addEventListener('load', function()
 			case "arrowright":
 			case "d":	delete buttons.right;	break;
 		}
+	});
+
+	window.addEventListener('gamepadconnected', function(event)
+	{
+		console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
+			event.gamepad.index, event.gamepad.id,
+			event.gamepad.buttons.length, event.gamepad.axes.length);
 	});
 
 	var w = 0;
