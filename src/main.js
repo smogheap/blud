@@ -1,4 +1,5 @@
 var Input;
+var TILE_SIZE		= 16;
 
 function loadImage(src)
 {
@@ -64,7 +65,7 @@ function tick(ticks)
 		if (character.animation) {
 			/* Continue the previous animation */
 			action = character.animation.name;
-			off = character.animation.frame * 16;
+			off = character.animation.frame * TILE_SIZE;
 
 			character.animation.frame++;
 
@@ -113,25 +114,25 @@ function tick(ticks)
 
 				if (vx < 5 && world.viewport.x > 0) {
 					world.viewport.x--;
-					world.viewport.offset.x = -16;
+					world.viewport.offset.x = -TILE_SIZE;
 				}
 				if ((world.viewport.width - vx) < 5 &&
 					world.viewport.x <= world.rows[0].length - world.viewport.width
 				) {
 					world.viewport.x++;
-					world.viewport.offset.x = 16;
+					world.viewport.offset.x = TILE_SIZE;
 				}
 
 
 				if (vy < 5 && world.viewport.y > 0) {
 					world.viewport.y--;
-					world.viewport.offset.y = -16;
+					world.viewport.offset.y = -TILE_SIZE;
 				}
 				if ((world.viewport.height - vy) < 5 &&
 					world.viewport.y <= world.rows.length - world.viewport.height
 				) {
 					world.viewport.y++;
-					world.viewport.offset.y = 16;
+					world.viewport.offset.y = TILE_SIZE;
 				}
 			}
 		}
@@ -139,8 +140,8 @@ function tick(ticks)
 		character.action = action;
 		character.off = off;
 		character.pos = [
-			(16 * world.scale * (character.x - world.viewport.x)) + (offx * world.scale),
-			(16 * world.scale * (character.y - world.viewport.y)) + (offy * world.scale)
+			(TILE_SIZE * world.scale * (character.x - world.viewport.x)) + (offx * world.scale),
+			(TILE_SIZE * world.scale * (character.y - world.viewport.y)) + (offy * world.scale)
 		];
 
 		if (character.animation && character.animation.frame >= 8) {
@@ -187,17 +188,17 @@ function render(ctx)
 			}
 
 			var img		= world.images[tile];
-			var vars	= (img.width / 16);
-			var off		= (WRand() % vars) * 16;
+			var vars	= (img.width / TILE_SIZE);
+			var off		= (WRand() % vars) * TILE_SIZE;
 
 			// TODO Detect edges and pick the appropriate alternate based
 			//		on the edges
 
 			ctx.drawImage(world.images[tile],
-					off, 0, 16, 16,
-					(16 * world.scale * x) + wx,
-					(16 * world.scale * y) + wy,
-					16 * world.scale, 16 * world.scale);
+					off, 0, TILE_SIZE, TILE_SIZE,
+					(TILE_SIZE * world.scale * x) + wx,
+					(TILE_SIZE * world.scale * y) + wy,
+					TILE_SIZE * world.scale, TILE_SIZE * world.scale);
 
 			// TODO Draw any items that are on this spot
 		}
@@ -216,9 +217,9 @@ function render(ctx)
 			}
 
 			ctx.drawImage(character.images[character.action],
-				character.off, 0, 16, 16,
+				character.off, 0, TILE_SIZE, TILE_SIZE,
 				character.pos[0] + wx, character.pos[1] + wy,
-				16 * world.scale, 16 * world.scale);
+				TILE_SIZE * world.scale, TILE_SIZE * world.scale);
 		}
 	}
 }
@@ -241,24 +242,24 @@ window.addEventListener('load', function()
 			h = window.innerHeight;
 
 			for (var i = 1; ; i++) {
-				if ((i * 16 * world.viewport.minwidth  <= w) &&
-					(i * 16 * world.viewport.minheight <= h)
+				if ((i * TILE_SIZE * world.viewport.minwidth  <= w) &&
+					(i * TILE_SIZE * world.viewport.minheight <= h)
 				) {
 					world.scale = i;
 				} else {
 					break;
 				}
 			}
-			world.viewport.width	= Math.floor(w / (world.scale * 16)) + 1;
-			world.viewport.height	= Math.floor(h / (world.scale * 16)) + 1;
+			world.viewport.width	= Math.floor(w / (world.scale * TILE_SIZE)) + 1;
+			world.viewport.height	= Math.floor(h / (world.scale * TILE_SIZE)) + 1;
 
 			world.viewport.width	= Math.min(world.viewport.width, world.viewport.maxwidth);
 			world.viewport.height	= Math.min(world.viewport.height, world.viewport.maxheight);
 
 			console.log("Using viewport size:", world.viewport.width, world.viewport.height);
 
-			w = world.scale * 16 * world.viewport.width;
-			h = world.scale * 16 * world.viewport.height;
+			w = world.scale * TILE_SIZE * world.viewport.width;
+			h = world.scale * TILE_SIZE * world.viewport.height;
 			// console.log(world.scale, w, h, window.innerWidth, window.innerHeight);
 
 			canvas.setAttribute('width',  w);
@@ -298,7 +299,7 @@ window.addEventListener('load', function()
 		*/
 		Input.poll();
 
-		if (time - lastFrame < 16) {  /* 60fps max */
+		if (time - lastFrame < TILE_SIZE) {  /* 60fps max */
 			return;
 		}
 
