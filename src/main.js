@@ -28,6 +28,7 @@ function updateButtons()
 function pollGamepads()
 {
 	var gamepads;
+	var axisThreshold	= 0.5;
 
 	if (navigator.getGamepads) {
 		gamepads = navigator.getGamepads();
@@ -40,17 +41,17 @@ function pollGamepads()
 	for (var i = 0, pad; pad = gamepads[i]; i++) {
 		buttons.js = {};
 
-		if (pad.axes[0] < 0) {
+		if (pad.axes[0] < -axisThreshold) {
 			buttons.js.left = true;
 		}
-		if (pad.axes[0] > 0) {
+		if (pad.axes[0] > axisThreshold) {
 			buttons.js.right = true;
 		}
 
-		if (pad.axes[1] < 0) {
+		if (pad.axes[1] < -axisThreshold) {
 			buttons.js.up = true;
 		}
-		if (pad.axes[1] > 0) {
+		if (pad.axes[1] > axisThreshold) {
 			buttons.js.down = true;
 		}
 	}
