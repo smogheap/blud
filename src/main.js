@@ -161,6 +161,25 @@ function tick(ticks)
 	}
 }
 
+function tileAt(x, y, deftile)
+{
+	var tile;
+	var row;
+
+	x += world.viewport.x;
+	y += world.viewport.y;
+
+	if (!(row = world.rows[y])) {
+		return(deftile);
+	}
+
+	if (!(tile = row.charAt(x)) || 1 !== tile.length) {
+		return(deftile);
+	}
+
+	return(tile);
+}
+
 function render(ctx)
 {
 	if (!world.images) {
@@ -175,37 +194,108 @@ function render(ctx)
 		draw over the row behind it.
 	*/
 	for (var y = -1; y <= world.viewport.height; y++) {
-		var row = world.rows[y + world.viewport.y];
-
-		if (!row) {
-			continue;
-		}
-
 		for (var x = -1; x <= world.viewport.width; x++) {
-			var tile = row.charAt(x + world.viewport.x);
-
-			WRand.setSeed(((y + world.viewport.y) * 100) + x + world.viewport.x);
+			var tile = tileAt(x, y, null);
 
 			if (!tile || 1 !== tile.length) {
 				continue;
 			}
+
+			WRand.setSeed(((y + world.viewport.y) * 100) * (x + world.viewport.x));
 
 			if (!world.images[tile]) {
 				world.images[tile] = loadImage(world.tiles[tile].src);
 			}
 
 			var img		= world.images[tile];
-			var vars	= (img.width / TILE_SIZE);
-			var offset	= (WRand() % vars) * TILE_SIZE;
+			var offsets	= null;
 
-			// TODO Detect edges and pick the appropriate alternate based
-			//		on the edges
+			if (world.tiles[tile].edges) {
+				/*
+					Pick an appropriate portion of the tile depending on what
+					the tiles surrounding this one are.
+				*/
+				var edges =	[	tileAt(x, y - 1, tile), tileAt(x + 1, y, tile),
+								tileAt(x, y + 1, tile), tileAt(x - 1, y, tile) ];
+				var count = 0;
+
+				/*
+					Edge is true for a direction if the tile does not match this
+					tile.
+				*/
+				for (var i = 0; i < edges.length; i++) {
+					edges[i] = (edges[i] == tile) ? false : true;
+					if (edges[i]) {
+						count++;
+					}
+				}
+
+				switch (count) {
+					case 0:
+					case 4:
+						/* Pick any random tile from the center 4 */
+						offsets = [ 2 + (WRand() % 2), 2 + (WRand() % 2) ];
+						break;
+
+					case 3:
+						if (!edges[0]) {
+							offsets = [ 2, 5 ]; /* North	*/
+						} else if (!edges[1]) {
+							offsets = [ 0, 3 ]; /* East		*/
+						} else if (!edges[2]) {
+							offsets = [ 3, 0 ]; /* South	*/
+						} else if (!edges[3]) {
+							offsets = [ 5, 2 ]; /* West		*/
+						}
+						break;
+
+					case 2:
+						// TODO No images for 2 edges across from each other
+						if (edges[0] && edges[1]) {
+							offsets = [ 4, 1 ];	/* NE */
+						} else if (edges[1] && edges[2]) {
+							offsets = [ 4, 4 ];	/* SE */
+						} else if (edges[2] && edges[3]) {
+							offsets = [ 1, 4 ];	/* SW */
+						} else if (edges[3] && edges[0]) {
+							offsets = [ 1, 1 ];	/* NW */
+						}
+						break;
+
+					case 1:
+						if (edges[0]) {
+							offsets = [ 2, 1 ];	/* North	*/
+						} else if (edges[1]) {
+							offsets = [ 4, 3 ];	/* East		*/
+						} else if (edges[2]) {
+							offsets = [ 3, 4 ];	/* South	*/
+						} else if (edges[3]) {
+							offsets = [ 1, 2 ];	/* West		*/
+						}
+						break;
+
+					default:
+						console.log(count, edges);
+				}
+
+				if (!offsets) {
+					debug(JSON.stringify(edges));
+					offsets = [ 2, 2 ];
+				}
+			} else {
+				/* Pick any random tile */
+				offsets = [
+					WRand() % (img.width  / TILE_SIZE),
+					WRand() % (img.height / TILE_SIZE)
+				];
+			}
 
 			ctx.drawImage(world.images[tile],
-					offset, 0, TILE_SIZE, TILE_SIZE,
+					offsets[0] * TILE_SIZE, offsets[1] * TILE_SIZE,
+					TILE_SIZE, TILE_SIZE,
 					(TILE_SIZE * world.scale * x) + wx,
 					(TILE_SIZE * world.scale * y) + wy,
-					TILE_SIZE * world.scale, TILE_SIZE * world.scale);
+					(TILE_SIZE * world.scale), (TILE_SIZE * world.scale));
 
 			// TODO Draw any items that are on this spot
 		}

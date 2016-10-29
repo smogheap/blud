@@ -21,7 +21,8 @@ var world = {
 		"o": {
 			name:			"plasma",
 			src:			"images/plasma.png",
-			solid:			true
+			solid:			true,
+			edges:			true
 		}
 	},
 
@@ -33,12 +34,12 @@ var world = {
 		"                        oooooooooooo         oooooo                             ",
 		"                         ooooooooooooooo   ooooooooo                            ",
 		"                                  oooooo   ooooooooooo                          ",
-		"                                   ooooo   ooooooooooooooooo                    ",
-		"                                              oooooooooooooooooooooo            ",
-		"                                                  ooooooooooooooooooo           ",
-		"                                                   ooooooooooooooooooooooooooooo",
-		"                                                    oooooooooooooooooooooooooooo",
-		"                                                        oooooooooooooooooooooooo",
+		"       o                           ooooo   ooooooooooooooooo                    ",
+		"     oooo                                     oooooooooooooooooooooo            ",
+		"     ooooo                                        ooooooooooooooooooo           ",
+		"    ooooo                                          ooooooooooooooooooooooooooooo",
+		"     oooo                                           oooooooooooooooooooooooooooo",
+		"      o                                                 oooooooooooooooooooooooo",
 		"                                                          oo oooooooooo    ooooo",
 		"                                                              ooooooooo    ooooo",
 		"                                                                    ooo    ooooo",
