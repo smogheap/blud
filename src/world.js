@@ -1,7 +1,14 @@
 var world = {
 	viewport: {
-		width:	30,
-		height:	16
+		x:					20,
+		y:					5,
+		width:				30,
+		height:				16,
+
+		offset:				{
+			x:				0,
+			y:				0
+		}
 	},
 
 	tiles: {
@@ -58,8 +65,8 @@ var world = {
 	characters: [
 		{
 			name:			"blud",
-			x:				5,
-			y:				0
+			x:				25,
+			y:				10
 		}
 	]
 };

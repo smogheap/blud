@@ -74,7 +74,6 @@ function canMove(character, x, y)
 	} catch (e) {
 		return(false);
 	}
-console.log('"' + tile + '"');
 
 	return(!world.tiles[tile].solid);
 }
@@ -82,6 +81,13 @@ console.log('"' + tile + '"');
 function tick(ticks)
 {
 	pollGamepads();
+
+	if (world.viewport.offset.x !== 0) {
+		world.viewport.offset.x += (world.viewport.offset.x > 0) ? -2 : 2;
+	}
+	if (world.viewport.offset.y !== 0) {
+		world.viewport.offset.y += (world.viewport.offset.y > 0) ? -2 : 2;
+	}
 
 	for (var c = 0, character; character = world.characters[c]; c++) {
 		/*
@@ -143,13 +149,42 @@ function tick(ticks)
 				action = 'east';
 				character.animation = { name: action, frame: 0, dx: 1, dy: 0 };
 			}
+
+			/* Do we need to scroll the viewport?  */
+			if (character.animation) {
+				var vx = character.x - world.viewport.x + character.animation.dx;
+				var vy = character.y - world.viewport.y + character.animation.dy;
+
+				if (vx < 5 && world.viewport.x > 0) {
+					world.viewport.x--;
+					world.viewport.offset.x = -16;
+				}
+				if ((world.viewport.width - vx) < 5 &&
+					world.viewport.x < world.rows[0].length - world.viewport.width
+				) {
+					world.viewport.x++;
+					world.viewport.offset.x = 16;
+				}
+
+
+				if (vy < 5 && world.viewport.y > 0) {
+					world.viewport.y--;
+					world.viewport.offset.y = -16;
+				}
+				if ((world.viewport.height - vy) < 5 &&
+					world.viewport.y < world.rows.length - world.viewport.height
+				) {
+					world.viewport.y++;
+					world.viewport.offset.y = 16;
+				}
+			}
 		}
 
 		character.action = action;
 		character.off = off;
 		character.pos = [
-			(16 * world.scale * character.x) + (offx * world.scale),
-			(16 * world.scale * character.y) + (offy * world.scale)
+			(16 * world.scale * (character.x - world.viewport.x)) + (offx * world.scale),
+			(16 * world.scale * (character.y - world.viewport.y)) + (offy * world.scale)
 		];
 
 		if (character.animation && character.animation.frame >= 8) {
@@ -168,6 +203,9 @@ function render(ctx)
 		world.images = {};
 	}
 
+	var wx = world.viewport.offset.x || 0;
+	var wy = world.viewport.offset.y || 0;
+
 	/* We need the same seed for every frame so the same tiles are used */
 	WRand.setSeed(12345);
 
@@ -175,8 +213,20 @@ function render(ctx)
 		Render each row from the top down, so a row closer to the player can
 		draw over the row behind it.
 	*/
-	for (var y = 0, row; (row = world.rows[y]) && y < world.viewport.height; y++) {
-		for (var x = 0, tile; (tile = row.charAt(x)) && 1 == tile.length && x < world.viewport.width; x++) {
+	for (var y = -1; y <= world.viewport.height; y++) {
+		var row = world.rows[y + world.viewport.y];
+
+		if (!row) {
+			continue;
+		}
+
+		for (var x = -1; x <= world.viewport.width; x++) {
+			var tile = row.charAt(x + world.viewport.x);
+
+			if (!tile || 1 !== tile.length) {
+				continue;
+			}
+
 			if (!world.images[tile]) {
 				world.images[tile] = loadImage(world.tiles[tile].src);
 			}
@@ -190,8 +240,8 @@ function render(ctx)
 
 			ctx.drawImage(world.images[tile],
 					off, 0, 16, 16,
-					16 * world.scale * x,
-					16 * world.scale * y,
+					(16 * world.scale * x) + wx,
+					(16 * world.scale * y) + wy,
 					16 * world.scale, 16 * world.scale);
 
 			// TODO Draw any items that are on this spot
@@ -202,7 +252,7 @@ function render(ctx)
 				character.images = {};
 			}
 
-			if (character.ry !== y) {
+			if (character.ry !== y + world.viewport.y) {
 				continue;
 			}
 
@@ -212,16 +262,8 @@ function render(ctx)
 
 			ctx.drawImage(character.images[character.action],
 				character.off, 0, 16, 16,
-				character.pos[0], character.pos[1],
+				character.pos[0] + wx, character.pos[1] + wy,
 				16 * world.scale, 16 * world.scale);
-
-			if (character.animation && character.animation.frame >= 8) {
-				/* The animation is complete */
-				character.x += character.animation.dx;
-				character.y += character.animation.dy;
-
-				delete character.animation;
-			}
 		}
 	}
 }
