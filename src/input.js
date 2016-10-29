@@ -1,4 +1,4 @@
-function InputHandler(canvas)
+function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 {
 	/* It only makes sense to have one instance of this */
 	if (arguments.callee._singletonInstance) {
@@ -41,14 +41,11 @@ function InputHandler(canvas)
 			return;
 		}
 
-		var x = (e.clientX / world.scale) - world.viewport.offset.x;
-		var y = (e.clientY / world.scale) - world.viewport.offset.y;
+		/* Store the position in the game world that the mouse is at */
+		var pos = getWorldPosCB([e.clientX, e.clientY]);
 
-		x = Math.floor(x / 16);
-		y = Math.floor(y / 16);
-
-		this.devices.mouse.x = x + world.viewport.x;
-		this.devices.mouse.y = y + world.viewport.y;
+		this.devices.mouse.x = pos[0];
+		this.devices.mouse.y = pos[1];
 	}.bind(this);
 
 	canvas.addEventListener('mousemove', mousePos);
@@ -60,6 +57,8 @@ function InputHandler(canvas)
 	{
 		this.devices.mouse.state &= ~this.HELD;
 	}.bind(this));
+
+	this.getPlayerPosCB = getPlayerPosCB;
 
 	return(this);
 }
@@ -74,22 +73,19 @@ InputHandler.prototype.getDirection = function getDirection()
 {
 	var d = [ false, false, false, false ];
 
-	// TODO Add a way to register a callback to translate a point (mosue pos) to
-	//		a set of coords in the game world that can be compared to the
-	//		character without having real knowledge of the workings of the game
-	//		engine...
-
 	/* Compare the mouse position (if still pressed) to the character position */
 	if (this.devices.mouse.state) {
-		if (this.devices.mouse.x < world.characters[0].x) {
+		var charpos	= this.getPlayerPosCB();
+
+		if (this.devices.mouse.x < charpos[0]) {
 			d[this.W] = true;
-		} else if (this.devices.mouse.x > world.characters[0].x) {
+		} else if (this.devices.mouse.x > charpos[0]) {
 			d[this.E] = true;
 		}
 
-		if (this.devices.mouse.y < world.characters[0].y) {
+		if (this.devices.mouse.y < charpos[1]) {
 			d[this.N] = true;
-		} else if (this.devices.mouse.y > world.characters[0].y) {
+		} else if (this.devices.mouse.y > charpos[1]) {
 			d[this.S] = true;
 		}
 

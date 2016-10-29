@@ -224,6 +224,35 @@ function render(ctx)
 	}
 }
 
+/*
+	Take the position of an actual point on screen and convert them to a
+	position in game.
+*/
+function pointToWorldCoords(point)
+{
+	var x = (point[0] / world.scale) - world.viewport.offset.x;
+	var y = (point[1] / world.scale) - world.viewport.offset.y;
+
+	x = Math.floor(x / 16);
+	y = Math.floor(y / 16);
+
+	x += world.viewport.x;
+	y += world.viewport.y;
+
+	return([ x, y ]);
+}
+
+/*
+	Return the current position of the player's character in the world
+*/
+function getPlayerPosition()
+{
+	return([
+		world.characters[0].x,
+		world.characters[0].y,
+	]);
+}
+
 window.addEventListener('load', function()
 {
 	var canvas		= document.createElement('canvas');
@@ -231,7 +260,7 @@ window.addEventListener('load', function()
 
 	document.body.appendChild(canvas);
 
-	Input = new InputHandler(canvas);
+	Input = new InputHandler(canvas, pointToWorldCoords, getPlayerPosition);
 
 	var w = 0;
 	var h = 0;
