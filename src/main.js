@@ -59,6 +59,26 @@ function pollGamepads()
 	updateButtons();
 }
 
+function canMove(character, x, y)
+{
+	var tile;
+
+	x += character.x;
+	y += character.y;
+
+	try {
+		tile = world.rows[y].charAt(x);
+		if (!tile || 1 !== tile.length) {
+			return(false);
+		}
+	} catch (e) {
+		return(false);
+	}
+console.log('"' + tile + '"');
+
+	return(!world.tiles[tile].solid);
+}
+
 function tick(ticks)
 {
 	pollGamepads();
@@ -98,22 +118,28 @@ function tick(ticks)
 				If multiple directions are being pressed then prefer the one
 				that was not animated last.
 			*/
-			if (buttons.up) {
+			if (buttons.up && canMove(character, 0, -1)) {
 				action = 'north';
 				character.animation = { name: action, frame: 0, dx: 0, dy: -1 };
 			}
 
-			if (buttons.down && (!character.animation || action === character.action)) {
+			if (buttons.down && canMove(character, 0, 1) &&
+				(!character.animation || action === character.action)
+			) {
 				action = 'south';
 				character.animation = { name: action, frame: 0, dx: 0, dy: 1 };
 			}
 
-			if (buttons.left && (!character.animation || action === character.action)) {
+			if (buttons.left && canMove(character, -1, 0) &&
+				(!character.animation || action === character.action)
+			) {
 				action = 'west';
 				character.animation = { name: action, frame: 0, dx: -1, dy: 0 };
 			}
 
-			if (buttons.right && (!character.animation || action === character.action)) {
+			if (buttons.right && canMove(character, 1, 0) &&
+				(!character.animation || action === character.action)
+			) {
 				action = 'east';
 				character.animation = { name: action, frame: 0, dx: 1, dy: 0 };
 			}
@@ -151,12 +177,8 @@ function render(ctx)
 	*/
 	for (var y = 0, row; (row = world.rows[y]) && y < world.viewport.height; y++) {
 		for (var x = 0, tile; (tile = row.charAt(x)) && 1 == tile.length && x < world.viewport.width; x++) {
-			if (tile === ' ') {
-				tile = 'x';
-			}
-
 			if (!world.images[tile]) {
-				world.images[tile] = loadImage('images/' + tile + '.png');
+				world.images[tile] = loadImage(world.tiles[tile].src);
 			}
 
 			var img		= world.images[tile];

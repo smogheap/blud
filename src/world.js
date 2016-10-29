@@ -4,6 +4,18 @@ var world = {
 		height:	16
 	},
 
+	tiles: {
+		" ": {
+			name:			"ground",
+			src:			"images/floor.png"
+		},
+		"o": {
+			name:			"plasma",
+			src:			"images/plasma.png",
+			solid:			true
+		}
+	},
+
 	rows: [
 		"           oooo                                                                 ",
 		"             ooooooo                                                            ",
