@@ -156,21 +156,32 @@ window.addEventListener('load', function()
 
 	window.addEventListener('keydown', function(event)
 	{
-		switch (event.keyCode) {
-			case 37:	buttons.left	= true; break;
-			case 38:	buttons.up		= true; break;
-			case 39:	buttons.right	= true; break;
-			case 40:	buttons.down	= true; break;
+		switch (event.key.toLowerCase()) {
+			case "arrowup":
+			case "w":	buttons.up		= true;	break;
+			case "arrowleft":
+			case "a":	buttons.left	= true;	break;
+			case "arrowdown":
+			case "s":	buttons.down	= true;	break;
+			case "arrowright":
+			case "d":	buttons.right	= true;	break;
+			default:
+				console.log(event);
+				break;
 		}
 	});
 
 	window.addEventListener('keyup', function(event)
 	{
-		switch (event.keyCode) {
-			case 37:	delete buttons.left;	break;
-			case 38:	delete buttons.up;		break;
-			case 39:	delete buttons.right;	break;
-			case 40:	delete buttons.down;	break;
+		switch (event.key.toLowerCase()) {
+			case "arrowup":
+			case "w":	delete buttons.up;		break;
+			case "arrowleft":
+			case "a":	delete buttons.left;	break;
+			case "arrowdown":
+			case "s":	delete buttons.down;	break;
+			case "arrowright":
+			case "d":	delete buttons.right;	break;
 		}
 	});
 

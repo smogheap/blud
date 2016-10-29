@@ -46,8 +46,8 @@ var world = {
 	characters: [
 		{
 			name:			"blud",
-			x:				10,
-			y:				10
+			x:				5,
+			y:				0
 		}
 	]
 };
