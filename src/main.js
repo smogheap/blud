@@ -17,12 +17,23 @@ function loadImage(src)
 	return(img);
 }
 
-function updateButtons()
+function updateButtons(handled)
 {
-	buttons.up		= buttons.js.up		|| buttons.kb.arrowup	|| buttons.kb.w;
-	buttons.left	= buttons.js.left	|| buttons.kb.arrowleft || buttons.kb.a;
-	buttons.down	= buttons.js.down	|| buttons.kb.arrowdown || buttons.kb.s;
-	buttons.right	= buttons.js.right	|| buttons.kb.arrowright|| buttons.kb.d;
+	/*
+		Buttons only get turned off once called from the tick callback so that
+		we can be sure it had a chance to see it.
+	*/
+	if (handled) {
+		buttons.up		= false;
+		buttons.left	= false;
+		buttons.down	= false;
+		buttons.right	= false;
+	}
+
+	buttons.up		= buttons.up	|| buttons.js.up	|| buttons.kb.arrowup	|| buttons.kb.w;
+	buttons.left	= buttons.left	|| buttons.js.left	|| buttons.kb.arrowleft || buttons.kb.a;
+	buttons.down	= buttons.down	|| buttons.js.down	|| buttons.kb.arrowdown || buttons.kb.s;
+	buttons.right	= buttons.right	|| buttons.js.right	|| buttons.kb.arrowright|| buttons.kb.d;
 }
 
 function pollGamepads()
@@ -178,6 +189,12 @@ function tick(ticks)
 					world.viewport.offset.y = 16;
 				}
 			}
+
+			/*
+				Clear the status for direction buttons that are no longer being
+				held now that we have acted on them.
+			*/
+			updateButtons(true);
 		}
 
 		character.action = action;
