@@ -203,8 +203,8 @@ function render(ctx)
 		world.images = {};
 	}
 
-	var wx = world.viewport.offset.x || 0;
-	var wy = world.viewport.offset.y || 0;
+	var wx = world.viewport.offset.x * world.scale;
+	var wy = world.viewport.offset.y * world.scale;
 
 	/* We need the same seed for every frame so the same tiles are used */
 	WRand.setSeed(12345);
