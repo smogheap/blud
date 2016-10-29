@@ -1,8 +1,4 @@
-var buttons = {
-	js: {},
-	kb: {},
-	mouse: {}
-};
+var Input;
 
 function loadImage(src)
 {
@@ -16,76 +12,6 @@ function loadImage(src)
 	img.src = src;
 
 	return(img);
-}
-
-function updateButtons(handled)
-{
-	/*
-		Buttons only get turned off once called from the tick callback so that
-		we can be sure it had a chance to see it.
-	*/
-	if (handled) {
-		buttons.up		= false;
-		buttons.left	= false;
-		buttons.down	= false;
-		buttons.right	= false;
-
-		return;
-	}
-
-	/* Compare the mouse position (if still pressed) to the character position */
-	if (buttons.mouse && buttons.mouse.pressed) {
-		// console.log(buttons.mouse.x, buttons.mouse.y, world.characters[0].x, world.characters[0].y);
-
-		if (buttons.mouse.x < world.characters[0].x) {
-			buttons.left = true;
-		} else if (buttons.mouse.x > world.characters[0].x) {
-			buttons.right = true;
-		}
-
-		if (buttons.mouse.y < world.characters[0].y) {
-			buttons.up = true;
-		} else if (buttons.mouse.y > world.characters[0].y) {
-			buttons.down = true;
-		}
-	}
-
-	buttons.up		= buttons.up	|| buttons.js.up	|| buttons.kb.arrowup	|| buttons.kb.w;
-	buttons.left	= buttons.left	|| buttons.js.left	|| buttons.kb.arrowleft || buttons.kb.a;
-	buttons.down	= buttons.down	|| buttons.js.down	|| buttons.kb.arrowdown || buttons.kb.s;
-	buttons.right	= buttons.right	|| buttons.js.right	|| buttons.kb.arrowright|| buttons.kb.d;
-}
-
-function pollGamepads()
-{
-	var gamepads;
-	var axisThreshold	= 0.5;
-
-	if (navigator.getGamepads) {
-		gamepads = navigator.getGamepads();
-	} else if (navigator.webkitGetGamepads) {
-		gamepads = navigator.webkitGetGamepads();
-	} else {
-		gamepads = [];
-	}
-
-	for (var i = 0, pad; pad = gamepads[i]; i++) {
-		buttons.js = {};
-
-		if (pad.axes[0] < -axisThreshold) {
-			buttons.js.left = true;
-		}
-		if (pad.axes[0] > axisThreshold) {
-			buttons.js.right = true;
-		}
-
-		if (pad.axes[1] < -axisThreshold) {
-			buttons.js.up = true;
-		}
-		if (pad.axes[1] > axisThreshold) {
-			buttons.js.down = true;
-		}
-	}
 }
 
 function canMove(character, x, y)
@@ -109,8 +35,6 @@ function canMove(character, x, y)
 
 function tick(ticks)
 {
-	pollGamepads();
-
 	if (world.viewport.offset.x !== 0) {
 		world.viewport.offset.x += (world.viewport.offset.x > 0) ? -2 : 2;
 	}
@@ -148,7 +72,7 @@ function tick(ticks)
 			offy = (character.animation.dy * 2 * character.animation.frame);
 		} else {
 			/* Get the current state of the various input devices */
-			updateButtons(false);
+			var dirs = Input.getDirection();
 
 			action = 'standing';
 
@@ -156,26 +80,26 @@ function tick(ticks)
 				If multiple directions are being pressed then prefer the one
 				that was not animated last.
 			*/
-			if (buttons.up && canMove(character, 0, -1)) {
+			if (dirs[Input.N] && canMove(character, 0, -1)) {
 				action = 'north';
 				character.animation = { name: action, frame: 0, dx: 0, dy: -1 };
 			}
 
-			if (buttons.down && canMove(character, 0, 1) &&
+			if (dirs[Input.S] && canMove(character, 0, 1) &&
 				(!character.animation || action === character.action)
 			) {
 				action = 'south';
 				character.animation = { name: action, frame: 0, dx: 0, dy: 1 };
 			}
 
-			if (buttons.left && canMove(character, -1, 0) &&
+			if (dirs[Input.W] && canMove(character, -1, 0) &&
 				(!character.animation || action === character.action)
 			) {
 				action = 'west';
 				character.animation = { name: action, frame: 0, dx: -1, dy: 0 };
 			}
 
-			if (buttons.right && canMove(character, 1, 0) &&
+			if (dirs[Input.E] && canMove(character, 1, 0) &&
 				(!character.animation || action === character.action)
 			) {
 				action = 'east';
@@ -210,12 +134,6 @@ function tick(ticks)
 					world.viewport.offset.y = 16;
 				}
 			}
-
-			/*
-				Clear the status for direction buttons that are no longer being
-				held now that we have acted on them.
-			*/
-			updateButtons(true);
 		}
 
 		character.action = action;
@@ -312,48 +230,7 @@ window.addEventListener('load', function()
 
 	document.body.appendChild(canvas);
 
-	window.addEventListener('keydown', function(e)
-	{
-		buttons.kb[e.key.toLowerCase()] = true;
-	});
-
-	window.addEventListener('keyup', function(e)
-	{
-		delete buttons.kb[e.key.toLowerCase()];
-	});
-
-	var mousePos = function mousePos(e)
-	{
-		if (!buttons.mouse.pressed) {
-			return;
-		}
-
-		var x = (e.clientX / world.scale) - world.viewport.offset.x;
-		var y = (e.clientY / world.scale) - world.viewport.offset.y;
-
-		x = Math.floor(x / 16);
-		y = Math.floor(y / 16);
-
-		buttons.mouse.x = x + world.viewport.x;
-		buttons.mouse.y = y + world.viewport.y;
-	};
-
-	canvas.addEventListener('mousemove', mousePos);
-	canvas.addEventListener('mousedown', function(e) {
-		buttons.mouse.pressed = true;
-		mousePos(e);
-	});
-	canvas.addEventListener('mouseup', function(e)
-	{
-		buttons.mouse = {};
-	});
-
-	window.addEventListener('gamepadconnected', function(e)
-	{
-		console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
-			e.gamepad.index, e.gamepad.id,
-			e.gamepad.buttons.length, e.gamepad.axes.length);
-	});
+	Input = new InputHandler(canvas);
 
 	var w = 0;
 	var h = 0;
@@ -414,6 +291,12 @@ window.addEventListener('load', function()
 		var ticks = 0;
 
 		requestAnimationFrame(doAnimationFrame);
+
+		/*
+			Poll input devices (mainly gamepads) as frequently as possible
+			regardless of the tick rate.
+		*/
+		Input.poll();
 
 		if (time - lastFrame < 16) {  /* 60fps max */
 			return;
