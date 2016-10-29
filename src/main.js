@@ -1,6 +1,7 @@
 var buttons = {
 	js: {},
-	kb: {}
+	kb: {},
+	mouse: {}
 };
 
 function loadImage(src)
@@ -28,6 +29,25 @@ function updateButtons(handled)
 		buttons.left	= false;
 		buttons.down	= false;
 		buttons.right	= false;
+
+		return;
+	}
+
+	/* Compare the mouse position (if still pressed) to the character position */
+	if (buttons.mouse && buttons.mouse.pressed) {
+		// console.log(buttons.mouse.x, buttons.mouse.y, world.characters[0].x, world.characters[0].y);
+
+		if (buttons.mouse.x < world.characters[0].x) {
+			buttons.left = true;
+		} else if (buttons.mouse.x > world.characters[0].x) {
+			buttons.right = true;
+		}
+
+		if (buttons.mouse.y < world.characters[0].y) {
+			buttons.up = true;
+		} else if (buttons.mouse.y > world.characters[0].y) {
+			buttons.down = true;
+		}
 	}
 
 	buttons.up		= buttons.up	|| buttons.js.up	|| buttons.kb.arrowup	|| buttons.kb.w;
@@ -66,8 +86,6 @@ function pollGamepads()
 			buttons.js.down = true;
 		}
 	}
-
-	updateButtons();
 }
 
 function canMove(character, x, y)
@@ -129,6 +147,9 @@ function tick(ticks)
 			offx = (character.animation.dx * 2 * character.animation.frame);
 			offy = (character.animation.dy * 2 * character.animation.frame);
 		} else {
+			/* Get the current state of the various input devices */
+			updateButtons(false);
+
 			action = 'standing';
 
 			/*
@@ -291,22 +312,47 @@ window.addEventListener('load', function()
 
 	document.body.appendChild(canvas);
 
-	window.addEventListener('keydown', function(event)
+	window.addEventListener('keydown', function(e)
 	{
-		buttons.kb[event.key.toLowerCase()] = true;
-		updateButtons();
+		buttons.kb[e.key.toLowerCase()] = true;
 	});
 
-	window.addEventListener('keyup', function(event)
+	window.addEventListener('keyup', function(e)
 	{
-		delete buttons.kb[event.key.toLowerCase()];
+		delete buttons.kb[e.key.toLowerCase()];
 	});
 
-	window.addEventListener('gamepadconnected', function(event)
+	var mousePos = function mousePos(e)
+	{
+		if (!buttons.mouse.pressed) {
+			return;
+		}
+
+		var x = (e.clientX / world.scale) - world.viewport.offset.x;
+		var y = (e.clientY / world.scale) - world.viewport.offset.y;
+
+		x = Math.floor(x / 16);
+		y = Math.floor(y / 16);
+
+		buttons.mouse.x = x + world.viewport.x;
+		buttons.mouse.y = y + world.viewport.y;
+	};
+
+	canvas.addEventListener('mousemove', mousePos);
+	canvas.addEventListener('mousedown', function(e) {
+		buttons.mouse.pressed = true;
+		mousePos(e);
+	});
+	canvas.addEventListener('mouseup', function(e)
+	{
+		buttons.mouse = {};
+	});
+
+	window.addEventListener('gamepadconnected', function(e)
 	{
 		console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
-			event.gamepad.index, event.gamepad.id,
-			event.gamepad.buttons.length, event.gamepad.axes.length);
+			e.gamepad.index, e.gamepad.id,
+			e.gamepad.buttons.length, e.gamepad.axes.length);
 	});
 
 	var w = 0;
