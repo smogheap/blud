@@ -65,7 +65,7 @@ function tick(ticks)
 		if (character.animation) {
 			/* Continue the previous animation */
 			action = character.animation.name;
-			offset = (character.animation.frame + 2) * TILE_SIZE;
+			offset = character.animation.frame * TILE_SIZE;
 
 			character.animation.frame++;
 
@@ -113,8 +113,6 @@ function tick(ticks)
 
 			/* Do we need to scroll the viewport?  */
 			if (character.animation) {
-				offset = 2;
-
 				var vx = character.x - world.viewport.x + character.animation.dx;
 				var vy = character.y - world.viewport.y + character.animation.dy;
 
@@ -226,7 +224,8 @@ function render(ctx)
 			}
 
 			ctx.drawImage(character.image,
-				character.offset, character.actionOffset || 0, TILE_SIZE, TILE_SIZE,
+				character.offset + (TILE_SIZE * 2),
+				character.actionOffset || 0, TILE_SIZE, TILE_SIZE,
 				character.pos[0] + wx, character.pos[1] + wy,
 				TILE_SIZE * world.scale, TILE_SIZE * world.scale);
 		}
@@ -334,7 +333,7 @@ window.addEventListener('load', function()
 
 	ctx.save();
 
-	var ticksPerSec	= 30;
+	var ticksPerSec	= 30; /* animations are 30fps */
 	var tickWait	= Math.floor(1000 / ticksPerSec);
 	var lastFrame	= 0;
 	var frametime	= 0;
