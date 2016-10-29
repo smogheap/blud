@@ -206,9 +206,6 @@ function render(ctx)
 	var wx = world.viewport.offset.x * world.scale;
 	var wy = world.viewport.offset.y * world.scale;
 
-	/* We need the same seed for every frame so the same tiles are used */
-	WRand.setSeed(12345);
-
 	/*
 		Render each row from the top down, so a row closer to the player can
 		draw over the row behind it.
@@ -222,6 +219,8 @@ function render(ctx)
 
 		for (var x = -1; x <= world.viewport.width; x++) {
 			var tile = row.charAt(x + world.viewport.x);
+
+			WRand.setSeed(((y + world.viewport.y) * 100) + x + world.viewport.x);
 
 			if (!tile || 1 !== tile.length) {
 				continue;
