@@ -57,7 +57,7 @@ function tick(ticks)
 			character.ry = character.y;
 		}
 
-		var off		= 0;
+		var offset	= 0;
 		var offx	= 0;
 		var offy	= 0;
 		var action;
@@ -65,7 +65,7 @@ function tick(ticks)
 		if (character.animation) {
 			/* Continue the previous animation */
 			action = character.animation.name;
-			off = character.animation.frame * TILE_SIZE;
+			offset = (character.animation.frame + 2) * TILE_SIZE;
 
 			character.animation.frame++;
 
@@ -113,6 +113,8 @@ function tick(ticks)
 
 			/* Do we need to scroll the viewport?  */
 			if (character.animation) {
+				offset = 2;
+
 				var vx = character.x - world.viewport.x + character.animation.dx;
 				var vy = character.y - world.viewport.y + character.animation.dy;
 
@@ -138,11 +140,14 @@ function tick(ticks)
 					world.viewport.y++;
 					world.viewport.offset.y = TILE_SIZE;
 				}
+			} else {
+				// TODO Occasionally change offset to 1...
+				offset = 0;
 			}
 		}
 
 		character.action = action;
-		character.off = off;
+		character.offset = offset;
 		character.pos = [
 			(TILE_SIZE * world.scale * (character.x - world.viewport.x)) + (offx * world.scale),
 			(TILE_SIZE * world.scale * (character.y - world.viewport.y)) + (offy * world.scale)
@@ -193,13 +198,13 @@ function render(ctx)
 
 			var img		= world.images[tile];
 			var vars	= (img.width / TILE_SIZE);
-			var off		= (WRand() % vars) * TILE_SIZE;
+			var offset	= (WRand() % vars) * TILE_SIZE;
 
 			// TODO Detect edges and pick the appropriate alternate based
 			//		on the edges
 
 			ctx.drawImage(world.images[tile],
-					off, 0, TILE_SIZE, TILE_SIZE,
+					offset, 0, TILE_SIZE, TILE_SIZE,
 					(TILE_SIZE * world.scale * x) + wx,
 					(TILE_SIZE * world.scale * y) + wy,
 					TILE_SIZE * world.scale, TILE_SIZE * world.scale);
@@ -221,7 +226,7 @@ function render(ctx)
 			}
 
 			ctx.drawImage(character.image,
-				character.off, character.actionOffset || 0, TILE_SIZE, TILE_SIZE,
+				character.offset, character.actionOffset || 0, TILE_SIZE, TILE_SIZE,
 				character.pos[0] + wx, character.pos[1] + wy,
 				TILE_SIZE * world.scale, TILE_SIZE * world.scale);
 		}
