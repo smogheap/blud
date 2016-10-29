@@ -2,8 +2,10 @@ var world = {
 	viewport: {
 		x:					20,
 		y:					5,
-		width:				30,
-		height:				16,
+		minwidth:			24,
+		minheight:			14,
+		maxwidth:			34,
+		maxheight:			19,
 
 		offset:				{
 			x:				0,

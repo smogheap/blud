@@ -171,7 +171,7 @@ function tick(ticks)
 					world.viewport.offset.x = -16;
 				}
 				if ((world.viewport.width - vx) < 5 &&
-					world.viewport.x < world.rows[0].length - world.viewport.width
+					world.viewport.x <= world.rows[0].length - world.viewport.width
 				) {
 					world.viewport.x++;
 					world.viewport.offset.x = 16;
@@ -183,7 +183,7 @@ function tick(ticks)
 					world.viewport.offset.y = -16;
 				}
 				if ((world.viewport.height - vy) < 5 &&
-					world.viewport.y < world.rows.length - world.viewport.height
+					world.viewport.y <= world.rows.length - world.viewport.height
 				) {
 					world.viewport.y++;
 					world.viewport.offset.y = 16;
@@ -318,14 +318,21 @@ window.addEventListener('load', function()
 			h = window.innerHeight;
 
 			for (var i = 1; ; i++) {
-				if ((i * 16 * world.viewport.width <= w) &&
-					(i * 16 * world.viewport.height <= h)
+				if ((i * 16 * world.viewport.minwidth  <= w) &&
+					(i * 16 * world.viewport.minheight <= h)
 				) {
 					world.scale = i;
 				} else {
 					break;
 				}
 			}
+			world.viewport.width	= Math.floor(w / (world.scale * 16)) + 1;
+			world.viewport.height	= Math.floor(h / (world.scale * 16)) + 1;
+
+			world.viewport.width	= Math.min(world.viewport.width, world.viewport.maxwidth);
+			world.viewport.height	= Math.min(world.viewport.height, world.viewport.maxheight);
+
+			console.log("Using viewport size:", world.viewport.width, world.viewport.height);
 
 			w = world.scale * 16 * world.viewport.width;
 			h = world.scale * 16 * world.viewport.height;
