@@ -84,6 +84,7 @@ function tick(ticks)
 			if (dirs[Input.N] && canMove(character, 0, -1)) {
 				action = 'north';
 				character.animation = { name: action, frame: 0, dx: 0, dy: -1 };
+				character.actionOffset = 48;
 			}
 
 			if (dirs[Input.S] && canMove(character, 0, 1) &&
@@ -91,6 +92,7 @@ function tick(ticks)
 			) {
 				action = 'south';
 				character.animation = { name: action, frame: 0, dx: 0, dy: 1 };
+				character.actionOffset = 16;
 			}
 
 			if (dirs[Input.W] && canMove(character, -1, 0) &&
@@ -98,6 +100,7 @@ function tick(ticks)
 			) {
 				action = 'west';
 				character.animation = { name: action, frame: 0, dx: -1, dy: 0 };
+				character.actionOffset = 32;
 			}
 
 			if (dirs[Input.E] && canMove(character, 1, 0) &&
@@ -105,6 +108,7 @@ function tick(ticks)
 			) {
 				action = 'east';
 				character.animation = { name: action, frame: 0, dx: 1, dy: 0 };
+				character.actionOffset = 0;
 			}
 
 			/* Do we need to scroll the viewport?  */
@@ -212,12 +216,12 @@ function render(ctx)
 				continue;
 			}
 
-			if (!character.images[character.action]) {
-				character.images[character.action] = loadImage('images/' + character.name + '-' + character.action + '.png');
+			if (!character.image) {
+				character.image = loadImage('images/' + character.name + '.png');
 			}
 
-			ctx.drawImage(character.images[character.action],
-				character.off, 0, TILE_SIZE, TILE_SIZE,
+			ctx.drawImage(character.image,
+				character.off, character.actionOffset || 0, TILE_SIZE, TILE_SIZE,
 				character.pos[0] + wx, character.pos[1] + wy,
 				TILE_SIZE * world.scale, TILE_SIZE * world.scale);
 		}
