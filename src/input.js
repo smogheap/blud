@@ -70,12 +70,12 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 
 	window.addEventListener('keydown', function(e)
 	{
-		this.devices.kb[e.key.toLowerCase()] = this.PRESSED | this.HELD;
+		this.devices.kb[e.code.toLowerCase()] = this.PRESSED | this.HELD;
 	}.bind(this));
 
 	window.addEventListener('keyup', function(e)
 	{
-		this.devices.kb[e.key.toLowerCase()] &= ~this.HELD;
+		this.devices.kb[e.code.toLowerCase()] &= ~this.HELD;
 	}.bind(this));
 
 	var mousePos = function mousePos(e)
@@ -138,10 +138,10 @@ InputHandler.prototype.getDirection = function getDirection()
 
 	/* Merge results from the keyboard */
 	// TODO Implement support for alternate bindings...
-	d[this.N] |= this.devices.kb.arrowup	|| this.devices.kb.w;
-	d[this.E] |= this.devices.kb.arrowright	|| this.devices.kb.d;
-	d[this.S] |= this.devices.kb.arrowdown	|| this.devices.kb.s;
-	d[this.W] |= this.devices.kb.arrowleft	|| this.devices.kb.a;
+	d[this.N] |= this.devices.kb.arrowup	|| this.devices.kb.keyw;
+	d[this.E] |= this.devices.kb.arrowright	|| this.devices.kb.keyd;
+	d[this.S] |= this.devices.kb.arrowdown	|| this.devices.kb.keys;
+	d[this.W] |= this.devices.kb.arrowleft	|| this.devices.kb.keya;
 
 	/* Merge results from gamepads */
 	this.poll();
