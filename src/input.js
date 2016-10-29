@@ -6,6 +6,16 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 	}
 	arguments.callee._singletonInstance = this;
 
+	/* Constants */
+	this.PRESSED		= 0x1; /* The button has been pressed and not acted on */
+	this.HELD			= 0x2; /* The button is still being held */
+
+	this.NORTH			= this.N = 0;
+	this.EAST			= this.E = 1;
+	this.SOUTH			= this.S = 2;
+	this.WEST			= this.W = 3;
+
+
 	/* The status of buttons as presented to the consumer */
 	this.buttons = {};
 
@@ -16,14 +26,47 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 		mouse:	{}
 	};
 
-	/* Constants */
-	this.PRESSED		= 0x1; /* The button has been pressed and not acted on */
-	this.HELD			= 0x2; /* The button is still being held */
+	this.bindings = {
+		js: [
 
-	this.NORTH			= this.N = 0;
-	this.EAST			= this.E = 1;
-	this.SOUTH			= this.S = 2;
-	this.WEST			= this.W = 3;
+		/* Left stick (usually) */
+		{
+			action:		this.N,
+			axis:		1,
+			threshold:	-0.5
+		}, {
+			action:		this.E,
+			axis:		0,
+			threshold:	0.5
+		}, {
+			action:		this.S,
+			axis:		1,
+			threshold:	0.5
+		}, {
+			action:		this.W,
+			axis:		0,
+			threshold:	-0.5
+		},
+
+		/* dpad (usually) */
+		{
+			action:		this.N,
+			axis:		7,
+			threshold:	-0.5
+		}, {
+			action:		this.E,
+			axis:		6,
+			threshold:	0.5
+		}, {
+			action:		this.S,
+			axis:		7,
+			threshold:	0.5
+		}, {
+			action:		this.W,
+			axis:		6,
+			threshold:	-0.5
+		}]
+	};
 
 	window.addEventListener('keydown', function(e)
 	{
@@ -93,12 +136,26 @@ InputHandler.prototype.getDirection = function getDirection()
 		this.devices.mouse.state &= ~this.PRESSED;
 	}
 
-	/* Merge the results from the mouse (already set) and kb and js */
+	/* Merge results from the keyboard */
 	// TODO Implement support for alternate bindings...
-	d[this.N] |= this.devices.js.up	|| this.devices.kb.arrowup		|| this.devices.kb.w;
-	d[this.E] |= this.devices.js.right|| this.devices.kb.arrowright	|| this.devices.kb.d;
-	d[this.S] |= this.devices.js.down	|| this.devices.kb.arrowdown	|| this.devices.kb.s;
-	d[this.W] |= this.devices.js.left	|| this.devices.kb.arrowleft	|| this.devices.kb.a;
+	d[this.N] |= this.devices.kb.arrowup	|| this.devices.kb.w;
+	d[this.E] |= this.devices.kb.arrowright	|| this.devices.kb.d;
+	d[this.S] |= this.devices.kb.arrowdown	|| this.devices.kb.s;
+	d[this.W] |= this.devices.kb.arrowleft	|| this.devices.kb.a;
+
+	/* Merge results from gamepads */
+	this.poll();
+	for (var i = 0, b; b = this.bindings.js[i]; i++) {
+		if (!b || !b.key) {
+			continue;
+		}
+
+		if (d.length < b.action) {
+			continue;
+		}
+
+		d[b.action] |= this.devices.js[b.key];
+	}
 
 	/* Clear the pressed state on all inputs on all devices */
 	this.clearPressed(this.devices.js);
@@ -135,28 +192,35 @@ InputHandler.prototype.poll = function poll()
 	}
 
 	for (var i = 0, pad; pad = gamepads[i]; i++) {
-		if (pad.axes[0] < -axisThreshold) {
-			this.devices.js.left = this.PRESSED | this.HELD;
-		} else {
-			this.devices.js.left &= ~this.HELD;
-		}
+		for (var i = 0, b; b = this.bindings.js[i]; i++) {
+			if (!isNaN(b.axis) && !isNaN(pad.axes[b.axis])) {
+				var value	= pad.axes[b.axis];
+				var on;
 
-		if (pad.axes[0] > axisThreshold) {
-			this.devices.js.right = this.PRESSED | this.HELD;
-		} else {
-			this.devices.js.right &= ~this.HELD;
-		}
+				if (b.threshold > 0) {
+					on = value >= b.threshold;
+				} else {
+					on = value <= b.threshold;
+				}
 
-		if (pad.axes[1] < -axisThreshold) {
-			this.devices.js.up = true;this.PRESSED | this.HELD;
-		} else {
-			this.devices.js.up &= ~this.HELD;
-		}
-		if (pad.axes[1] > axisThreshold) {
-			this.devices.js.down = true;this.PRESSED | this.HELD;
-		} else {
-			this.devices.js.down &= ~this.HELD;
+				if (!b.key) {
+					b.key = 'axis' + b.axis + (b.threshold > 0 ? '+' : '-');
+				}
+
+				if (on) {
+					if (!this.devices.js[b.key]) {
+						this.devices.js[b.key] = this.PRESSED;
+					}
+					this.devices.js[b.key] |= this.HELD;
+				} else {
+					this.devices.js[b.key] &= ~this.HELD;
+				}
+			} else {
+				// TODO Add support for buttons
+			}
 		}
 	}
+
+	// debug(JSON.stringify(this.devices.js));
 };
 

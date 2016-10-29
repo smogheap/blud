@@ -253,6 +253,20 @@ function getPlayerPosition()
 	]);
 }
 
+function debug(msg)
+{
+	var		div;
+
+	if (!(div = document.getElementById('debug'))) {
+		div = document.createElement('div');
+
+		div.id = 'debug';
+		document.body.appendChild(div);
+	}
+
+	div.innerText = msg;
+}
+
 window.addEventListener('load', function()
 {
 	var canvas		= document.createElement('canvas');
