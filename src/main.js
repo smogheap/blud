@@ -99,7 +99,6 @@ function tick(ticks)
 			*/
 			if (buttons.up) {
 				action = 'north';
-// action = 'south';
 				character.animation = { name: action, frame: 0, dx: 0, dy: -1 };
 			}
 
@@ -110,7 +109,6 @@ function tick(ticks)
 
 			if (buttons.left && (!character.animation || action === character.action)) {
 				action = 'west';
-// action = 'east';
 				character.animation = { name: action, frame: 0, dx: -1, dy: 0 };
 			}
 
