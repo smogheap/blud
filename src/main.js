@@ -14,6 +14,71 @@ function loadImage(src)
 	return(img);
 }
 
+function tick()
+{
+	for (var c = 0, character; character = world.characters[c]; c++) {
+		/*
+			Determine the row offset to use when rendering this character.
+
+			If the character is moving from one row to another then it needs to
+			render with the row it is moving towards if that row is lower on
+			screen than the row it is actually still in.
+		*/
+		if (character.animation && character.animation.dy > 0) {
+			character.ry = character.y + 1;
+		} else {
+			character.ry = character.y;
+		}
+
+		var off		= 0;
+		var offx	= 0;
+		var offy	= 0;
+		var action;
+
+		if (character.animation) {
+			/* Continue the previous animation */
+			action = character.animation.name;
+			off = character.animation.frame * 16;
+
+			character.animation.frame++;
+
+			offx = (character.animation.dx * 2 * character.animation.frame);
+			offy = (character.animation.dy * 2 * character.animation.frame);
+		} else {
+			if (buttons.up) {
+				action = 'north';
+				character.animation = { name: action, frame: 0, dx: 0, dy: -1 };
+			} else if (buttons.down) {
+				action = 'south';
+				character.animation = { name: action, frame: 0, dx: 0, dy: 1 };
+			} else if (buttons.left) {
+				action = 'west';
+				character.animation = { name: action, frame: 0, dx: -1, dy: 0 };
+			} else if (buttons.right) {
+				action = 'east';
+				character.animation = { name: action, frame: 0, dx: 1, dy: 0 };
+			} else {
+				action = 'standing';
+			}
+		}
+
+		character.action = action;
+		character.off = off;
+		character.pos = [
+			(16 * world.scale * character.x) + (offx * world.scale),
+			(16 * world.scale * character.y) + (offy * world.scale)
+		];
+
+		if (character.animation && character.animation.frame >= 8) {
+			/* The animation is complete */
+			character.x += character.animation.dx;
+			character.y += character.animation.dy;
+
+			delete character.animation;
+		}
+	}
+}
+
 function render(ctx)
 {
 	if (!world.images) {
@@ -22,15 +87,6 @@ function render(ctx)
 
 	/* We need the same seed for every frame so the same tiles are used */
 	WRand.setSeed(12345);
-
-	/* Determine which vertical row each character is on for this frame */
-	for (var c = 0, character; character = world.characters[c]; c++) {
-		if (character.animation && character.animation.dy > 0) {
-			character.ry = 1;
-		} else {
-			character.ry = 0;
-		}
-	}
 
 	/*
 		Render each row from the top down, so a row closer to the player can
@@ -43,7 +99,6 @@ function render(ctx)
 			}
 
 			if (!world.images[tile]) {
-				// TODO Load an image for tile
 				world.images[tile] = loadImage('images/' + tile + '.png');
 			}
 
@@ -51,13 +106,8 @@ function render(ctx)
 			var vars	= (img.width / 16);
 			var off		= (WRand() % vars) * 16;
 
-
-			// TODO If this tile has alternate images pick one
 			// TODO Detect edges and pick the appropriate alternate based
 			//		on the edges
-
-
-			// TODO Draw the tile
 
 			ctx.drawImage(world.images[tile],
 					off, 0, 16, 16,
@@ -73,52 +123,17 @@ function render(ctx)
 				character.images = {};
 			}
 
-			if (character.y + character.ry !== y) {
+			if (character.ry !== y) {
 				continue;
 			}
 
-			var name;
-			var off		= 0;
-			var offx	= 0;
-			var offy	= 0;
-
-			// TODO Adjust for frame rate...
-			if (character.animation) {
-				/* Continue the previous animation */
-				name = character.animation.name;
-
-				off = character.animation.frame * 16;
-
-				character.animation.frame++;
-
-				offx = (character.animation.dx * 2 * character.animation.frame);
-				offy = (character.animation.dy * 2 * character.animation.frame);
-			} else {
-				if (buttons.up) {
-					name = 'north';
-					character.animation = { name: name, frame: 0, dx: 0, dy: -1 };
-				} else if (buttons.down) {
-					name = 'south';
-					character.animation = { name: name, frame: 0, dx: 0, dy: 1 };
-				} else if (buttons.left) {
-					name = 'west';
-					character.animation = { name: name, frame: 0, dx: -1, dy: 0 };
-				} else if (buttons.right) {
-					name = 'east';
-					character.animation = { name: name, frame: 0, dx: 1, dy: 0 };
-				} else {
-					name = 'standing';
-				}
+			if (!character.images[character.action]) {
+				character.images[character.action] = loadImage('images/' + character.name + '-' + character.action + '.png');
 			}
 
-			if (!character.images[name]) {
-				character.images[name] = loadImage('images/' + character.name + '-' + name + '.png');
-			}
-
-			ctx.drawImage(character.images[name],
-				off, 0, 16, 16,
-				(16 * world.scale * character.x) + (offx * world.scale),
-				(16 * world.scale * character.y) + (offy * world.scale),
+			ctx.drawImage(character.images[character.action],
+				character.off, 0, 16, 16,
+				character.pos[0], character.pos[1],
 				16 * world.scale, 16 * world.scale);
 
 			if (character.animation && character.animation.frame >= 8) {
@@ -179,7 +194,7 @@ window.addEventListener('load', function()
 
 			w = world.scale * 16 * world.viewport.width;
 			h = world.scale * 16 * world.viewport.height;
-console.log(world.scale, w, h, window.innerWidth, window.innerHeight);
+			// console.log(world.scale, w, h, window.innerWidth, window.innerHeight);
 
 			canvas.setAttribute('width',  w);
 			canvas.setAttribute('height', h);
@@ -201,22 +216,47 @@ console.log(world.scale, w, h, window.innerWidth, window.innerHeight);
 
 	ctx.save();
 
-	var renderWrapper = function renderWrapper(time)
-	{
-		var thrust;
-		var rocket;
+	var ticksPerSec	= 30;
+	var tickWait	= Math.floor(1000 / ticksPerSec);
+	var lastFrame	= 0;
+	var frametime	= 0;
 
-		requestAnimationFrame(renderWrapper);
+	var doAnimationFrame = function doAnimationFrame(time)
+	{
+		var ticks = 0;
+
+		requestAnimationFrame(doAnimationFrame);
+
+		if (time - lastFrame < 16) {  /* 60fps max */
+			return;
+		}
+
+		if (frametime) {
+			frametime += time - lastFrame;
+		} else {
+			frametime = time - lastFrame;
+		}
+		lastFrame = time;
+
+		while (frametime >= tickWait) {
+			// console.log('tick');
+			tick();
+			ticks++;
+			frametime -= tickWait;
+			// frametime /= 1.5;
+		}
+
 		resizeCanvas();
 
 		/* Clear the canvas */
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 		ctx.save();
+		// console.log('render');
 		render(ctx);
 		ctx.restore();
 	};
-	requestAnimationFrame(renderWrapper);
+	requestAnimationFrame(doAnimationFrame);
 });
 
 
