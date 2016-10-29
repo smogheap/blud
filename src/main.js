@@ -1,4 +1,7 @@
-var buttons = {};
+var buttons = {
+	js: {},
+	kb: {}
+};
 
 function loadImage(src)
 {
@@ -14,6 +17,14 @@ function loadImage(src)
 	return(img);
 }
 
+function updateButtons()
+{
+	buttons.up		= buttons.js.up		|| buttons.kb.arrowup	|| buttons.kb.w;
+	buttons.left	= buttons.js.left	|| buttons.kb.arrowleft || buttons.kb.a;
+	buttons.down	= buttons.js.down	|| buttons.kb.arrowdown || buttons.kb.s;
+	buttons.right	= buttons.js.right	|| buttons.kb.arrowright|| buttons.kb.d;
+}
+
 function pollGamepads()
 {
 	var gamepads;
@@ -27,23 +38,24 @@ function pollGamepads()
 	}
 
 	for (var i = 0, pad; pad = gamepads[i]; i++) {
-		buttons = {};
+		buttons.js = {};
 
-		// console.log(pad);
 		if (pad.axes[0] < 0) {
-			buttons.left = true;
+			buttons.js.left = true;
 		}
 		if (pad.axes[0] > 0) {
-			buttons.right = true;
+			buttons.js.right = true;
 		}
 
 		if (pad.axes[1] < 0) {
-			buttons.up = true;
+			buttons.js.up = true;
 		}
 		if (pad.axes[1] > 0) {
-			buttons.down = true;
+			buttons.js.down = true;
 		}
 	}
+
+	updateButtons();
 }
 
 function tick(ticks)
@@ -202,33 +214,13 @@ window.addEventListener('load', function()
 
 	window.addEventListener('keydown', function(event)
 	{
-		switch (event.key.toLowerCase()) {
-			case "arrowup":
-			case "w":	buttons.up		= true;	break;
-			case "arrowleft":
-			case "a":	buttons.left	= true;	break;
-			case "arrowdown":
-			case "s":	buttons.down	= true;	break;
-			case "arrowright":
-			case "d":	buttons.right	= true;	break;
-			default:
-				console.log(event);
-				break;
-		}
+		buttons.kb[event.key.toLowerCase()] = true;
+		updateButtons();
 	});
 
 	window.addEventListener('keyup', function(event)
 	{
-		switch (event.key.toLowerCase()) {
-			case "arrowup":
-			case "w":	delete buttons.up;		break;
-			case "arrowleft":
-			case "a":	delete buttons.left;	break;
-			case "arrowdown":
-			case "s":	delete buttons.down;	break;
-			case "arrowright":
-			case "d":	delete buttons.right;	break;
-		}
+		delete buttons.kb[event.key.toLowerCase()];
 	});
 
 	window.addEventListener('gamepadconnected', function(event)
