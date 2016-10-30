@@ -205,8 +205,8 @@ function tick(ticks)
 
 		character.offset = offset;
 		character.pos = [
-			(TILE_SIZE * world.scale * (character.x - world.viewport.x)) + (offx * world.scale),
-			(TILE_SIZE * world.scale * (character.y - world.viewport.y)) + (offy * world.scale)
+			(TILE_SIZE * (character.x - world.viewport.x)) + offx,
+			(TILE_SIZE * (character.y - world.viewport.y)) + offy
 		];
 	}
 }
@@ -236,8 +236,8 @@ function render(ctx)
 		world.images = {};
 	}
 
-	var wx = world.viewport.offset.x * world.scale;
-	var wy = world.viewport.offset.y * world.scale;
+	var wx = world.viewport.offset.x;
+	var wy = world.viewport.offset.y;
 
 	/*
 		Render each row from the top down, so a row closer to the player can
@@ -298,9 +298,9 @@ function render(ctx)
 			ctx.drawImage(world.images[tile],
 					offsets[0] * TILE_SIZE, offsets[1] * TILE_SIZE,
 					TILE_SIZE, TILE_SIZE,
-					(TILE_SIZE * world.scale * x) + wx,
-					(TILE_SIZE * world.scale * y) + wy,
-					(TILE_SIZE * world.scale), (TILE_SIZE * world.scale));
+					(TILE_SIZE * x) + wx,
+					(TILE_SIZE * y) + wy,
+					(TILE_SIZE), (TILE_SIZE));
 
 			// TODO Draw any items that are on this spot
 		}
@@ -322,7 +322,7 @@ function render(ctx)
 				character.offset + (TILE_SIZE * 2),
 				character.actionOffset || 0, TILE_SIZE, TILE_SIZE,
 				character.pos[0] + wx, character.pos[1] + wy,
-				TILE_SIZE * world.scale, TILE_SIZE * world.scale);
+				TILE_SIZE, TILE_SIZE);
 		}
 	}
 }
@@ -333,6 +333,7 @@ function render(ctx)
 */
 function pointToWorldCoords(point)
 {
+	// TODO Adjust for the position of the canvas...
 	var x = (point[0] / world.scale) - world.viewport.offset.x;
 	var y = (point[1] / world.scale) - world.viewport.offset.y;
 
@@ -374,10 +375,14 @@ window.addEventListener('load', function()
 {
 	var canvas		= document.createElement('canvas');
 	var ctx			= canvas.getContext('2d');
+	var buffer		= document.createElement('canvas');
+	var bctx		= buffer.getContext('2d');
 
 	document.body.appendChild(canvas);
 
 	input = new InputHandler(canvas, pointToWorldCoords, getPlayerPosition);
+
+	world.scale = 1;
 
 	var w = 0;
 	var h = 0;
@@ -411,14 +416,17 @@ window.addEventListener('load', function()
 			canvas.setAttribute('width',  w);
 			canvas.setAttribute('height', h);
 
+			buffer.setAttribute('width',  world.viewport.width  * TILE_SIZE);
+			buffer.setAttribute('height', world.viewport.height * TILE_SIZE);
+
 			/* Restore the initial saved state, and save it again */
 			ctx.restore();
 			ctx.save();
+			bctx.restore();
+			bctx.save();
 
-			ctx.mozImageSmoothingEnabled		= false;
-			ctx.webkitImageSmoothingEnabled		= false;
-			ctx.msImageSmoothingEnabled			= false;
-			ctx.imageSmoothingEnabled			= false;
+			disableSmoothing(ctx);
+			disableSmoothing(bctx);
 
 			/* Store the current actual size so we can detect when it changes */
 			w = window.innerWidth;
@@ -426,7 +434,7 @@ window.addEventListener('load', function()
 		}
 	};
 
-	ctx.save();
+	bctx.save();
 
 	var ticksPerSec	= 30; /* animations are 30fps */
 	var tickWait	= Math.floor(1000 / ticksPerSec);
@@ -495,16 +503,22 @@ if (!dialog && ticks === 90) {
 		resizeCanvas();
 
 		/* Clear the canvas */
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		bctx.clearRect(0, 0, buffer.width, buffer.height);
 
-		ctx.save();
-		render(ctx);
+		bctx.save();
+		render(bctx);
 
 		if (dialog && !dialog.closed) {
-			dialog.render(ctx, world.scale);
+			dialog.render(bctx);
 		}
 		firstframe = false;
-		ctx.restore();
+		bctx.restore();
+
+		/* Draw (and scale) the image to the main canvas now */
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.drawImage(buffer,
+				0, 0, buffer.width, buffer.height,
+				0, 0, buffer.width * world.scale, buffer.height * world.scale);
 	};
 	requestAnimationFrame(doAnimationFrame);
 });

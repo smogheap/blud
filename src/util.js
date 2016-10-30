@@ -40,14 +40,19 @@ window.addEventListener('load', function() {
 	}
 });
 
+function disableSmoothing(ctx)
+{
+	ctx.mozImageSmoothingEnabled		= false;
+	ctx.webkitImageSmoothingEnabled		= false;
+	ctx.msImageSmoothingEnabled			= false;
+	ctx.imageSmoothingEnabled			= false;
+}
+
 function loadImage(src, cb)
 {
 	var img = new Image();
 
-	img.mozImageSmoothingEnabled		= false;
-	img.webkitImageSmoothingEnabled		= false;
-	img.msImageSmoothingEnabled			= false;
-	img.imageSmoothingEnabled			= false;
+	disableSmoothing(img);
 
 	if (cb) {
 		img.onload = function() {

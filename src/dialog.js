@@ -133,7 +133,7 @@ Dialog.prototype.tick = function tick()
 	}
 };
 
-Dialog.prototype.render = function render(ctx, scale)
+Dialog.prototype.render = function render(ctx)
 {
 	var img = this.canvas;
 	var per	= this.ticks / this.steps;
@@ -160,14 +160,14 @@ Dialog.prototype.render = function render(ctx, scale)
 		var x	= Math.floor(ctx.canvas.width  / 2);
 		var y	= Math.floor(ctx.canvas.height / 2);
 
-		x -= Math.floor((img.width  * scale) / 2);
-		y -= Math.floor((img.height * scale) / 2);
+		x -= Math.floor(img.width  / 2);
+		y -= Math.floor(img.height / 2);
 
 		ctx.drawImage(img,
 					0, 0,
 					img.width, img.height,
 					x, y,
-					img.width * scale, img.height * scale);
+					img.width, img.height);
 	}
 };
 

@@ -88,7 +88,7 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 		}
 
 		/* Store the position in the game world that the mouse is at */
-		var pos = getWorldPosCB([e.clientX, e.clientY]);
+		var pos = getWorldPosCB([e.offsetX, e.offsetY]);
 
 		this.devices.mouse.x = pos[0];
 		this.devices.mouse.y = pos[1];
