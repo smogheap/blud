@@ -40,6 +40,62 @@ function canMove(character, x, y)
 	return(!world.tiles[tile].solid);
 }
 
+function startMove(character, direction, x, y, animationOffset)
+{
+	var		stuck	= false;
+
+	if (!canMove(character, x, y)) {
+		/*
+			The character isn't allowed to move in this direction, most likely
+			because there is a solid object there.
+
+			The character may be allowed to turn in that direction though.
+		*/
+		if (!character.animation) {
+			stuck = true;
+		} else {
+			return(null);
+		}
+	}
+
+	if (character.animation) {
+		/*
+			The character has already started moving in another direction, so
+			don't start moving in this direction unless the previous movement
+			for the character was in this direction.
+
+			Give a preference to any direction other than the one moved in last
+			to allow for a zig-zag when 2 directions are held, and to allow
+			sliding against walls by holding 2 directions.
+		*/
+		if (direction !== character.direction) {
+			return(null);
+		}
+	}
+
+	character.animation = {
+		frame:			0,
+		dx:				stuck ? 0 : x,
+		dy:				stuck ? 0 : y
+	};
+
+	if (character.direction !== direction && character.animation &&
+		!character.wasMoving
+	) {
+		/*
+			Give a moment to cancel movement while turning from a stand
+			still. If the character is already moving then keep the
+			momentum going.
+		*/
+		character.animation.frame -= 4;
+	}
+
+	character.direction		= direction;
+	character.actionOffset	= animationOffset;
+
+	return(character.animation);
+}
+
 function tick(ticks)
 {
 	if (world.viewport.offset.x !== 0) {
@@ -114,51 +170,18 @@ function tick(ticks)
 				If multiple directions are being pressed then prefer the one
 				that was not animated last.
 			*/
-			if (dirs[Input.N] && canMove(character, 0, -1)) {
-				dir = Input.N;
-				character.animation = { frame: 0, dx: 0, dy: -1 };
-				character.actionOffset = 48;
+			if (dirs[Input.N]) {
+				startMove(character, Input.N,  0, -1, 48);
 			}
-
-			if (dirs[Input.S] && canMove(character, 0, 1) &&
-				(!character.animation || dir === character.direction)
-			) {
-				dir = Input.S;
-				character.animation = { frame: 0, dx: 0, dy: 1 };
-				character.actionOffset = 16;
+			if (dirs[Input.E]) {
+				startMove(character, Input.E,  1,  0, 0);
 			}
-
-			if (dirs[Input.W] && canMove(character, -1, 0) &&
-				(!character.animation || dir === character.direction)
-			) {
-				dir = Input.W;
-				character.animation = { frame: 0, dx: -1, dy: 0 };
-				character.actionOffset = 32;
+			if (dirs[Input.S]) {
+				startMove(character, Input.S,  0,  1, 16);
 			}
-
-			if (dirs[Input.E] && canMove(character, 1, 0) &&
-				(!character.animation || dir === character.direction)
-			) {
-				dir = Input.E;
-				character.animation = { frame: 0, dx: 1, dy: 0 };
-				character.actionOffset = 0;
+			if (dirs[Input.W]) {
+				startMove(character, Input.S, -1,  0, 32);
 			}
-
-			if (character.direction !== dir && character.animation &&
-				!character.wasMoving
-			) {
-				/*
-					Give a moment to cancel movement while turning from a stand
-					still. If the character is already moving then keep the
-					momentum going.
-				*/
-				character.animation.frame -= 4;
-			}
-
-			if (!isNaN(dir)) {
-				character.direction = dir;
-			}
-
 
 			/* Do we need to scroll the viewport?  */
 			if (character.animation) {
