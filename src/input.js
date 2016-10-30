@@ -15,6 +15,9 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 	this.SOUTH			= this.S = 2;
 	this.WEST			= this.W = 3;
 
+	this.ACTION			= 'action';
+	this.BACK			= 'back';
+
 
 	/* The status of buttons as presented to the consumer */
 	this.buttons = {};
@@ -167,6 +170,26 @@ InputHandler.prototype.getDirection = function getDirection(clear)
 
 	return(d);
 }
+
+InputHandler.prototype.getButton = function getButton(name, clear)
+{
+	var		btn = false;
+
+	// TODO Decide what is bound to this name
+	switch (name) {
+		case this.ACTION:
+			btn |= this.devices.kb.space;
+			break;
+	}
+
+	/* Clear the pressed state on all inputs on all devices */
+	if (clear) {
+		this.clearPressed(this.devices.js);
+		this.clearPressed(this.devices.kb);
+	}
+
+	return(btn);
+};
 
 InputHandler.prototype.clearPressed = function clearPressed(device)
 {

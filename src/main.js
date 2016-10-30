@@ -1,4 +1,5 @@
-var Input;
+var input;
+var dialog			= null;
 var TILE_SIZE		= 16;
 
 /*
@@ -6,20 +7,6 @@ var TILE_SIZE		= 16;
 	purposes to avoid printing debug messages at 60fps.
 */
 var firstframe		= true;
-
-function loadImage(src)
-{
-	var img = new Image();
-
-	img.mozImageSmoothingEnabled		= false;
-	img.webkitImageSmoothingEnabled		= false;
-	img.msImageSmoothingEnabled			= false;
-	img.imageSmoothingEnabled			= false;
-
-	img.src = src;
-
-	return(img);
-}
 
 function canMove(character, x, y)
 {
@@ -137,11 +124,11 @@ function tick(ticks)
 
 		if (character.animation) {
 			/* Continue the previous animation */
-			var dirs = Input.getDirection(false); /* Don't clear pressed state */
+			var dirs = input.getDirection(false); /* Don't clear pressed state */
 
 			if (!isNaN(character.direction) &&
 				character.animation.frame < 0 &&
-				!(dirs[character.direction] & Input.HELD)
+				!(dirs[character.direction] & input.HELD)
 			) {
 				/* Cancel the movement */
 				delete character.animation;
@@ -163,24 +150,24 @@ function tick(ticks)
 
 		if (!character.animation) {
 			/* Get the current state of the various input devices */
-			var dirs	= Input.getDirection(true);
+			var dirs	= input.getDirection(true);
 			var dir		= undefined;
 
 			/*
 				If multiple directions are being pressed then prefer the one
 				that was not animated last.
 			*/
-			if (dirs[Input.N]) {
-				startMove(character, Input.N,  0, -1, 48);
+			if (dirs[input.N]) {
+				startMove(character, input.N,  0, -1, 48);
 			}
-			if (dirs[Input.E]) {
-				startMove(character, Input.E,  1,  0, 0);
+			if (dirs[input.E]) {
+				startMove(character, input.E,  1,  0, 0);
 			}
-			if (dirs[Input.S]) {
-				startMove(character, Input.S,  0,  1, 16);
+			if (dirs[input.S]) {
+				startMove(character, input.S,  0,  1, 16);
 			}
-			if (dirs[Input.W]) {
-				startMove(character, Input.S, -1,  0, 32);
+			if (dirs[input.W]) {
+				startMove(character, input.S, -1,  0, 32);
 			}
 
 			/* Do we need to scroll the viewport?  */
@@ -390,7 +377,7 @@ window.addEventListener('load', function()
 
 	document.body.appendChild(canvas);
 
-	Input = new InputHandler(canvas, pointToWorldCoords, getPlayerPosition);
+	input = new InputHandler(canvas, pointToWorldCoords, getPlayerPosition);
 
 	var w = 0;
 	var h = 0;
@@ -445,18 +432,17 @@ window.addEventListener('load', function()
 	var tickWait	= Math.floor(1000 / ticksPerSec);
 	var lastFrame	= 0;
 	var frametime	= 0;
+	var ticks		= 0;
 
 	var doAnimationFrame = function doAnimationFrame(time)
 	{
-		var ticks = 0;
-
 		requestAnimationFrame(doAnimationFrame);
 
 		/*
 			Poll input devices (mainly gamepads) as frequently as possible
 			regardless of the tick rate.
 		*/
-		Input.poll();
+		input.poll();
 
 		if (time - lastFrame < TILE_SIZE) {  /* 60fps max */
 			return;
@@ -469,9 +455,33 @@ window.addEventListener('load', function()
 		}
 		lastFrame = time;
 
+
+if (!dialog && ticks === 90) {
+	console.log('Opening dialog now');
+
+	// Testing
+	dialog = new Dialog("Howdy\n\nThis is a simple test of a dialog system.", true);
+	dialog = new Dialog([
+		"Howdy",
+		"",
+		"This is a simple dialog test. You can press a key",
+		"to continue. Eventually this will be updated and",
+		"will even include options that you can pick from."
+	].join('\n'), true);
+}
+
 		while (frametime >= tickWait) {
-			// console.log('tick');
-			tick(ticks++);
+			if (dialog && dialog.closed) {
+				delete dialog;
+				dialog = null;
+			}
+
+			if (dialog) {
+				dialog.tick(ticks);
+			} else {
+				tick(ticks);
+			}
+			ticks++;
 			frametime -= tickWait;
 			// frametime /= 1.5;
 		}
@@ -482,8 +492,11 @@ window.addEventListener('load', function()
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 		ctx.save();
-		// console.log('render');
 		render(ctx);
+
+		if (dialog) {
+			dialog.render(ctx, world.scale);
+		}
 		firstframe = false;
 		ctx.restore();
 	};

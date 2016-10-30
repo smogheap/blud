@@ -40,3 +40,23 @@ window.addEventListener('load', function() {
 	}
 });
 
+function loadImage(src, cb)
+{
+	var img = new Image();
+
+	img.mozImageSmoothingEnabled		= false;
+	img.webkitImageSmoothingEnabled		= false;
+	img.msImageSmoothingEnabled			= false;
+	img.imageSmoothingEnabled			= false;
+
+	if (cb) {
+		img.onload = function() {
+			cb(img);
+		};
+	}
+
+	img.src = src;
+	return(img);
+}
+
+
