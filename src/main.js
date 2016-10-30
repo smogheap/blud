@@ -44,6 +44,18 @@ function tick(ticks)
 	}
 
 	for (var c = 0, character; character = world.characters[c]; c++) {
+		/* Has the previous animation ended for this character? */
+		if (character.animation && character.animation.frame >= 8) {
+			/* The animation is complete */
+			character.x += character.animation.dx;
+			character.y += character.animation.dy;
+
+			delete character.animation;
+			character.wasMoving = true;
+		} else {
+			character.wasMoving = false;
+		}
+
 		/*
 			Determine the row offset to use when rendering this character.
 
@@ -60,56 +72,87 @@ function tick(ticks)
 		var offset	= 0;
 		var offx	= 0;
 		var offy	= 0;
-		var action;
 
 		if (character.animation) {
 			/* Continue the previous animation */
-			action = character.animation.name;
-			offset = character.animation.frame * TILE_SIZE;
+			var dirs = Input.getDirection(false); /* Don't clear pressed state */
 
-			character.animation.frame++;
+			if (!isNaN(character.direction) &&
+				character.animation.frame < 0 &&
+				!(dirs[character.direction] & Input.HELD)
+			) {
+				/* Cancel the movement */
+				delete character.animation;
+			} else {
+				var f = character.animation.frame;
 
-			offx = (character.animation.dx * 2 * character.animation.frame);
-			offy = (character.animation.dy * 2 * character.animation.frame);
-		} else {
+				if (f < 0) {
+					/* Negative frame is used to add a delay for turning */
+					f = 0;
+				}
+
+				offset = f * TILE_SIZE;
+				character.animation.frame++; f++;
+
+				offx = (character.animation.dx * 2 * f);
+				offy = (character.animation.dy * 2 * f);
+			}
+		}
+
+		if (!character.animation) {
 			/* Get the current state of the various input devices */
-			var dirs = Input.getDirection();
-
-			action = 'standing';
+			var dirs	= Input.getDirection(true);
+			var dir		= undefined;
 
 			/*
 				If multiple directions are being pressed then prefer the one
 				that was not animated last.
 			*/
 			if (dirs[Input.N] && canMove(character, 0, -1)) {
-				action = 'north';
-				character.animation = { name: action, frame: 0, dx: 0, dy: -1 };
+				dir = Input.N;
+				character.animation = { frame: 0, dx: 0, dy: -1 };
 				character.actionOffset = 48;
 			}
 
 			if (dirs[Input.S] && canMove(character, 0, 1) &&
-				(!character.animation || action === character.action)
+				(!character.animation || dir === character.direction)
 			) {
-				action = 'south';
-				character.animation = { name: action, frame: 0, dx: 0, dy: 1 };
+				dir = Input.S;
+				character.animation = { frame: 0, dx: 0, dy: 1 };
 				character.actionOffset = 16;
 			}
 
 			if (dirs[Input.W] && canMove(character, -1, 0) &&
-				(!character.animation || action === character.action)
+				(!character.animation || dir === character.direction)
 			) {
-				action = 'west';
-				character.animation = { name: action, frame: 0, dx: -1, dy: 0 };
+				dir = Input.W;
+				character.animation = { frame: 0, dx: -1, dy: 0 };
 				character.actionOffset = 32;
 			}
 
 			if (dirs[Input.E] && canMove(character, 1, 0) &&
-				(!character.animation || action === character.action)
+				(!character.animation || dir === character.direction)
 			) {
-				action = 'east';
-				character.animation = { name: action, frame: 0, dx: 1, dy: 0 };
+				dir = Input.E;
+				character.animation = { frame: 0, dx: 1, dy: 0 };
 				character.actionOffset = 0;
 			}
+
+			if (character.direction !== dir && character.animation &&
+				!character.wasMoving
+			) {
+				/*
+					Give a moment to cancel movement while turning from a stand
+					still. If the character is already moving then keep the
+					momentum going.
+				*/
+				character.animation.frame -= 4;
+			}
+
+			if (!isNaN(dir)) {
+				character.direction = dir;
+			}
+
 
 			/* Do we need to scroll the viewport?  */
 			if (character.animation) {
@@ -144,20 +187,11 @@ function tick(ticks)
 			}
 		}
 
-		character.action = action;
 		character.offset = offset;
 		character.pos = [
 			(TILE_SIZE * world.scale * (character.x - world.viewport.x)) + (offx * world.scale),
 			(TILE_SIZE * world.scale * (character.y - world.viewport.y)) + (offy * world.scale)
 		];
-
-		if (character.animation && character.animation.frame >= 8) {
-			/* The animation is complete */
-			character.x += character.animation.dx;
-			character.y += character.animation.dy;
-
-			delete character.animation;
-		}
 	}
 }
 

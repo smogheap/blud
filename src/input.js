@@ -112,7 +112,7 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 	This call will clear the PRESSED status from all inputs, so it should only
 	be called once per tick.
 */
-InputHandler.prototype.getDirection = function getDirection()
+InputHandler.prototype.getDirection = function getDirection(clear)
 {
 	var d = [ false, false, false, false ];
 
@@ -133,7 +133,9 @@ InputHandler.prototype.getDirection = function getDirection()
 		}
 
 		/* Clear the pressed state since this input has been handled */
-		this.devices.mouse.state &= ~this.PRESSED;
+		if (clear) {
+			this.devices.mouse.state &= ~this.PRESSED;
+		}
 	}
 
 	/* Merge results from the keyboard */
@@ -158,8 +160,10 @@ InputHandler.prototype.getDirection = function getDirection()
 	}
 
 	/* Clear the pressed state on all inputs on all devices */
-	this.clearPressed(this.devices.js);
-	this.clearPressed(this.devices.kb);
+	if (clear) {
+		this.clearPressed(this.devices.js);
+		this.clearPressed(this.devices.kb);
+	}
 
 	return(d);
 }
