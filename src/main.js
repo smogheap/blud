@@ -464,7 +464,7 @@ if (!dialog && ticks === 90) {
 	dialog = new Dialog([
 		"Howdy",
 		"",
-		"This is a simple dialog test. You can press a key",
+		"This is a simple dialog test. You can press space",
 		"to continue. Eventually this will be updated and",
 		"will even include options that you can pick from."
 	].join('\n'), true);
