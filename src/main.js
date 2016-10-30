@@ -404,8 +404,8 @@ window.addEventListener('load', function()
 
 			console.log("Using viewport size:", world.viewport.width, world.viewport.height);
 
-			w = world.scale * TILE_SIZE * world.viewport.width;
-			h = world.scale * TILE_SIZE * world.viewport.height;
+			w = Math.min(world.scale * TILE_SIZE * world.viewport.width,  window.innerWidth);
+			h = Math.min(world.scale * TILE_SIZE * world.viewport.height, window.innerHeight);;
 			// console.log(world.scale, w, h, window.innerWidth, window.innerHeight);
 
 			canvas.setAttribute('width',  w);
@@ -460,23 +460,29 @@ if (!dialog && ticks === 90) {
 	console.log('Opening dialog now');
 
 	// Testing
-	dialog = new Dialog("Howdy\n\nThis is a simple test of a dialog system.", true);
 	dialog = new Dialog([
 		"Howdy",
 		"",
 		"This is a simple dialog test. You can press space",
 		"to continue. Eventually this will be updated and",
 		"will even include options that you can pick from."
-	].join('\n'), true);
+	].join('\n'), true, null, function() {
+		dialog = new Dialog([
+			"Okay, I'll let you get back to the game now."
+		].join('\n'), true, null, function() {
+			dialog = new Dialog([
+				"!!!"
+			].join('\n'), true, null, function() {
+				dialog = null;
+			});
+
+		});
+
+	});
 }
 
 		while (frametime >= tickWait) {
-			if (dialog && dialog.closed) {
-				delete dialog;
-				dialog = null;
-			}
-
-			if (dialog) {
+			if (dialog && !dialog.closed) {
 				dialog.tick(ticks);
 			} else {
 				tick(ticks);
@@ -494,7 +500,7 @@ if (!dialog && ticks === 90) {
 		ctx.save();
 		render(ctx);
 
-		if (dialog) {
+		if (dialog && !dialog.closed) {
 			dialog.render(ctx, world.scale);
 		}
 		firstframe = false;

@@ -1,4 +1,6 @@
 var font		= null;
+var fontSizeX	= 8;
+var fontSizeY	= 8;
 var fontkeys = [
 	" !\"#$%^'()*+,-./0123456789:;<=>?",
 	"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_",
@@ -9,7 +11,7 @@ var fontOffsets = {};
 /* Build a table with offsets for each displayable character */
 for (var y = 0, line; line = fontkeys[y]; y++) {
 	for (var x = 0, key; (key = line.charAt(x)) && key.length == 1; x++) {
-		fontOffsets[key] = [ x * 8, y * 8 ];
+		fontOffsets[key] = [ x * fontSizeX, y * fontSizeY ];
 	}
 }
 
@@ -17,10 +19,18 @@ loadImage('images/text.png', function(img) {
 	font = img;
 });
 
-function Dialog(msg, spoken, options)
+function Dialog(msg, spoken, options, closecb)
 {
 	var lines		= msg.split('\n');
 
+	/*
+		The number of steps that should be used to zoom the dialog in when
+		opening it, and out again when closing it.
+	*/
+	this.steps		= 8;
+
+	this.ticks		= 0;
+	this.closecb	= closecb;
 	this.spoken		= spoken;
 	this.msg		= msg;
 	this.options	= options;
@@ -43,8 +53,8 @@ function Dialog(msg, spoken, options)
 	this.canvas		= document.createElement('canvas');
 	this.ctx		= this.canvas.getContext('2d');
 
-	this.canvas.setAttribute('width',  (this.width  * 8) + 32);
-	this.canvas.setAttribute('height', (this.height * 8) + 16);
+	this.canvas.setAttribute('width',  (this.width  * fontSizeX) + 32);
+	this.canvas.setAttribute('height', (this.height * fontSizeY) + 16);
 
 	this.ctx.mozImageSmoothingEnabled		= false;
 	this.ctx.webkitImageSmoothingEnabled	= false;
@@ -63,13 +73,23 @@ Dialog.prototype.tick = function tick()
 		if (this.drawLimit < this.msg.length) {
 			this.drawLimit = this.msg.length;
 		} else {
-			this.closed = true;
+			/* Reset ticks - Count down now that we're closing */
+			this.ticks = this.steps;
+			this.closing = true;
 		}
 	}
 
-	if (this.closed) {
+	if (this.closing) {
+		this.ticks--;
+
+		if (this.ticks < 0 && this.closecb) {
+			this.closed = true;
+			this.closecb();
+		}
 		return;
 	}
+
+	this.ticks++;
 
 	if (!font) {
 		/* Not ready */
@@ -77,7 +97,9 @@ Dialog.prototype.tick = function tick()
 	}
 
 	if (this.drawLimit < this.msg.length) {
-		this.drawLimit++;
+		/* Adjust this increment to change the speed text is "spoken" */
+		// TODO Play a noise with this?
+		this.drawLimit += 2;
 	}
 
 	if (this.drawn >= this.drawLimit) {
@@ -103,9 +125,9 @@ Dialog.prototype.tick = function tick()
 		if (fontOffsets[c]) {
 			this.ctx.drawImage(font,
 						fontOffsets[c][0], fontOffsets[c][1],
-						8, 8,
-						(x + 1) * 8, (y + 1) * 8,
-						8, 8);
+						fontSizeX, fontSizeY,
+						(x + 1) * fontSizeX, (y + 1) * fontSizeY,
+						fontSizeX, fontSizeY);
 		}
 		this.drawn++;
 	}
@@ -113,17 +135,39 @@ Dialog.prototype.tick = function tick()
 
 Dialog.prototype.render = function render(ctx, scale)
 {
-	// TODO Fade the square in to the right size over a few frames
-	// TODO If the text is being spoken render it a character at a time, unless
-	//		the player hits a key while it is drawing.
+	var img = this.canvas;
+	var per	= this.ticks / this.steps;
 
-	if (this.canvas && ctx && !this.closed) {
-		// TODO Where do we want to position it?
-		ctx.drawImage(this.canvas,
+	if (per < 1) {
+		/* Scale the image so it zooms in */
+		img = document.createElement('canvas');
+
+		var sctx = img.getContext('2d');
+
+		img.setAttribute('width',  this.canvas.width  * per);
+		img.setAttribute('height', this.canvas.height * per);
+
+		sctx.mozImageSmoothingEnabled		= false;
+		sctx.webkitImageSmoothingEnabled	= false;
+		sctx.msImageSmoothingEnabled		= false;
+		sctx.imageSmoothingEnabled			= false;
+
+		sctx.drawImage(this.canvas, 0, 0, this.canvas.width, this.canvas.height,
+						0, 0, img.width, img.height);
+	}
+
+	if (img && ctx && !this.closed) {
+		var x	= Math.floor(ctx.canvas.width  / 2);
+		var y	= Math.floor(ctx.canvas.height / 2);
+
+		x -= Math.floor((img.width  * scale) / 2);
+		y -= Math.floor((img.height * scale) / 2);
+
+		ctx.drawImage(img,
 					0, 0,
-					this.canvas.width, this.canvas.height,
-					32 * scale, 32 * scale,
-					this.canvas.width * scale, this.canvas.height * scale);
+					img.width, img.height,
+					x, y,
+					img.width * scale, img.height * scale);
 	}
 };
 
