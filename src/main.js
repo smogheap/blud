@@ -231,10 +231,8 @@ function render(ctx)
 				}
 
 				switch (count) {
-					case 0:
 					case 4:
-						/* Pick any random tile from the center 4 */
-						offsets = [ 2 + (WRand() % 2), 2 + (WRand() % 2) ];
+						offsets = [ 0, 0 ];
 						break;
 
 					case 3:
@@ -250,7 +248,6 @@ function render(ctx)
 						break;
 
 					case 2:
-						// TODO No images for 2 edges across from each other
 						if (edges[0] && edges[1]) {
 							offsets = [ 4, 1 ];	/* NE */
 						} else if (edges[1] && edges[2]) {
@@ -259,6 +256,10 @@ function render(ctx)
 							offsets = [ 1, 4 ];	/* SW */
 						} else if (edges[3] && edges[0]) {
 							offsets = [ 1, 1 ];	/* NW */
+						} else if (edges[0] && edges[2]) {
+							offsets = [ 0, 2 ]; /* N & S */
+						} else if (edges[1] && edges[3]) {
+							offsets = [ 2, 0 ]; /* E & W */
 						}
 						break;
 
@@ -272,6 +273,11 @@ function render(ctx)
 						} else if (edges[3]) {
 							offsets = [ 1, 2 ];	/* West		*/
 						}
+						break;
+
+					case 0:
+						/* Pick any random tile from the center 4 */
+						offsets = [ 2 + (WRand() % 2), 2 + (WRand() % 2) ];
 						break;
 
 					default:

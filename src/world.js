@@ -1,7 +1,7 @@
 var world = {
 	viewport: {
-		x:					20,
-		y:					5,
+		x:					0,
+		y:					0,
 		minwidth:			24,
 		minheight:			14,
 		maxwidth:			34,
@@ -30,9 +30,9 @@ var world = {
 		"           oooo                                                                 ",
 		"             ooooooo                                                            ",
 		"             ooooooooooooo                                                      ",
-		"                 oooooooooo    ooooo                                            ",
-		"                        oooooooooooo         oooooo                             ",
-		"                         ooooooooooooooo   ooooooooo                            ",
+		"    ooo          oooooooooo    ooooo                                            ",
+		"    o o o               oooooooooooo         oooooo                             ",
+		"    ooo   o              ooooooooooooooo   ooooooooo                            ",
 		"                                  oooooo   ooooooooooo                          ",
 		"       o                           ooooo   ooooooooooooooooo                    ",
 		"     oooo                                     oooooooooooooooooooooo            ",
@@ -68,8 +68,8 @@ var world = {
 	characters: [
 		{
 			name:			"blud",
-			x:				25,
-			y:				10
+			x:				1,
+			y:				1
 		}
 	]
 };
