@@ -1,6 +1,12 @@
 var Input;
 var TILE_SIZE		= 16;
 
+/*
+	This will be true for the first frame only, and can be used for debug
+	purposes to avoid printing debug messages at 60fps.
+*/
+var firstframe		= true;
+
 function loadImage(src)
 {
 	var img = new Image();
@@ -243,87 +249,36 @@ function render(ctx)
 
 			var img		= world.images[tile];
 			var offsets	= null;
+			var options	= null;
 
 			if (world.tiles[tile].edges) {
 				/*
 					Pick an appropriate portion of the tile depending on what
 					the tiles surrounding this one are.
 				*/
+				var key = "";
 				var edges =	[	tileAt(x, y - 1, tile), tileAt(x + 1, y, tile),
 								tileAt(x, y + 1, tile), tileAt(x - 1, y, tile) ];
-				var count = 0;
 
 				/*
-					Edge is true for a direction if the tile does not match this
-					tile.
+					Build a string to represent the edges, with 1 meaning there
+					is an edge and 0 meaning there is not, in the order NESW.
 				*/
 				for (var i = 0; i < edges.length; i++) {
-					edges[i] = (edges[i] == tile) ? false : true;
-					if (edges[i]) {
-						count++;
-					}
+					key += (edges[i] !== tile) ? "1" : "0";
 				}
 
-				switch (count) {
-					case 4:
-						offsets = [ 0, 0 ];
-						break;
-
-					case 3:
-						if (!edges[0]) {
-							offsets = [ 2, 5 ]; /* North	*/
-						} else if (!edges[1]) {
-							offsets = [ 0, 3 ]; /* East		*/
-						} else if (!edges[2]) {
-							offsets = [ 3, 0 ]; /* South	*/
-						} else if (!edges[3]) {
-							offsets = [ 5, 2 ]; /* West		*/
-						}
-						break;
-
-					case 2:
-						if (edges[0] && edges[1]) {
-							offsets = [ 4, 1 ];	/* NE */
-						} else if (edges[1] && edges[2]) {
-							offsets = [ 4, 4 ];	/* SE */
-						} else if (edges[2] && edges[3]) {
-							offsets = [ 1, 4 ];	/* SW */
-						} else if (edges[3] && edges[0]) {
-							offsets = [ 1, 1 ];	/* NW */
-						} else if (edges[0] && edges[2]) {
-							offsets = [ 0, 2 ]; /* N & S */
-						} else if (edges[1] && edges[3]) {
-							offsets = [ 2, 0 ]; /* E & W */
-						}
-						break;
-
-					case 1:
-						if (edges[0]) {
-							offsets = [ 2, 1 ];	/* North	*/
-						} else if (edges[1]) {
-							offsets = [ 4, 3 ];	/* East		*/
-						} else if (edges[2]) {
-							offsets = [ 3, 4 ];	/* South	*/
-						} else if (edges[3]) {
-							offsets = [ 1, 2 ];	/* West		*/
-						}
-						break;
-
-					case 0:
-						/* Pick any random tile from the center 4 */
-						offsets = [ 2 + (WRand() % 2), 2 + (WRand() % 2) ];
-						break;
-
-					default:
-						console.log(count, edges);
+				if (!(options = world.tiles[tile].edges[key])) {
+					/* Default to an image used for no edges */
+					options = world.tiles[tile].edges["0000"];
 				}
+			}
 
-				if (!offsets) {
-					debug(JSON.stringify(edges));
-					offsets = [ 2, 2 ];
-				}
+			if (options && options.length > 0) {
+				/* Pick any one of the available options */
+				offsets = options[WRand() % options.length];
 			} else {
-				/* Pick any random tile */
+				/* Pick any tile in the image */
 				offsets = [
 					WRand() % (img.width  / TILE_SIZE),
 					WRand() % (img.height / TILE_SIZE)
@@ -506,6 +461,7 @@ window.addEventListener('load', function()
 		ctx.save();
 		// console.log('render');
 		render(ctx);
+		firstframe = false;
 		ctx.restore();
 	};
 	requestAnimationFrame(doAnimationFrame);
