@@ -38,10 +38,10 @@ function startMove(character, direction, x, y, animationOffset)
 
 			The character may be allowed to turn in that direction though.
 		*/
-		if (!character.animation) {
+		if (!character.animation && !character.wasMoving) {
 			stuck = true;
 		} else {
-			return(null);
+			return;
 		}
 	}
 
@@ -55,8 +55,8 @@ function startMove(character, direction, x, y, animationOffset)
 			to allow for a zig-zag when 2 directions are held, and to allow
 			sliding against walls by holding 2 directions.
 		*/
-		if (direction !== character.direction) {
-			return(null);
+		if (direction === character.lastDirection) {
+			return;
 		}
 	}
 
@@ -80,7 +80,7 @@ function startMove(character, direction, x, y, animationOffset)
 	character.direction		= direction;
 	character.actionOffset	= animationOffset;
 
-	return(character.animation);
+	return;
 }
 
 function tick(ticks)
@@ -157,6 +157,7 @@ function tick(ticks)
 				If multiple directions are being pressed then prefer the one
 				that was not animated last.
 			*/
+			character.lastDirection = character.direction;
 			if (dirs[input.N]) {
 				startMove(character, input.N,  0, -1, 48);
 			}
