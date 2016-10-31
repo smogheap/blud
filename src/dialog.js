@@ -40,6 +40,11 @@ loadImage('images/text.png', function(img) {
 
 		modal	If true the dialog can't be canceled with the input.BACK button
 
+		inputcb	A function to call to handle input. If specified this function
+				must do all input handling for this dialog.
+
+		noinput	If true then ignore all input
+
 		steps	The number of ticks to take to animate the dialog opening or
 				closing. If not specified this defaults to 8.
 
@@ -69,7 +74,10 @@ function Dialog(options)
 
 	this.drawn		= 0;
 	this.ticks		= 0;
+	this.modal		= options.modal;
+	this.noinput	= options.noinput;
 	this.closecb	= options.closecb;
+	this.inputcb	= options.inputcb;
 	this.spoken		= options.spoken;
 	this.msg		= options.msg || '';
 	this.selected	= 0;
@@ -111,8 +119,10 @@ function Dialog(options)
 	this.width = Math.max(this.width, longest);
 
 	if (this.icon) {
-		this.iconWidth = Math.floor(this.icon[4] / fontSizeX) + 1;
+		this.iconWidth = Math.ceil(this.icon[3] / fontSizeX);
 		this.width += this.iconWidth;
+
+		this.height = Math.max(this.height, Math.ceil(this.icon[4] / fontSizeY));
 	} else {
 		this.iconWidth = 0;
 	}
@@ -161,10 +171,12 @@ function Dialog(options)
 	}
 
 	if (this.icon) {
+		var y = 8 + ((this.height * fontSizeY) / 2) - (this.icon[4] / 2)
+
 		this.ctx.drawImage(	this.icon[0],
 							this.icon[1], this.icon[2],
 							this.icon[3], this.icon[4],
-							16, 8,
+							8, y,
 							this.icon[3], this.icon[4]);
 	}
 
@@ -206,36 +218,59 @@ function drawText(str, ctx, x, y, scale, noclear)
 
 Dialog.prototype.close = function close()
 {
-	/* Reset ticks - Count down now that we're closing */
-	this.ticks = this.steps;
-	this.closing = true;
+	if (this.ticks < 0 || this.steps === 0) {
+		this.closed = true;
+		dialog = null;
+
+		if (this.closecb) {
+			if (this.choices) {
+				this.closecb(this.selected);
+			} else {
+				this.closecb(-1);
+			}
+		}
+	} else {
+		/* Reset ticks - Count down now that we're closing */
+		this.ticks = this.steps;
+		this.closing = true;
+	}
 }
 
 Dialog.prototype.tick = function tick()
 {
-	if (input.getButton(input.BACK, true) & input.PRESSED) {
-		this.selected = -1;
-		this.close();
-	}
-	if (input.getButton(input.CONTINUE, true) & input.PRESSED) {
-		if (this.drawLimit < this.msg.length) {
-			this.drawLimit = this.msg.length;
-		} else {
+	if (this.inputcb) {
+		/* Let the consumer handle input */
+		this.inputcb(this);
+	} else {
+		if (!this.noinput && !this.modal &&
+			input.getButton(input.BACK, true) & input.PRESSED
+		) {
+			this.selected = -1;
 			this.close();
 		}
-	}
-	var dirs = input.getDirection(true);
 
-	if (!this.closing && this.choices && this.drawLimit >= this.msg.length) {
-		if ((dirs[input.N] | dirs[input.E]) & input.PRESSED) {
-			this.selected--
-			if (this.selected < 0) {
-				this.selected += this.choices.length;
+		if (!this.noinput) {
+			if (input.getButton(input.CONTINUE, true) & input.PRESSED) {
+				if (this.drawLimit < this.msg.length) {
+					this.drawLimit = this.msg.length;
+				} else {
+					this.close();
+				}
 			}
-		} else if ((dirs[input.S] | dirs[input.W]) & input.PRESSED) {
-			this.selected++
-			if (this.selected >= this.choices.length) {
-				this.selected -= this.choices.length;
+			var dirs = input.getDirection(true);
+
+			if (!this.closing && this.choices && this.drawLimit >= this.msg.length) {
+				if ((dirs[input.N] | dirs[input.E]) & input.PRESSED) {
+					this.selected--
+					if (this.selected < 0) {
+						this.selected += this.choices.length;
+					}
+				} else if ((dirs[input.S] | dirs[input.W]) & input.PRESSED) {
+					this.selected++
+					if (this.selected >= this.choices.length) {
+						this.selected -= this.choices.length;
+					}
+				}
 			}
 		}
 	}
@@ -244,16 +279,7 @@ Dialog.prototype.tick = function tick()
 		this.ticks--;
 
 		if (this.ticks < 0) {
-			this.closed = true;
-			dialog = null;
-
-			if (this.closecb) {
-				if (this.choices) {
-					this.closecb(this.selected);
-				} else {
-					this.closecb(-1);
-				}
-			}
+			this.close();
 		}
 		return;
 	}

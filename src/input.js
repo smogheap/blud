@@ -23,6 +23,8 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 	this.B				= 'B';
 	this.X				= 'X';
 	this.Y				= 'Y';
+	this.LB				= 'LB';
+	this.RB				= 'RB';
 
 
 	/* The status of buttons as presented to the consumer */
@@ -392,8 +394,60 @@ InputHandler.prototype.poll = function poll()
 
 InputHandler.prototype.remapjs = function remapjs()
 {
-	new Dialog({
-		msg:	"Remap"
-	});
+	loadImage('images/blud.png', function(img) {
+		var map		= { };
+		var canvas	= document.createElement('canvas');
+		var ctx		= canvas.getContext('2d');
+
+		var todo	= {};
+						/* Left image, Right Image, Name */
+		todo[input.N] =		[ 1, 0, "Up"	];
+		todo[input.E] =		[ 2, 0, "Right"	];
+		todo[input.S] =		[ 3, 0, "Down"	];
+		todo[input.W] =		[ 4, 0, "left"	];
+
+		todo[input.A] =		[ 0, 3, "A"		];
+		todo[input.B] =		[ 0, 2, "B"		];
+		todo[input.X] =		[ 0, 4, "X"		];
+		todo[input.Y] =		[ 0, 1, "Y"		];
+
+		todo[input.START] =	[ 0, 5, "START" ];
+		todo[input.SELECT] =[ 5, 0, "SELECT"];
+
+		todo[input.RB] =	[ 0, 6, "Right Shoulder" ];
+		todo[input.LB] =	[ 6, 0, "Left Shoulder"  ];
+
+
+		canvas.setAttribute('width',  32);
+		canvas.setAttribute('height', 16);
+
+		/* Base image */
+		ctx.drawImage(img, 12 * 16, 0, 32, 16, 0, 0, 32, 16);
+
+		var keys = Object.keys(todo);
+		var nextInput = function nextInput() {
+			var key = keys.shift();
+
+			if (!key) {
+				new Dialog("Done");
+				return;
+			}
+
+			var offsets = todo[key];
+
+			/* Draw left and right sides of image */
+			ctx.drawImage(img, 12 * 16, offsets[0] * 16, 16, 16, 0,  0, 16, 16);
+			ctx.drawImage(img, 13 * 16, offsets[1] * 16, 16, 16, 16, 0, 16, 16);
+
+			dialog = new Dialog({
+				steps:	0,
+				msg:	"Press the highlighted button\non your controller",
+				icon:	[ canvas, 0, 0, 32, 16 ],
+				closecb: nextInput
+			});
+			dialog.tick();
+		}.bind(this);
+		nextInput();
+	}.bind(this));
 };
 
