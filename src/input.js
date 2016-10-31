@@ -80,6 +80,47 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 		],
 
 		kb: [
+			/* WASD */
+			{
+				action:		this.N,
+				key:		"keyw"
+			}, {
+				action:		this.E,
+				key:		"keyd"
+			}, {
+				action:		this.S,
+				key:		"keya"
+			}, {
+				action:		this.W,
+				key:		"keya"
+			},
+
+			/* Arrows */
+			{
+				action:		this.N,
+				key:		"arrowup"
+			}, {
+				action:		this.E,
+				key:		"arrowright"
+			}, {
+				action:		this.S,
+				key:		"arrowdown"
+			}, {
+				action:		this.W,
+				key:		"arrowleft"
+			},
+
+			/* Enter and escape for dialogs */
+			{
+				action:		this.CONTINUE,
+				key:		"enter"
+			}, {
+				action:		this.CONTINUE,
+				key:		"space"
+			}, {
+				action:		this.BACK,
+				key:		"escape"
+			}
 		]
 	};
 
@@ -154,11 +195,15 @@ InputHandler.prototype.getDirection = function getDirection(clear)
 	}
 
 	/* Merge results from the keyboard */
-	// TODO Implement support for alternate bindings...
-	d[this.N] |= this.devices.kb.arrowup	|| this.devices.kb.keyw;
-	d[this.E] |= this.devices.kb.arrowright	|| this.devices.kb.keyd;
-	d[this.S] |= this.devices.kb.arrowdown	|| this.devices.kb.keys;
-	d[this.W] |= this.devices.kb.arrowleft	|| this.devices.kb.keya;
+	for (var i = 0, b; b = this.bindings.kb[i]; i++) {
+		if (!b || !b.key) {
+			continue;
+		}
+
+		if ([ this.N, this.E, this.S, this.W ].includes(b.action)) {
+			d[b.action] |= this.devices.kb[b.key];
+		}
+	}
 
 	/* Merge results from gamepads */
 	this.poll();
@@ -187,16 +232,13 @@ InputHandler.prototype.getButton = function getButton(name, clear)
 {
 	var		btn = 0;
 
-	// TODO Decide what is bound to this name
-	switch (name) {
-		case this.CONTINUE:
-			btn |= this.devices.kb.space;
-			btn |= this.devices.kb.enter;
-			break;
+	/* Merge results from the keyboard */
+	for (var i = 0, b; b = this.bindings.kb[i]; i++) {
+		if (!b || !b.key || b.action !== name) {
+			continue;
+		}
 
-		case this.BACK:
-			btn |= this.devices.kb.escape;
-			break;
+		btn |= this.devices.kb[b.key];
 	}
 
 	/* Merge results from gamepads */
