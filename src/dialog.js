@@ -72,23 +72,29 @@ function Dialog(msg, spoken, options, closecb)
 	return(this);
 }
 
-Dialog.prototype.drawText = function drawText(str, ctx, x, y)
+function drawText(str, ctx, x, y, scale, noclear)
 {
+	if (isNaN(scale)) {
+		scale = 1;
+	}
+
 	for (var i = 0; i < str.length; i++) {
 		var c = str.charAt(i);
 
-		ctx.fillStyle = 'black';
-		ctx.fillRect(x * fontSizeX, y * fontSizeY,
-					fontSizeX, fontSizeY);
+		if (!noclear) {
+			ctx.fillStyle = 'black';
+			ctx.fillRect(x, y,
+						fontSizeX * scale, fontSizeY * scale);
+		}
 
 		if (fontOffsets[c]) {
 			ctx.drawImage(font,
 					fontOffsets[c][0], fontOffsets[c][1],
 					fontSizeX, fontSizeY,
-					x * fontSizeX, y * fontSizeY,
-					fontSizeX, fontSizeY);
+					x, y,
+					fontSizeX * scale, fontSizeY * scale);
 		}
-		x++;
+		x += fontSizeX * scale;
 	}
 }
 
@@ -166,8 +172,9 @@ Dialog.prototype.tick = function tick()
 					o = "  " + o + "  ";
 				}
 
-				this.drawText(o, this.ctx,
-					this.width - (5 + longest), this.height + 2 + i);
+				drawText(o, this.ctx,
+					fontSizeX * (this.width - (5 + longest)),
+					fontSizeY * (this.height + 2 + i));
 			}
 		}
 
@@ -190,7 +197,7 @@ Dialog.prototype.tick = function tick()
 			continue;
 		}
 
-		this.drawText(c, this.ctx, x + 1, y + 1);
+		drawText(c, this.ctx, fontSizeX * (x + 1), fontSizeY * (y + 1));
 		this.drawn++;
 	}
 };

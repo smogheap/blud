@@ -464,7 +464,7 @@ window.addEventListener('load', function()
 		lastFrame = time;
 
 
-if (!dialog && ticks === 90) {
+if (false && !dialog && ticks === 90) {
 	console.log('Opening dialog now');
 
 	// Testing
@@ -496,7 +496,6 @@ if (!dialog && ticks === 90) {
 
 	});
 }
-
 		while (frametime >= tickWait) {
 			if (dialog && !dialog.closed) {
 				dialog.tick(ticks);
@@ -515,6 +514,22 @@ if (!dialog && ticks === 90) {
 
 		bctx.save();
 		render(bctx);
+
+if (false) {
+	var size = 8;
+	var y;
+
+	drawText("BLUD", bctx,
+			(buffer.width  / 2) - (size * 8 * 2),
+			y = ((buffer.height / 3) - (size * 8)),
+			size, true);
+	y += size * 8;
+
+	size = 2;
+	drawText("A tiny game.", bctx,
+			(buffer.width  / 2) - (size * 8 * 6),
+			y + (size * 8), size, true);
+}
 
 		if (dialog && !dialog.closed) {
 			dialog.render(bctx);
