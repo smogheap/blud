@@ -316,6 +316,13 @@ function render(ctx)
 				];
 			}
 
+			if (world.tiles[tile].baseOffset) {
+				offsets = [
+					offsets[0] + world.tiles[tile].baseOffset[0],
+					offsets[1] + world.tiles[tile].baseOffset[1]
+				];
+			}
+
 			ctx.drawImage(img,
 					offsets[0] * TILE_SIZE, offsets[1] * TILE_SIZE,
 					TILE_SIZE, TILE_SIZE,
