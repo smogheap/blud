@@ -92,6 +92,13 @@ function tick(ticks)
 		world.viewport.offset.y += (world.viewport.offset.y > 0) ? -2 : 2;
 	}
 
+	/* Paused? */
+	if (input.getButton(input.START, true) & input.PRESSED) {
+		dialog = new Dialog("Paused", false, null, function() {
+			dialog = null;
+		});
+	}
+
 	for (var c = 0, character; character = world.characters[c]; c++) {
 		/* Has the previous animation ended for this character? */
 		if (character.animation && character.animation.frame >= 8) {

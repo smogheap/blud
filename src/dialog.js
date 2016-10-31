@@ -107,11 +107,11 @@ Dialog.prototype.close = function close()
 
 Dialog.prototype.tick = function tick()
 {
-	if (input.getButton(input.BACK, false) & input.PRESSED) {
+	if (input.getButton(input.BACK, true) & input.PRESSED) {
 		this.selected = -1;
 		this.close();
 	}
-	if (input.getButton(input.CONTINUE, false) & input.PRESSED) {
+	if (input.getButton(input.CONTINUE, true) & input.PRESSED) {
 		if (this.drawLimit < this.msg.length) {
 			this.drawLimit = this.msg.length;
 		} else {

@@ -17,6 +17,12 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 
 	this.CONTINUE		= 'continue';
 	this.BACK			= 'back';
+	this.START			= 'start';
+	this.SELECT			= 'select';
+	this.A				= 'A';
+	this.B				= 'B';
+	this.X				= 'X';
+	this.Y				= 'Y';
 
 
 	/* The status of buttons as presented to the consumer */
@@ -76,6 +82,33 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 			}, {
 				action:		this.BACK,
 				button:		1
+			},
+
+			{
+				action:		this.A,
+				button:		0
+			}, {
+				action:		this.B,
+				button:		1
+			}, {
+				action:		this.X,
+				button:		2
+			}, {
+				action:		this.Y,
+				button:		3
+			},
+
+			{
+				action:		this.START,
+				button:		7
+			},
+			{
+				action:		this.CONTINUE,
+				button:		7
+			},
+			{
+				action:		this.SELECT,
+				button:		6
 			}
 		],
 
@@ -120,6 +153,14 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 			}, {
 				action:		this.BACK,
 				key:		"escape"
+			},
+
+			{
+				action:		this.START,
+				key:		"escape"
+			}, {
+				action:		this.SELECT,
+				key:		"tab"
 			}
 		]
 	};
@@ -202,6 +243,10 @@ InputHandler.prototype.getDirection = function getDirection(clear)
 
 		if ([ this.N, this.E, this.S, this.W ].includes(b.action)) {
 			d[b.action] |= this.devices.kb[b.key];
+
+			if (clear) {
+				this.devices.kb[b.key] &= ~this.PRESSED;
+			}
 		}
 	}
 
@@ -212,17 +257,13 @@ InputHandler.prototype.getDirection = function getDirection(clear)
 			continue;
 		}
 
-		if (d.length < b.action) {
-			continue;
+		if ([ this.N, this.E, this.S, this.W ].includes(b.action)) {
+			d[b.action] |= this.devices.js[b.key];
+
+			if (clear) {
+				this.devices.js[b.key] &= ~this.PRESSED;
+			}
 		}
-
-		d[b.action] |= this.devices.js[b.key];
-	}
-
-	/* Clear the pressed state on all inputs on all devices */
-	if (clear) {
-		this.clearPressed(this.devices.js);
-		this.clearPressed(this.devices.kb);
 	}
 
 	return(d);
@@ -232,29 +273,33 @@ InputHandler.prototype.getButton = function getButton(name, clear)
 {
 	var		btn = 0;
 
+	if ("string" === typeof name) {
+		name = [ name ];
+	}
+
 	/* Merge results from the keyboard */
 	for (var i = 0, b; b = this.bindings.kb[i]; i++) {
-		if (!b || !b.key || b.action !== name) {
+		if (!b || !b.key || !name.includes(b.action)) {
 			continue;
 		}
 
 		btn |= this.devices.kb[b.key];
+		if (clear) {
+			this.devices.kb[b.key] &= ~this.PRESSED;
+		}
 	}
 
 	/* Merge results from gamepads */
 	this.poll();
 	for (var i = 0, b; b = this.bindings.js[i]; i++) {
-		if (!b || !b.key || b.action !== name) {
+		if (!b || !b.key || !name.includes(b.action)) {
 			continue;
 		}
 
 		btn |= this.devices.js[b.key];
-	}
-
-	/* Clear the pressed state on all inputs on all devices */
-	if (clear) {
-		this.clearPressed(this.devices.js);
-		this.clearPressed(this.devices.kb);
+		if (clear) {
+			this.devices.js[b.key] &= ~this.PRESSED;
+		}
 	}
 
 	return(btn);
