@@ -70,6 +70,9 @@ var world = {
 				"001111": [ [ 1, 10 ] ],
 				"011010": [ [ 4, 10 ] ],
 				"011011": [ [ 4, 10 ] ],
+				"001011": [ [ 3, 7 ] ],
+				// "001010":
+				// "001001":
 
 				/* No edges */
 				"0000": [ [ 2, 2 ], [ 2, 3 ], [ 3, 2 ], [ 3, 3 ] ]
@@ -85,12 +88,12 @@ var world = {
 		" o o o o o              oooooooooooo         oooooo                             ",
 		" ooo ooo   o             ooooooooooooooo   ooooooooo                            ",
 		" ooo                              oooooo   ooooooooooo                          ",
-		"       o                           ooooo   ooooooooooooooooo                    ",
-		"     oooo                                     oooooooooooooooooooooo            ",
-		"     ooooo                                        ooooooooooooooooooo           ",
-		"    ooooo                                          ooooooooooooooooooooooooooooo",
-		"     oooo                                           oooooooooooooooooooooooooooo",
-		"      o                                                 oooooooooooooooooooooooo",
+		"       o     o     oo              ooooo   ooooooooooooooooo                    ",
+		"     oooo  oooo  ooooo                        oooooooooooooooooooooo            ",
+		"     ooooo o  oo o   oo                           ooooooooooooooooooo           ",
+		"    ooooo oo  o oo   o                             ooooooooooooooooooooooooooooo",
+		"     oooo  oooo  ooooo                              oooooooooooooooooooooooooooo",
+		"      o     o     oo                                    oooooooooooooooooooooooo",
 		"                                                          oo oooooooooo    ooooo",
 		"                                                              ooooooooo    ooooo",
 		"                                                                    ooo    ooooo",
