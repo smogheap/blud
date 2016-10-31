@@ -94,8 +94,17 @@ function tick(ticks)
 
 	/* Paused? */
 	if (input.getButton(input.START, true) & input.PRESSED) {
-		dialog = new Dialog("Paused", false, null, function() {
-			dialog = null;
+		dialog = new Dialog("Paused", false, [ "Continue", "Options" ], function(value, selected) {
+			if (1 !== selected) {
+				dialog = null;
+			} else {
+				/* Display options */
+				dialog = new Dialog("Options", false, [ "Keyboard Bindings", "Controller Bindings" ], function(value, selected) {
+					dialog = new Dialog("Sorry, that is not implemented yet", false, null, function(value, selected) {
+						dialog = null;
+					});
+				});
+			}
 		});
 	}
 

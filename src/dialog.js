@@ -59,6 +59,18 @@ function Dialog(msg, spoken, options, closecb)
 	this.canvas		= document.createElement('canvas');
 	this.ctx		= this.canvas.getContext('2d');
 
+	/* Pad box to fit the largest option */
+	var longest = 0;
+
+	if (this.options) {
+		for (var i = 0, o; o = this.options[i]; i++) {
+			longest = Math.max(longest, o.length);
+		}
+		longest += 6;
+	}
+	this.width = Math.max(this.width, longest);
+
+
 	this.canvas.setAttribute('width',  (this.width + 4) * fontSizeX);
 	if (options && options.length > 0) {
 		this.canvas.setAttribute('height', (this.height + 3 + options.length) * fontSizeY);
