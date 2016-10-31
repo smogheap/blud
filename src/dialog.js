@@ -8,8 +8,8 @@ var fontkeys = [
 ];
 var fontOffsets = {
 	pointer0:		[ 256, 0 ],
-	pointer1:		[ 264, 0 ],
-	pointer2:		[ 256, 8 ],
+	pointer1:		[ 256, 0 ],
+	pointer2:		[ 264, 8 ],
 	pointer3:		[ 264, 8 ]
 };
 
@@ -22,10 +22,6 @@ for (var y = 0, line; line = fontkeys[y]; y++) {
 
 loadImage('images/text.png', function(img) {
 	font = img;
-});
-loadImage('images/blud.png', function(img) {
-	// 17 * 16, 0 * 16 is top left corner of 3x3 tile for borders
-	borders = img;
 });
 
 function Dialog(msg, spoken, options, closecb)
@@ -79,26 +75,30 @@ function Dialog(msg, spoken, options, closecb)
 		this.ctx.fillStyle = 'black';
 		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 	} else {
+		/*
+			Borders are in the image at 272x0, in a 3x3 grid of images that are
+			each 8x8 pixels.
+		*/
 		for (var x = 0; x < this.canvas.width; x += fontSizeX) {
 			for (var y = 0; y < this.canvas.height; y += fontSizeY) {
-				var sx = 16 * 17;
-				var sy = 16 * 0;
+				var sx = 272;
+				var sy = 0;
 
 				if (x > 0) {
-					sx += 16;
+					sx += 8;
 				}
 				if (x + fontSizeX >= this.canvas.width) {
-					sx += 16 + 8;
+					sx += 8;
 				}
 
 				if (y > 0) {
-					sy += 16;
+					sy += 8;
 				}
 				if (y + fontSizeY >= this.canvas.height) {
-					sy += 16 + 8;
+					sy += 8;
 				}
 
-				this.ctx.drawImage(borders,
+				this.ctx.drawImage(font,
 						sx, sy, fontSizeX, fontSizeY,
 						x,  y,  fontSizeX, fontSizeY)
 			}
@@ -110,8 +110,6 @@ function Dialog(msg, spoken, options, closecb)
 
 function drawText(str, ctx, x, y, scale, noclear)
 {
-	var img;
-
 	if (isNaN(scale)) {
 		scale = 1;
 	}
@@ -121,10 +119,8 @@ function drawText(str, ctx, x, y, scale, noclear)
 
 		if ('string' === typeof str) {
 			 c = str.charAt(i);
-			img = font;
 		} else {
 			c = "pointer" + str[i];
-			img = borders;
 		}
 
 		if (!noclear) {
@@ -134,7 +130,7 @@ function drawText(str, ctx, x, y, scale, noclear)
 		}
 
 		if (fontOffsets[c]) {
-			ctx.drawImage(img,
+			ctx.drawImage(font,
 					fontOffsets[c][0], fontOffsets[c][1],
 					fontSizeX, fontSizeY,
 					x, y,
