@@ -390,3 +390,10 @@ InputHandler.prototype.poll = function poll()
 	// debug(JSON.stringify(this.devices.js));
 };
 
+InputHandler.prototype.remapjs = function remapjs()
+{
+	new Dialog({
+		msg:	"Remap"
+	});
+};
+

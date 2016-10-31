@@ -1,5 +1,4 @@
 var input;
-var dialog			= null;
 var TILE_SIZE		= 16;
 
 /*
@@ -95,16 +94,50 @@ function tick(ticks)
 
 	/* Paused? */
 	if (input.getButton(input.START, true) & input.PRESSED) {
-		dialog = new Dialog("Paused", false, [ "Continue", "Options" ], function(value, selected) {
-			if (1 !== selected) {
-				dialog = null;
-			} else {
-				/* Display options */
-				dialog = new Dialog("Options", false, [ "Keyboard Bindings", "Controller Bindings" ], function(value, selected) {
-					dialog = new Dialog("Sorry, that is not implemented yet", false, null, function(value, selected) {
-						dialog = null;
-					});
-				});
+		new Dialog({
+			msg:		"Paused",
+			choices:	[ "Continue", "About", "Options" ],
+
+			closecb: function(selected) {
+				switch (selected) {
+					default:
+					case 0:
+						break;
+
+					case 1:
+						new Dialog({
+							msg: [
+								"Blud is a game about a blood",
+								"cell who finds himself in",
+								"one odd situation after",
+								"another.",
+								"",
+								"Blud was created by Micah",
+								"Gorrell and Owen Swerkstrom."
+							].join('\n'),
+							icon: [ world.characters[0].image, 0, 0, TILE_SIZE, TILE_SIZE ]
+						});
+						break;
+
+					case 2:
+						new Dialog({
+							msg:		"Options",
+							choices:	[ "Remap Controller", "Cancel" ],
+
+							closecb: function(selected) {
+								switch (selected) {
+									case 0:
+										input.remapjs();
+										break;
+
+									default:
+									case 1:
+										break;
+								}
+							}
+						});
+						break;
+				}
 			}
 		});
 	}
@@ -512,37 +545,6 @@ window.addEventListener('load', function()
 		}
 		lastFrame = time;
 
-
-if (true && !dialog && ticks === 90) {
-	console.log('Opening dialog now');
-
-	// Testing
-	dialog = new Dialog([
-		"Howdy",
-		"",
-		"My name is Blud. I'm a blood cell.",
-	].join('\n'), true, [ "Tell me more", "Just let me play" ], function(option, selected) {
-		if (selected !== 0) {
-			dialog = null;
-			return;
-		}
-
-		dialog = new Dialog([
-			"This game is a work in progress. There",
-			"isn't a lot to show yet, but feel free to",
-			"play around. We'll be adding more as",
-			"quickly as we can."
-		].join('\n'), false, [ "That's cool" ], function() {
-			dialog = new Dialog([
-				"!!!"
-			].join('\n'), false, null, function() {
-				dialog = null;
-			});
-
-		});
-
-	});
-}
 		while (frametime >= tickWait) {
 			if (dialog && !dialog.closed) {
 				dialog.tick(ticks);

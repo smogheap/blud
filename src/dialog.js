@@ -1,3 +1,4 @@
+var dialog		= null;
 var font		= null;
 var fontSizeX	= 8;
 var fontSizeY	= 8;
@@ -24,22 +25,61 @@ loadImage('images/text.png', function(img) {
 	font = img;
 });
 
-function Dialog(msg, spoken, options, closecb)
+/*
+	Supported options:
+		icon	An image to display to the left of the msg. This can either be
+				just an image, or an array of: [ img, x, y, w, h ]
+		msg		The text to display
+
+		spoken	If true the text will be displayed one character at a time to
+				indicate to the player that the text is being spoken.
+
+		closecb	A function to call when the dialog is closed. The function will
+				be called with the index of the option that was selected if
+				there was one, or -1.
+
+		modal	If true the dialog can't be canceled with the input.BACK button
+
+		steps	The number of ticks to take to animate the dialog opening or
+				closing. If not specified this defaults to 8.
+
+		choices	An array of choices.
+
+		fill	If specified the background will be filled with this color
+				instead of drawing the normal border.
+
+		// TODO Add support for icons and/or text for choices.
+		// TODO Add support for a grid of choices (useful with images)
+*/
+function Dialog(options)
 {
-	var lines		= msg.split('\n');
+	if ("string" === typeof options) {
+		options = { msg: options };
+	}
 
 	/*
 		The number of steps that should be used to zoom the dialog in when
 		opening it, and out again when closing it.
 	*/
-	this.steps		= 8;
+	if (isNaN(options.steps)) {
+		this.steps	= 8;
+	} else {
+		this.steps	= options.steps;
+	}
 
+	this.drawn		= 0;
 	this.ticks		= 0;
-	this.closecb	= closecb;
-	this.spoken		= spoken;
-	this.msg		= msg;
-	this.options	= options;
+	this.closecb	= options.closecb;
+	this.spoken		= options.spoken;
+	this.msg		= options.msg || '';
 	this.selected	= 0;
+	this.icon		= options.icon;
+
+	if (options.choices && options.choices.length > 0) {
+		this.choices = options.choices;
+	}
+
+	var lines		= this.msg.split('\n');
 
 	this.height		= lines.length;
 	this.width		= lines[0].length;
@@ -48,45 +88,48 @@ function Dialog(msg, spoken, options, closecb)
 		this.width = Math.max(this.width, lines[i].length);
 	}
 
-	if (spoken) {
+	if (this.spoken) {
 		this.drawLimit	= 1;
 	} else {
-		this.drawLimit	= msg.length;
+		this.drawLimit	= this.msg.length;
 	}
-	this.drawn = 0;
-
 
 	this.canvas		= document.createElement('canvas');
 	this.ctx		= this.canvas.getContext('2d');
 
+	disableSmoothing(this.ctx);
+
 	/* Pad box to fit the largest option */
 	var longest = 0;
 
-	if (this.options) {
-		for (var i = 0, o; o = this.options[i]; i++) {
+	if (this.choices) {
+		for (var i = 0, o; o = this.choices[i]; i++) {
 			longest = Math.max(longest, o.length);
 		}
 		longest += 1;
 	}
 	this.width = Math.max(this.width, longest);
 
+	if (this.icon) {
+		this.iconWidth = Math.floor(this.icon[4] / fontSizeX) + 1;
+		this.width += this.iconWidth;
+	} else {
+		this.iconWidth = 0;
+	}
 
 	this.canvas.setAttribute('width',  (this.width + 4) * fontSizeX);
-	if (options && options.length > 0) {
-		this.canvas.setAttribute('height', (this.height + 3 + options.length) * fontSizeY);
+	if (this.choices) {
+		this.canvas.setAttribute('height', (this.height + 3 + this.choices.length) * fontSizeY);
 	} else {
 		this.canvas.setAttribute('height', (this.height + 2) * fontSizeY);
 	}
 
-	this.ctx.mozImageSmoothingEnabled		= false;
-	this.ctx.webkitImageSmoothingEnabled	= false;
-	this.ctx.msImageSmoothingEnabled		= false;
-	this.ctx.imageSmoothingEnabled			= false;
-
-	if (false) {
-		this.ctx.fillStyle = 'black';
+	if (options.fill) {
+		this.ctx.fillStyle = options.fill;
 		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 	} else {
+		this.ctx.fillStyle = '#666666';
+
 		/*
 			Borders are in the image at 272x0, in a 3x3 grid of images that are
 			each 8x8 pixels.
@@ -117,6 +160,15 @@ function Dialog(msg, spoken, options, closecb)
 		}
 	}
 
+	if (this.icon) {
+		this.ctx.drawImage(	this.icon[0],
+							this.icon[1], this.icon[2],
+							this.icon[3], this.icon[4],
+							16, 8,
+							this.icon[3], this.icon[4]);
+	}
+
+	dialog = this;
 	return(this);
 }
 
@@ -136,7 +188,7 @@ function drawText(str, ctx, x, y, scale, noclear)
 		}
 
 		if (!noclear) {
-			ctx.fillStyle = '#666666';
+			// ctx.fillStyle = '#666666';
 			ctx.fillRect(x, y,
 						fontSizeX * scale, fontSizeY * scale);
 		}
@@ -174,16 +226,16 @@ Dialog.prototype.tick = function tick()
 	}
 	var dirs = input.getDirection(true);
 
-	if (!this.closing && this.options && this.drawLimit >= this.msg.length) {
+	if (!this.closing && this.choices && this.drawLimit >= this.msg.length) {
 		if ((dirs[input.N] | dirs[input.E]) & input.PRESSED) {
 			this.selected--
 			if (this.selected < 0) {
-				this.selected += this.options.length;
+				this.selected += this.choices.length;
 			}
 		} else if ((dirs[input.S] | dirs[input.W]) & input.PRESSED) {
 			this.selected++
-			if (this.selected >= this.options.length) {
-				this.selected -= this.options.length;
+			if (this.selected >= this.choices.length) {
+				this.selected -= this.choices.length;
 			}
 		}
 	}
@@ -191,13 +243,16 @@ Dialog.prototype.tick = function tick()
 	if (this.closing) {
 		this.ticks--;
 
-		if (this.ticks < 0 && this.closecb) {
+		if (this.ticks < 0) {
 			this.closed = true;
+			dialog = null;
 
-			if (this.options) {
-				this.closecb(this.options[this.selected], this.selected);
-			} else {
-				this.closecb();
+			if (this.closecb) {
+				if (this.choices) {
+					this.closecb(this.selected);
+				} else {
+					this.closecb(-1);
+				}
 			}
 		}
 		return;
@@ -219,12 +274,12 @@ Dialog.prototype.tick = function tick()
 	if (this.drawn >= this.drawLimit) {
 		var longest = 0;
 
-		if (this.options) {
-			for (var i = 0, o; o = this.options[i]; i++) {
+		if (this.choices) {
+			for (var i = 0, o; o = this.choices[i]; i++) {
 				longest = Math.max(longest, o.length);
 			}
 
-			for (var i = 0, o; o = this.options[i]; i++) {
+			for (var i = 0, o; o = this.choices[i]; i++) {
 				while (o.length < longest) {
 					o += " ";
 				}
@@ -258,7 +313,7 @@ Dialog.prototype.tick = function tick()
 			continue;
 		}
 
-		drawText(c, this.ctx, fontSizeX * (x + 1), fontSizeY * (y + 1));
+		drawText(c, this.ctx, fontSizeX * (x + 1 + this.iconWidth), fontSizeY * (y + 1));
 		this.drawn++;
 	}
 };
