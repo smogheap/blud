@@ -6,7 +6,12 @@ var fontkeys = [
 	"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_",
 	"`abcdefghijklmnopqrstuvwxyz{|}~"
 ];
-var fontOffsets = {};
+var fontOffsets = {
+	pointer0:		[ 256, 0 ],
+	pointer1:		[ 264, 0 ],
+	pointer2:		[ 256, 8 ],
+	pointer3:		[ 264, 8 ]
+};
 
 /* Build a table with offsets for each displayable character */
 for (var y = 0, line; line = fontkeys[y]; y++) {
@@ -17,6 +22,10 @@ for (var y = 0, line; line = fontkeys[y]; y++) {
 
 loadImage('images/text.png', function(img) {
 	font = img;
+});
+loadImage('images/blud.png', function(img) {
+	// 17 * 16, 0 * 16 is top left corner of 3x3 tile for borders
+	borders = img;
 });
 
 function Dialog(msg, spoken, options, closecb)
@@ -66,29 +75,66 @@ function Dialog(msg, spoken, options, closecb)
 	this.ctx.msImageSmoothingEnabled		= false;
 	this.ctx.imageSmoothingEnabled			= false;
 
-	this.ctx.fillStyle = 'black';
-	this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+	if (false) {
+		this.ctx.fillStyle = 'black';
+		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+	} else {
+		for (var x = 0; x < this.canvas.width; x += fontSizeX) {
+			for (var y = 0; y < this.canvas.height; y += fontSizeY) {
+				var sx = 16 * 17;
+				var sy = 16 * 0;
+
+				if (x > 0) {
+					sx += 16;
+				}
+				if (x + fontSizeX >= this.canvas.width) {
+					sx += 16 + 8;
+				}
+
+				if (y > 0) {
+					sy += 16;
+				}
+				if (y + fontSizeY >= this.canvas.height) {
+					sy += 16 + 8;
+				}
+
+				this.ctx.drawImage(borders,
+						sx, sy, fontSizeX, fontSizeY,
+						x,  y,  fontSizeX, fontSizeY)
+			}
+		}
+	}
 
 	return(this);
 }
 
 function drawText(str, ctx, x, y, scale, noclear)
 {
+	var img;
+
 	if (isNaN(scale)) {
 		scale = 1;
 	}
 
 	for (var i = 0; i < str.length; i++) {
-		var c = str.charAt(i);
+		var c;
+
+		if ('string' === typeof str) {
+			 c = str.charAt(i);
+			img = font;
+		} else {
+			c = "pointer" + str[i];
+			img = borders;
+		}
 
 		if (!noclear) {
-			ctx.fillStyle = 'black';
+			ctx.fillStyle = '#666666';
 			ctx.fillRect(x, y,
 						fontSizeX * scale, fontSizeY * scale);
 		}
 
 		if (fontOffsets[c]) {
-			ctx.drawImage(font,
+			ctx.drawImage(img,
 					fontOffsets[c][0], fontOffsets[c][1],
 					fontSizeX, fontSizeY,
 					x, y,
@@ -175,14 +221,26 @@ Dialog.prototype.tick = function tick()
 					o += " ";
 				}
 
-				if (i == this.selected) {
-					o = "[ " + o + " ]";
+				if (false) {
+					if (i == this.selected) {
+						o = "[ " + o + " ]";
+					} else {
+						o = "  " + o + "  ";
+					}
 				} else {
-					o = "  " + o + "  ";
+					if (i == this.selected) {
+						drawText([ 0 ], this.ctx,
+							fontSizeX * (this.width - (5 + longest)),
+							fontSizeY * (this.height + 2 + i));
+					} else {
+						drawText(" ", this.ctx,
+							fontSizeX * (this.width - (5 + longest)),
+							fontSizeY * (this.height + 2 + i));
+					}
 				}
 
 				drawText(o, this.ctx,
-					fontSizeX * (this.width - (5 + longest)),
+					fontSizeX * (this.width - (4 + longest)),
 					fontSizeY * (this.height + 2 + i));
 			}
 		}
