@@ -15,7 +15,7 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 	this.SOUTH			= this.S = 2;
 	this.WEST			= this.W = 3;
 
-	this.ACTION			= 'action';
+	this.CONTINUE		= 'continue';
 	this.BACK			= 'back';
 
 
@@ -177,8 +177,13 @@ InputHandler.prototype.getButton = function getButton(name, clear)
 
 	// TODO Decide what is bound to this name
 	switch (name) {
-		case this.ACTION:
+		case this.CONTINUE:
 			btn |= this.devices.kb.space;
+			btn |= this.devices.kb.enter;
+			break;
+
+		case this.BACK:
+			btn |= this.devices.kb.escape;
 			break;
 	}
 

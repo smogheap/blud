@@ -98,20 +98,29 @@ function drawText(str, ctx, x, y, scale, noclear)
 	}
 }
 
+Dialog.prototype.close = function close()
+{
+	/* Reset ticks - Count down now that we're closing */
+	this.ticks = this.steps;
+	this.closing = true;
+}
+
 Dialog.prototype.tick = function tick()
 {
-	if (input.getButton(input.ACTION, false) & input.PRESSED) {
+	if (input.getButton(input.BACK, false) & input.PRESSED) {
+		this.selected = -1;
+		this.close();
+	}
+	if (input.getButton(input.CONTINUE, false) & input.PRESSED) {
 		if (this.drawLimit < this.msg.length) {
 			this.drawLimit = this.msg.length;
 		} else {
-			/* Reset ticks - Count down now that we're closing */
-			this.ticks = this.steps;
-			this.closing = true;
+			this.close();
 		}
 	}
 	var dirs = input.getDirection(true);
 
-	if (this.options) {
+	if (!this.closing && this.options && this.drawLimit >= this.msg.length) {
 		if ((dirs[input.N] | dirs[input.E]) & input.PRESSED) {
 			this.selected--
 			if (this.selected < 0) {

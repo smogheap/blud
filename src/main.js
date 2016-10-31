@@ -465,7 +465,7 @@ window.addEventListener('load', function()
 		lastFrame = time;
 
 
-if (false && !dialog && ticks === 90) {
+if (true && !dialog && ticks === 90) {
 	console.log('Opening dialog now');
 
 	// Testing
@@ -475,7 +475,7 @@ if (false && !dialog && ticks === 90) {
 		"This is a simple dialog test. You can press space",
 		"to continue."
 	].join('\n'), true, [ "Tell me more", "Let me play" ], function(option, selected) {
-		if (selected == 1) {
+		if (selected !== 0) {
 			dialog = null;
 			return;
 		}
