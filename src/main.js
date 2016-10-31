@@ -63,7 +63,8 @@ function startMove(character, direction, x, y, animationOffset)
 	character.animation = {
 		frame:			0,
 		dx:				stuck ? 0 : x,
-		dy:				stuck ? 0 : y
+		dy:				stuck ? 0 : y,
+		stuck:			stuck
 	};
 
 	if (character.direction !== direction && character.animation &&
@@ -164,7 +165,7 @@ function tick(ticks)
 			}
 		}
 
-		if (!character.animation) {
+		if (!character.animation || character.animation.stuck) {
 			/* Get the current state of the various input devices */
 			var dirs	= input.getDirection(true);
 			var dir		= undefined;
