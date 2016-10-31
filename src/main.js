@@ -175,7 +175,7 @@ function tick(ticks)
 				startMove(character, input.S,  0,  1, 16);
 			}
 			if (dirs[input.W]) {
-				startMove(character, input.S, -1,  0, 32);
+				startMove(character, input.W, -1,  0, 32);
 			}
 
 			/* Do we need to scroll the viewport?  */
