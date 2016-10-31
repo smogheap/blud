@@ -168,11 +168,13 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 	window.addEventListener('keydown', function(e)
 	{
 		this.devices.kb[e.code.toLowerCase()] = this.PRESSED | this.HELD;
+		e.preventDefault();
 	}.bind(this));
 
 	window.addEventListener('keyup', function(e)
 	{
 		this.devices.kb[e.code.toLowerCase()] &= ~this.HELD;
+		e.preventDefault();
 	}.bind(this));
 
 	var mousePos = function mousePos(e)
