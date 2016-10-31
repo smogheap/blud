@@ -192,11 +192,11 @@ function tick(ticks)
 				var vx = character.x - world.viewport.x + character.animation.dx;
 				var vy = character.y - world.viewport.y + character.animation.dy;
 
-				if (vx < 5 && world.viewport.x > 0) {
+				if (vx < 10 && world.viewport.x > 0) {
 					world.viewport.x--;
 					world.viewport.offset.x = -TILE_SIZE;
 				}
-				if ((world.viewport.width - vx) < 5 &&
+				if ((world.viewport.width - vx) < 10 &&
 					world.viewport.x <= world.rows[0].length - world.viewport.width
 				) {
 					world.viewport.x++;
@@ -204,11 +204,11 @@ function tick(ticks)
 				}
 
 
-				if (vy < 5 && world.viewport.y > 0) {
+				if (vy < 6 && world.viewport.y > 0) {
 					world.viewport.y--;
 					world.viewport.offset.y = -TILE_SIZE;
 				}
-				if ((world.viewport.height - vy) < 5 &&
+				if ((world.viewport.height - vy) < 6 &&
 					world.viewport.y <= world.rows.length - world.viewport.height
 				) {
 					world.viewport.y++;
