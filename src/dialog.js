@@ -66,7 +66,7 @@ function Dialog(msg, spoken, options, closecb)
 		for (var i = 0, o; o = this.options[i]; i++) {
 			longest = Math.max(longest, o.length);
 		}
-		longest += 6;
+		longest += 1;
 	}
 	this.width = Math.max(this.width, longest);
 
@@ -229,26 +229,12 @@ Dialog.prototype.tick = function tick()
 					o += " ";
 				}
 
-				if (false) {
-					if (i == this.selected) {
-						o = "[ " + o + " ]";
-					} else {
-						o = "  " + o + "  ";
-					}
-				} else {
-					if (i == this.selected) {
-						drawText([ 0 ], this.ctx,
-							fontSizeX * (this.width - (5 + longest)),
-							fontSizeY * (this.height + 2 + i));
-					} else {
-						drawText(" ", this.ctx,
-							fontSizeX * (this.width - (5 + longest)),
-							fontSizeY * (this.height + 2 + i));
-					}
-				}
+				drawText(i === this.selected ? [ 0 ] : " ", this.ctx,
+					fontSizeX * (1 + this.width - longest),
+					fontSizeY * (this.height + 2 + i));
 
 				drawText(o, this.ctx,
-					fontSizeX * (this.width - (4 + longest)),
+					fontSizeX * (2 + this.width - longest),
 					fontSizeY * (this.height + 2 + i));
 			}
 		}
