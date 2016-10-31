@@ -261,11 +261,12 @@ function render(ctx)
 
 			WRand.setSeed(((y + world.viewport.y) * 100) * (x + world.viewport.x));
 
-			if (!world.images[tile]) {
-				world.images[tile] = loadImage(world.tiles[tile].src);
+			var src = world.tiles[tile].src;
+			if (!world.images[src]) {
+				world.images[src] = loadImage(world.tiles[tile].src);
 			}
 
-			var img		= world.images[tile];
+			var img		= world.images[src];
 			var offsets	= null;
 			var options	= null;
 
@@ -273,23 +274,35 @@ function render(ctx)
 				/*
 					Pick an appropriate portion of the tile depending on what
 					the tiles surrounding this one are.
+
+					Build a string to represent the edges, in the order:
+						N,E,S,W,NW,NE,SW,SE
+
+					Look for edges on the tile with all 8 characters, then 6,
+					then 4 since the kitty corner values may not matter in most
+					cases.
 				*/
 				var key = "";
-				var edges =	[	tileAt(x, y - 1, tile), tileAt(x + 1, y, tile),
-								tileAt(x, y + 1, tile), tileAt(x - 1, y, tile) ];
+				var edges =	[
+					tileAt(x, y - 1, tile), tileAt(x + 1, y, tile),
+					tileAt(x, y + 1, tile), tileAt(x - 1, y, tile),
 
-				/*
-					Build a string to represent the edges, with 1 meaning there
-					is an edge and 0 meaning there is not, in the order NESW.
-				*/
+					tileAt(x - 1, y - 1, tile), tileAt(x + 1, y - 1, tile),
+					tileAt(x - 1, y + 1, tile), tileAt(x + 1, y + 1, tile)
+				];
+
 				for (var i = 0; i < edges.length; i++) {
 					key += (edges[i] !== tile) ? "1" : "0";
 				}
 
-				if (!(options = world.tiles[tile].edges[key])) {
-					/* Default to an image used for no edges */
-					options = world.tiles[tile].edges["0000"];
-				}
+				options =	world.tiles[tile].edges[key] ||
+							world.tiles[tile].edges[key.slice(0, 6)] ||
+							world.tiles[tile].edges[key.slice(0, 4)] ||
+							world.tiles[tile].edges["0000"];
+			}
+
+			if ((!options || !options.length) && world.tiles[tile].options) {
+				options = world.tiles[tile].options;
 			}
 
 			if (options && options.length > 0) {
@@ -303,7 +316,7 @@ function render(ctx)
 				];
 			}
 
-			ctx.drawImage(world.images[tile],
+			ctx.drawImage(img,
 					offsets[0] * TILE_SIZE, offsets[1] * TILE_SIZE,
 					TILE_SIZE, TILE_SIZE,
 					(TILE_SIZE * x) + wx,
@@ -322,12 +335,13 @@ function render(ctx)
 				continue;
 			}
 
+			// TODO Add offset definitions for characters in world.js
 			if (!character.image) {
 				character.image = loadImage('images/' + character.name + '.png');
 			}
 
 			ctx.drawImage(character.image,
-				character.offset + (TILE_SIZE * 2),
+				character.offset + (TILE_SIZE * 3),
 				character.actionOffset || 0, TILE_SIZE, TILE_SIZE,
 				character.pos[0] + wx, character.pos[1] + wy,
 				TILE_SIZE, TILE_SIZE);
