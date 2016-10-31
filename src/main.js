@@ -156,7 +156,7 @@ function tick(ticks)
 					f = 0;
 				}
 
-				offset = f * TILE_SIZE;
+				offset = (f + 3) * TILE_SIZE;
 				character.animation.frame++; f++;
 
 				offx = (character.animation.dx * 2 * f);
@@ -215,8 +215,18 @@ function tick(ticks)
 					world.viewport.offset.y = TILE_SIZE;
 				}
 			} else {
-				// TODO Occasionally change offset to 1...
-				offset = 0;
+				switch (ticks % 200) {
+					case 0:
+					case 25:
+						/* blink */
+						offset = 16;
+						break;
+
+					default:
+						/* Standing, eyes open */
+						offset = 0;
+						break;
+				}
 			}
 		}
 
@@ -357,7 +367,7 @@ function render(ctx)
 			}
 
 			ctx.drawImage(character.image,
-				character.offset + (TILE_SIZE * 3),
+				character.offset,
 				character.actionOffset || 0, TILE_SIZE, TILE_SIZE,
 				character.pos[0] + wx, character.pos[1] + wy,
 				TILE_SIZE, TILE_SIZE);
