@@ -3,7 +3,7 @@ var fontSizeX	= 8;
 var fontSizeY	= 8;
 var fontkeys = [
 	" !\"#$%^'()*+,-./0123456789:;<=>?",
-	"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_",
+	"@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_",
 	"`abcdefghijklmnopqrstuvwxyz{|}~"
 ];
 var fontOffsets = {};
@@ -34,6 +34,7 @@ function Dialog(msg, spoken, options, closecb)
 	this.spoken		= spoken;
 	this.msg		= msg;
 	this.options	= options;
+	this.selected	= 0;
 
 	this.height		= lines.length;
 	this.width		= lines[0].length;
@@ -53,8 +54,12 @@ function Dialog(msg, spoken, options, closecb)
 	this.canvas		= document.createElement('canvas');
 	this.ctx		= this.canvas.getContext('2d');
 
-	this.canvas.setAttribute('width',  (this.width  * fontSizeX) + 32);
-	this.canvas.setAttribute('height', (this.height * fontSizeY) + 16);
+	this.canvas.setAttribute('width',  (this.width + 4) * fontSizeX);
+	if (options && options.length > 0) {
+		this.canvas.setAttribute('height', (this.height + 3 + options.length) * fontSizeY);
+	} else {
+		this.canvas.setAttribute('height', (this.height + 2) * fontSizeY);
+	}
 
 	this.ctx.mozImageSmoothingEnabled		= false;
 	this.ctx.webkitImageSmoothingEnabled	= false;
@@ -67,9 +72,29 @@ function Dialog(msg, spoken, options, closecb)
 	return(this);
 }
 
+Dialog.prototype.drawText = function drawText(str, ctx, x, y)
+{
+	for (var i = 0; i < str.length; i++) {
+		var c = str.charAt(i);
+
+		ctx.fillStyle = 'black';
+		ctx.fillRect(x * fontSizeX, y * fontSizeY,
+					fontSizeX, fontSizeY);
+
+		if (fontOffsets[c]) {
+			ctx.drawImage(font,
+					fontOffsets[c][0], fontOffsets[c][1],
+					fontSizeX, fontSizeY,
+					x * fontSizeX, y * fontSizeY,
+					fontSizeX, fontSizeY);
+		}
+		x++;
+	}
+}
+
 Dialog.prototype.tick = function tick()
 {
-	if (input.getButton(input.ACTION, true) & input.PRESSED) {
+	if (input.getButton(input.ACTION, false) & input.PRESSED) {
 		if (this.drawLimit < this.msg.length) {
 			this.drawLimit = this.msg.length;
 		} else {
@@ -78,13 +103,33 @@ Dialog.prototype.tick = function tick()
 			this.closing = true;
 		}
 	}
+	var dirs = input.getDirection(true);
+
+	if (this.options) {
+		if ((dirs[input.N] | dirs[input.E]) & input.PRESSED) {
+			this.selected--
+			if (this.selected < 0) {
+				this.selected += this.options.length;
+			}
+		} else if ((dirs[input.S] | dirs[input.W]) & input.PRESSED) {
+			this.selected++
+			if (this.selected >= this.options.length) {
+				this.selected -= this.options.length;
+			}
+		}
+	}
 
 	if (this.closing) {
 		this.ticks--;
 
 		if (this.ticks < 0 && this.closecb) {
 			this.closed = true;
-			this.closecb();
+
+			if (this.options) {
+				this.closecb(this.options[this.selected], this.selected);
+			} else {
+				this.closecb();
+			}
 		}
 		return;
 	}
@@ -103,6 +148,29 @@ Dialog.prototype.tick = function tick()
 	}
 
 	if (this.drawn >= this.drawLimit) {
+		var longest = 0;
+
+		if (this.options) {
+			for (var i = 0, o; o = this.options[i]; i++) {
+				longest = Math.max(longest, o.length);
+			}
+
+			for (var i = 0, o; o = this.options[i]; i++) {
+				while (o.length < longest) {
+					o += " ";
+				}
+
+				if (i == this.selected) {
+					o = "[ " + o + " ]";
+				} else {
+					o = "  " + o + "  ";
+				}
+
+				this.drawText(o, this.ctx,
+					this.width - (5 + longest), this.height + 2 + i);
+			}
+		}
+
 		return;
 	}
 
@@ -122,13 +190,7 @@ Dialog.prototype.tick = function tick()
 			continue;
 		}
 
-		if (fontOffsets[c]) {
-			this.ctx.drawImage(font,
-						fontOffsets[c][0], fontOffsets[c][1],
-						fontSizeX, fontSizeY,
-						(x + 1) * fontSizeX, (y + 1) * fontSizeY,
-						fontSizeX, fontSizeY);
-		}
+		this.drawText(c, this.ctx, x + 1, y + 1);
 		this.drawn++;
 	}
 };

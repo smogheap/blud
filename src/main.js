@@ -472,15 +472,23 @@ if (!dialog && ticks === 90) {
 		"Howdy",
 		"",
 		"This is a simple dialog test. You can press space",
-		"to continue. Eventually this will be updated and",
-		"will even include options that you can pick from."
-	].join('\n'), true, null, function() {
+		"to continue."
+	].join('\n'), true, [ "Tell me more", "Let me play" ], function(option, selected) {
+		if (selected == 1) {
+			dialog = null;
+			return;
+		}
+
 		dialog = new Dialog([
-			"Okay, I'll let you get back to the game now."
-		].join('\n'), true, null, function() {
+			"Okay, so...",
+			"",
+			"",
+			"I don't have much to say yet. But uh, I'll",
+			"work on that."
+		].join('\n'), false, [ "That's cool" ], function() {
 			dialog = new Dialog([
 				"!!!"
-			].join('\n'), true, null, function() {
+			].join('\n'), false, null, function() {
 				dialog = null;
 			});
 
