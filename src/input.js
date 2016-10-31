@@ -122,7 +122,7 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 				key:		"keyd"
 			}, {
 				action:		this.S,
-				key:		"keya"
+				key:		"keys"
 			}, {
 				action:		this.W,
 				key:		"keya"
