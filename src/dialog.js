@@ -136,38 +136,22 @@ Dialog.prototype.tick = function tick()
 Dialog.prototype.render = function render(ctx)
 {
 	var img = this.canvas;
-	var per	= this.ticks / this.steps;
-
-	if (per < 1) {
-		/* Scale the image so it zooms in */
-		img = document.createElement('canvas');
-
-		var sctx = img.getContext('2d');
-
-		img.setAttribute('width',  this.canvas.width  * per);
-		img.setAttribute('height', this.canvas.height * per);
-
-		sctx.mozImageSmoothingEnabled		= false;
-		sctx.webkitImageSmoothingEnabled	= false;
-		sctx.msImageSmoothingEnabled		= false;
-		sctx.imageSmoothingEnabled			= false;
-
-		sctx.drawImage(this.canvas, 0, 0, this.canvas.width, this.canvas.height,
-						0, 0, img.width, img.height);
-	}
+	var per	= Math.min(this.ticks / this.steps, 1);
 
 	if (img && ctx && !this.closed) {
-		var x	= Math.floor(ctx.canvas.width  / 2);
-		var y	= Math.floor(ctx.canvas.height / 2);
+		var w = Math.floor(per * img.width);
+		var h = Math.floor(per * img.height);
+		var x = Math.floor(ctx.canvas.width  / 2);
+		var y = Math.floor(ctx.canvas.height / 2);
 
-		x -= Math.floor(img.width  / 2);
-		y -= Math.floor(img.height / 2);
+		x -= Math.floor(w / 2);
+		y -= Math.floor(h / 2);
 
 		ctx.drawImage(img,
 					0, 0,
 					img.width, img.height,
 					x, y,
-					img.width, img.height);
+					per * img.width, per * img.height);
 	}
 };
 
