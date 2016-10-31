@@ -31,44 +31,56 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 
 	this.bindings = {
 		js: [
+			/* Left stick (usually) */
+			{
+				action:		this.N,
+				axis:		1,
+				threshold:	-0.5
+			}, {
+				action:		this.E,
+				axis:		0,
+				threshold:	0.5
+			}, {
+				action:		this.S,
+				axis:		1,
+				threshold:	0.5
+			}, {
+				action:		this.W,
+				axis:		0,
+				threshold:	-0.5
+			},
 
-		/* Left stick (usually) */
-		{
-			action:		this.N,
-			axis:		1,
-			threshold:	-0.5
-		}, {
-			action:		this.E,
-			axis:		0,
-			threshold:	0.5
-		}, {
-			action:		this.S,
-			axis:		1,
-			threshold:	0.5
-		}, {
-			action:		this.W,
-			axis:		0,
-			threshold:	-0.5
-		},
+			/* dpad (usually) */
+			{
+				action:		this.N,
+				axis:		7,
+				threshold:	-0.5
+			}, {
+				action:		this.E,
+				axis:		6,
+				threshold:	0.5
+			}, {
+				action:		this.S,
+				axis:		7,
+				threshold:	0.5
+			}, {
+				action:		this.W,
+				axis:		6,
+				threshold:	-0.5
+			},
 
-		/* dpad (usually) */
-		{
-			action:		this.N,
-			axis:		7,
-			threshold:	-0.5
-		}, {
-			action:		this.E,
-			axis:		6,
-			threshold:	0.5
-		}, {
-			action:		this.S,
-			axis:		7,
-			threshold:	0.5
-		}, {
-			action:		this.W,
-			axis:		6,
-			threshold:	-0.5
-		}]
+			/* Buttons */
+			{
+				action:		this.CONTINUE,
+				button:		0
+			}, {
+				action:		this.BACK,
+				button:		1
+			}
+		],
+
+		kb: [
+		]
 	};
 
 	window.addEventListener('keydown', function(e)
@@ -173,7 +185,7 @@ InputHandler.prototype.getDirection = function getDirection(clear)
 
 InputHandler.prototype.getButton = function getButton(name, clear)
 {
-	var		btn = false;
+	var		btn = 0;
 
 	// TODO Decide what is bound to this name
 	switch (name) {
@@ -185,6 +197,16 @@ InputHandler.prototype.getButton = function getButton(name, clear)
 		case this.BACK:
 			btn |= this.devices.kb.escape;
 			break;
+	}
+
+	/* Merge results from gamepads */
+	this.poll();
+	for (var i = 0, b; b = this.bindings.js[i]; i++) {
+		if (!b || !b.key || b.action !== name) {
+			continue;
+		}
+
+		btn |= this.devices.js[b.key];
 	}
 
 	/* Clear the pressed state on all inputs on all devices */
@@ -236,7 +258,7 @@ InputHandler.prototype.poll = function poll()
 				}
 
 				if (!b.key) {
-					b.key = 'axis' + b.axis + (b.threshold > 0 ? '+' : '-');
+					b.key = 'axis:' + b.axis + (b.threshold > 0 ? '+' : '-');
 				}
 
 				if (on) {
@@ -247,8 +269,27 @@ InputHandler.prototype.poll = function poll()
 				} else {
 					this.devices.js[b.key] &= ~this.HELD;
 				}
-			} else {
-				// TODO Add support for buttons
+			} else if (!isNaN(b.button)) {
+				var on;
+
+				if ("object" === typeof pad.buttons[b.button]) {
+					on = pad.buttons[b.button].pressed;
+				} else {
+					on = pad.buttons[b.button];
+				}
+
+				if (!b.key) {
+					b.key = 'btn:' + b.button;
+				}
+
+				if (on) {
+					if (!this.devices.js[b.key]) {
+						this.devices.js[b.key] = this.PRESSED;
+					}
+					this.devices.js[b.key] |= this.HELD;
+				} else {
+					this.devices.js[b.key] &= ~this.HELD;
+				}
 			}
 		}
 	}
