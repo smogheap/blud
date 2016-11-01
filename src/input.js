@@ -10,10 +10,10 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 	this.PRESSED		= 0x1; /* The button has been pressed and not acted on */
 	this.HELD			= 0x2; /* The button is still being held */
 
-	this.NORTH			= this.N = 0;
-	this.EAST			= this.E = 1;
-	this.SOUTH			= this.S = 2;
-	this.WEST			= this.W = 3;
+	this.NORTH			= this.N = 'N';
+	this.EAST			= this.E = 'E';
+	this.SOUTH			= this.S = 'S';
+	this.WEST			= this.W = 'W';
 
 	this.CONTINUE		= 'continue';
 	this.BACK			= 'back';
@@ -26,13 +26,14 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 	this.LB				= 'LB';
 	this.RB				= 'RB';
 
+	this.axisThreshold	= 0.5;
 
 	/* The status of buttons as presented to the consumer */
 	this.buttons = {};
 
 	/* The status of each device. The details may vary from device to device */
 	this.devices = {
-		js:		{},
+		js:		[],
 		kb:		{},
 		mouse:	{}
 	};
@@ -42,75 +43,67 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 			/* Left stick (usually) */
 			{
 				action:		this.N,
-				axis:		1,
-				threshold:	-0.5
+				key:		"axis1-"
 			}, {
 				action:		this.E,
-				axis:		0,
-				threshold:	0.5
+				key:		"axis0+"
 			}, {
 				action:		this.S,
-				axis:		1,
-				threshold:	0.5
+				key:		"axis1+"
 			}, {
 				action:		this.W,
-				axis:		0,
-				threshold:	-0.5
+				key:		"axis0-"
 			},
 
 			/* dpad (usually) */
 			{
 				action:		this.N,
-				axis:		7,
-				threshold:	-0.5
+				key:		"axis7-"
 			}, {
 				action:		this.E,
-				axis:		6,
-				threshold:	0.5
+				key:		"axis6+"
 			}, {
 				action:		this.S,
-				axis:		7,
-				threshold:	0.5
+				key:		"axis7+"
 			}, {
 				action:		this.W,
-				axis:		6,
-				threshold:	-0.5
+				key:		"axis6-"
 			},
 
 			/* Buttons */
 			{
 				action:		this.CONTINUE,
-				button:		0
+				key:		"button0"
 			}, {
 				action:		this.BACK,
-				button:		1
+				key:		"button1"
 			},
 
 			{
 				action:		this.A,
-				button:		0
+				key:		"button0"
 			}, {
 				action:		this.B,
-				button:		1
+				key:		"button1"
 			}, {
 				action:		this.X,
-				button:		2
+				key:		"button2"
 			}, {
 				action:		this.Y,
-				button:		3
+				key:		"button3"
 			},
 
 			{
 				action:		this.START,
-				button:		7
+				key:		"button7"
 			},
 			{
 				action:		this.CONTINUE,
-				button:		7
+				key:		"button7"
 			},
 			{
 				action:		this.SELECT,
-				button:		6
+				key:		"button6"
 			}
 		],
 
@@ -212,14 +205,14 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 }
 
 /*
-	Return an array of the current state of all directions.
+	Return an object with the current state of all directions.
 
 	This call will clear the PRESSED status from all inputs, so it should only
 	be called once per tick.
 */
 InputHandler.prototype.getDirection = function getDirection(clear)
 {
-	var d = [ false, false, false, false ];
+	var d = {};
 
 	/* Compare the mouse position (if still pressed) to the character position */
 	if (this.devices.mouse.state) {
@@ -266,10 +259,12 @@ InputHandler.prototype.getDirection = function getDirection(clear)
 		}
 
 		if ([ this.N, this.E, this.S, this.W ].includes(b.action)) {
-			d[b.action] |= this.devices.js[b.key];
+			for (var p = 0; p < this.devices.js.length; p++) {0
+				d[b.action] |= this.devices.js[p][b.key];
 
-			if (clear) {
-				this.devices.js[b.key] &= ~this.PRESSED;
+				if (clear) {
+					this.devices.js[p][b.key] &= ~this.PRESSED;
+				}
 			}
 		}
 	}
@@ -304,9 +299,11 @@ InputHandler.prototype.getButton = function getButton(name, clear)
 			continue;
 		}
 
-		btn |= this.devices.js[b.key];
-		if (clear) {
-			this.devices.js[b.key] &= ~this.PRESSED;
+		for (var p = 0; p < this.devices.js.length; p++) {
+			btn |= this.devices.js[p][b.key];
+			if (clear) {
+				this.devices.js[p][b.key] &= ~this.PRESSED;
+			}
 		}
 	}
 
@@ -330,7 +327,6 @@ InputHandler.prototype.clearPressed = function clearPressed(device)
 InputHandler.prototype.poll = function poll()
 {
 	var gamepads;
-	var axisThreshold	= 0.5;
 
 	if (navigator.getGamepads) {
 		gamepads = navigator.getGamepads();
@@ -341,50 +337,56 @@ InputHandler.prototype.poll = function poll()
 	}
 
 	for (var i = 0, pad; pad = gamepads[i]; i++) {
-		for (var i = 0, b; b = this.bindings.js[i]; i++) {
-			if (!isNaN(b.axis) && !isNaN(pad.axes[b.axis])) {
-				var value	= pad.axes[b.axis];
-				var on;
+		if (!this.devices.js[i]) {
+			this.devices.js[i] = {};
+			this.devices.js[i].id = pad.id;
+		}
 
-				if (b.threshold > 0) {
-					on = value >= b.threshold;
-				} else {
-					on = value <= b.threshold;
+		for (var a = 0; a < pad.axes.length; a++) {
+			var axis	= pad.axes[a];
+			var key		= "axis" + a;
+			var on		= false;
+
+			if (axis > this.axisThreshold) {
+				key += '+';
+				on = true;
+			}
+
+			if (axis < -this.axisThreshold) {
+				key += '-';
+				on = true;
+			}
+
+			if (on) {
+				if (!this.devices.js[i][key]) {
+					this.devices.js[i][key] = this.PRESSED;
 				}
 
-				if (!b.key) {
-					b.key = 'axis:' + b.axis + (b.threshold > 0 ? '+' : '-');
-				}
+				this.devices.js[i][key] |= this.HELD;
+			} else {
+				this.devices.js[i][(key + '+')] &= ~this.HELD;
+				this.devices.js[i][(key + '-')] &= ~this.HELD;
+			}
+		}
 
-				if (on) {
-					if (!this.devices.js[b.key]) {
-						this.devices.js[b.key] = this.PRESSED;
-					}
-					this.devices.js[b.key] |= this.HELD;
-				} else {
-					this.devices.js[b.key] &= ~this.HELD;
-				}
-			} else if (!isNaN(b.button)) {
-				var on;
+		for (var b = 0; b < pad.buttons.length; b++) {
+			var btn	= pad.buttons[b];
+			var key	= "button" + b;
+			var on;
 
-				if ("object" === typeof pad.buttons[b.button]) {
-					on = pad.buttons[b.button].pressed;
-				} else {
-					on = pad.buttons[b.button];
-				}
+			if ("object" === typeof btn) {
+				on = btn.pressed;
+			} else {
+				on = btn;
+			}
 
-				if (!b.key) {
-					b.key = 'btn:' + b.button;
+			if (on) {
+				if (!this.devices.js[i][key]) {
+					this.devices.js[i][key] = this.PRESSED;
 				}
-
-				if (on) {
-					if (!this.devices.js[b.key]) {
-						this.devices.js[b.key] = this.PRESSED;
-					}
-					this.devices.js[b.key] |= this.HELD;
-				} else {
-					this.devices.js[b.key] &= ~this.HELD;
-				}
+				this.devices.js[i][key] |= this.HELD;
+			} else {
+				this.devices.js[i][key] &= ~this.HELD;
 			}
 		}
 	}
@@ -395,7 +397,7 @@ InputHandler.prototype.poll = function poll()
 InputHandler.prototype.remapjs = function remapjs()
 {
 	loadImage('images/blud.png', function(img) {
-		var map		= { };
+		var map		= [];
 		var canvas	= document.createElement('canvas');
 		var ctx		= canvas.getContext('2d');
 
@@ -425,10 +427,53 @@ InputHandler.prototype.remapjs = function remapjs()
 		ctx.drawImage(img, 12 * 16, 0, 32, 16, 0, 0, 32, 16);
 
 		var keys = Object.keys(todo);
-		var nextInput = function nextInput() {
-			var key = keys.shift();
+		var key;
 
-			if (!key) {
+		var readInput = function readInput() {
+			this.poll();
+
+			for (var p = 0; p < this.devices.js.length; p++) {
+				var pad		= this.devices.js[p];
+				var pkeys	= Object.keys(pad);
+
+				for (var i = 0; i < pkeys.length; i++) {
+					if (pad[pkeys[i]] & this.PRESSED) {
+						/* We found a new button */
+						map.push({
+							action: key,
+							key:	pkeys[i],
+							device:	pad.id
+						});
+
+						/* Add alternate button names as well */
+						if (key === this.A || key === this.START) {
+							map.push({
+								action: this.CONTINUE,
+								key:	pkeys[i],
+								device:	pad.id
+							});
+						}
+						if (key === this.B) {
+							map.push({
+								action: this.BACK,
+								key:	pkeys[i],
+								device:	pad.id
+							});
+						}
+
+						nextInput();
+					}
+				}
+			}
+		}.bind(this);
+
+		var nextInput = function nextInput() {
+			if (!(key = keys.shift())) {
+				// TODO Save locally and then load again at startup
+
+				// console.log(JSON.stringify(map));
+
+				this.bindings.js = map;
 				new Dialog("Done");
 				return;
 			}
@@ -439,11 +484,16 @@ InputHandler.prototype.remapjs = function remapjs()
 			ctx.drawImage(img, 12 * 16, offsets[0] * 16, 16, 16, 0,  0, 16, 16);
 			ctx.drawImage(img, 13 * 16, offsets[1] * 16, 16, 16, 16, 0, 16, 16);
 
+			for (var p = 0; p < this.devices.js.length; p++) {
+				this.clearPressed(this.devices.js[p]);
+			}
+
 			dialog = new Dialog({
 				steps:	0,
 				msg:	"Press the highlighted button\non your controller",
 				icon:	[ canvas, 0, 0, 32, 16 ],
-				closecb: nextInput
+				closecb: nextInput,
+				inputcb: readInput
 			});
 			dialog.tick();
 		}.bind(this);
