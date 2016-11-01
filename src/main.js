@@ -149,7 +149,7 @@ function tick(ticks)
 			character.x += character.animation.dx;
 			character.y += character.animation.dy;
 
-			delete character.animation;
+			character.animation = null;
 			character.wasMoving = true;
 		} else {
 			character.wasMoving = false;
@@ -176,12 +176,12 @@ function tick(ticks)
 			/* Continue the previous animation */
 			var dirs = input.getDirection(false); /* Don't clear pressed state */
 
-			if (!isNaN(character.direction) &&
+			if (character.direction &&
 				character.animation.frame < 0 &&
 				!(dirs[character.direction] & input.HELD)
 			) {
 				/* Cancel the movement */
-				delete character.animation;
+				character.animation = null;
 			} else {
 				var f = character.animation.frame;
 
