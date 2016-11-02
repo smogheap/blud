@@ -89,6 +89,7 @@ function Dialog(options)
 
 	var lines		= this.msg.split('\n');
 
+	this.lineCount	= lines.length;
 	this.height		= lines.length;
 	this.width		= lines[0].length;
 
@@ -327,6 +328,7 @@ Dialog.prototype.tick = function tick()
 	var y = 0;
 	for (var i = 0; i < this.drawLimit; i++) {
 		var c = this.msg.charAt(i);
+		var oy = 0;
 
 		if (c === '\n') {
 			x = 0;
@@ -339,7 +341,12 @@ Dialog.prototype.tick = function tick()
 			continue;
 		}
 
-		drawText(c, this.ctx, fontSizeX * (x + 1 + this.iconWidth), fontSizeY * (y + 1));
+		if (1 === this.lineCount && this.icon && !this.choices) {
+			oy = (this.height - 1) * fontSizeY / 2;
+		}
+
+		drawText(c, this.ctx,
+			fontSizeX * (x + 1 + this.iconWidth), (fontSizeY * (y + 1)) + oy);
 		this.drawn++;
 	}
 };
