@@ -24,6 +24,22 @@ function canMove(actor, direction)
 		case 'W': x--; break;
 	}
 
+	for (var a = 0, other; other = actors[a]; a++) {
+		if (actor === other) {
+			continue;
+		}
+
+		if (x === other.x && x === other.y) {
+			return(false);
+		}
+
+		var rpos = other.renderPos();
+
+		if (x === rpos[0] && y === rpos[1]) {
+			return(false);
+		}
+	}
+
 	try {
 		tile = world.rows[y].charAt(x);
 		if (!tile || 1 !== tile.length) {
@@ -366,8 +382,10 @@ window.addEventListener('load', function()
 		}
 	};
 
-	/* Load the actors */
+	/* Load the actors; Only the first gets input */
 	actors.push(new Actor("blud", input));
+	actors.push(new Actor("abby"));
+	actors.push(new Actor("saul"));
 
 	bctx.save();
 

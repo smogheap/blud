@@ -124,7 +124,6 @@ var world = {
 			x:				1,
 			y:				1,
 			facing:			"E",
-
 			src:			"images/blud.png",
 
 			moving: {
@@ -146,6 +145,48 @@ var world = {
 				E: { x: 1, y: 0 },
 				S: { x: 1, y: 1 },
 				W: { x: 1, y: 2 }
+			}
+		},
+
+		"abby": {
+			x:				30,
+			y:				10,
+			facing:			"S",
+			src:			"images/blud.png",
+
+			standing: {
+				N: { x: 0, y: 4 },
+				E: { x: 0, y: 4 },
+				S: { x: 0, y: 4 },
+				W: { x: 0, y: 4 }
+			},
+
+			blinking: {
+				N: { x: 0, y: 5 },
+				E: { x: 0, y: 5 },
+				S: { x: 0, y: 5 },
+				W: { x: 0, y: 5 }
+			}
+		},
+
+		"saul": {
+			x:				9,
+			y:				10,
+			facing:			"S",
+			src:			"images/blud.png",
+
+			standing: {
+				N: { x: 5, y: 4 },
+				E: { x: 5, y: 4 },
+				S: { x: 5, y: 4 },
+				W: { x: 5, y: 4 }
+			},
+
+			blinking: {
+				N: { x: 5, y: 5 },
+				E: { x: 5, y: 5 },
+				S: { x: 5, y: 5 },
+				W: { x: 5, y: 5 }
 			}
 		}
 	}
