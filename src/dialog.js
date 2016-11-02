@@ -291,7 +291,7 @@ Dialog.prototype.tick = function tick()
 		return;
 	}
 
-	if (this.drawLimit < this.msg.length) {
+	if (this.drawLimit < this.msg.length && this.ticks > this.steps) {
 		/* Adjust this increment to change the speed text is "spoken" */
 		// TODO Play a noise with this?
 		this.drawLimit += 2;
