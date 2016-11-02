@@ -142,7 +142,7 @@ Actor.prototype.tick = function tick()
 						Fallthrough; Let input break a character out an
 						animation for the stuck state.
 					*/
-					console.log('stuck');
+					// console.log('stuck');
 				}
 			} else {
 				/* The animation has completed */
@@ -201,7 +201,7 @@ Actor.prototype.tick = function tick()
 			switch (this.state) {
 				case this.STANDING:
 					if (0 == (WRand() % 40)) {
-						console.log('blink');
+						// console.log('blink');
 						this.state = this.BLINKING;
 					}
 					break;
