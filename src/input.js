@@ -1,4 +1,4 @@
-function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
+function InputHandler(canvas)
 {
 	/* It only makes sense to have one instance of this */
 	if (arguments.callee._singletonInstance) {
@@ -34,8 +34,7 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 	/* The status of each device. The details may vary from device to device */
 	this.devices = {
 		js:		[],
-		kb:		{},
-		mouse:	{}
+		kb:		{}
 	};
 
 	this.bindings = {
@@ -179,31 +178,6 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 		}
 	}.bind(this));
 
-	var mousePos = function mousePos(e)
-	{
-		if (!(this.devices.mouse.state & this.HELD)) {
-			return;
-		}
-
-		/* Store the position in the game world that the mouse is at */
-		var pos = getWorldPosCB([e.offsetX, e.offsetY]);
-
-		this.devices.mouse.x = pos[0];
-		this.devices.mouse.y = pos[1];
-	}.bind(this);
-
-	canvas.addEventListener('mousemove', mousePos);
-	canvas.addEventListener('mousedown', function(e) {
-		this.devices.mouse.state = this.PRESSED | this.HELD;
-		mousePos(e);
-	}.bind(this));
-	canvas.addEventListener('mouseup', function(e)
-	{
-		this.devices.mouse.state &= ~this.HELD;
-	}.bind(this));
-
-	this.getPlayerPosCB = getPlayerPosCB;
-
 	return(this);
 }
 
@@ -216,28 +190,6 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 InputHandler.prototype.getDirection = function getDirection(clear)
 {
 	var d = {};
-
-	/* Compare the mouse position (if still pressed) to the character position */
-	if (this.devices.mouse.state) {
-		var charpos	= this.getPlayerPosCB();
-
-		if (this.devices.mouse.x < charpos[0]) {
-			d[this.W] = true;
-		} else if (this.devices.mouse.x > charpos[0]) {
-			d[this.E] = true;
-		}
-
-		if (this.devices.mouse.y < charpos[1]) {
-			d[this.N] = true;
-		} else if (this.devices.mouse.y > charpos[1]) {
-			d[this.S] = true;
-		}
-
-		/* Clear the pressed state since this input has been handled */
-		if (clear) {
-			this.devices.mouse.state &= ~this.PRESSED;
-		}
-	}
 
 	/* Merge results from the keyboard */
 	for (var i = 0, b; b = this.bindings.kb[i]; i++) {
