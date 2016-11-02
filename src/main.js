@@ -4,12 +4,30 @@ var marginX		= 10;
 var marginY		= 6;
 
 var actors		= [];
+var player		= null;
 
 /*
 	This will be true for the first frame only, and can be used for debug
 	purposes to avoid printing debug messages at 60fps.
 */
 var firstframe		= true;
+
+function actorAt(x, y)
+{
+	for (var a = 0, actor; actor = actors[a]; a++) {
+		if (x === actor.x && x === actor.y) {
+			return(actor);
+		}
+
+		var rpos = actor.renderPos();
+
+		if (x === rpos[0] && y === rpos[1]) {
+			return(actor);
+		}
+	}
+
+	return(null);
+}
 
 function canMove(actor, direction)
 {
@@ -24,20 +42,10 @@ function canMove(actor, direction)
 		case 'W': x--; break;
 	}
 
-	for (var a = 0, other; other = actors[a]; a++) {
-		if (actor === other) {
-			continue;
-		}
+	var a;
 
-		if (x === other.x && x === other.y) {
-			return(false);
-		}
-
-		var rpos = other.renderPos();
-
-		if (x === rpos[0] && y === rpos[1]) {
-			return(false);
-		}
+	if ((a = actorAt(x, y)) && a !== actor)  {
+		return(false);
 	}
 
 	try {
@@ -143,6 +151,15 @@ function tick(ticks)
 				}
 			}
 		});
+	}
+
+	if (input.getButton(input.A, true) & input.PRESSED) {
+		var pos		= player.lookingAt();
+		var actor	= actorAt(pos[0], pos[1]);
+
+		if (actor) {
+			actor.talk();
+		}
 	}
 
 	for (var a = 0, actor; actor = actors[a]; a++) {
@@ -383,7 +400,7 @@ window.addEventListener('load', function()
 	};
 
 	/* Load the actors; Only the first gets input */
-	actors.push(new Actor("blud", input));
+	actors.push((player = new Actor("blud", input)));
 	actors.push(new Actor("abby"));
 	actors.push(new Actor("saul"));
 

@@ -148,6 +148,9 @@ function InputHandler(canvas, getWorldPosCB, getPlayerPosCB)
 			}, {
 				action:		this.BACK,
 				key:		"escape"
+			}, {
+				action:		this.A,
+				key:		"space"
 			},
 
 			{
@@ -259,7 +262,7 @@ InputHandler.prototype.getDirection = function getDirection(clear)
 		}
 
 		if ([ this.N, this.E, this.S, this.W ].includes(b.action)) {
-			for (var p = 0; p < this.devices.js.length; p++) {0
+			for (var p = 0; p < this.devices.js.length; p++) {
 				d[b.action] |= this.devices.js[p][b.key];
 
 				if (clear) {
@@ -270,7 +273,7 @@ InputHandler.prototype.getDirection = function getDirection(clear)
 	}
 
 	return(d);
-}
+};
 
 InputHandler.prototype.getButton = function getButton(name, clear)
 {

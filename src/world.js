@@ -187,7 +187,13 @@ var world = {
 				E: { x: 5, y: 5 },
 				S: { x: 5, y: 5 },
 				W: { x: 5, y: 5 }
-			}
+			},
+
+			dialog: [
+				"Howdy",
+				"What do you want?",
+				"Why are you bugging me? Go away!"
+			]
 		}
 	}
 };
