@@ -77,10 +77,71 @@ var world = {
 				/* No edges */
 				"0000": [ [ 2, 2 ], [ 2, 3 ], [ 3, 2 ], [ 3, 3 ] ]
 			}
+		},
+
+		"C": {
+			name:			"cholesterol",
+			src:			"images/blud.png",
+			solid:			true,
+
+			/* This number is added to all offsets defined for this tile */
+			baseOffset:		[ 7, 9 ],
+
+			edges: {
+				"00000001": [ [ 2, 4 ] ],
+				"0100": [ [ 2, 5 ] ],
+				"0000": [ [ -3, 3 ] ]
+			}
 		}
 	},
 
 	rows: [
+		"C                                                                               ",
+		"oC                                                                              ",
+		"ooC                                                                             ",
+		"oooC                                                                            ",
+		"ooooC                                                                           ",
+		"oooooC                                                                          ",
+		"ooooooC                                                                         ",
+		"ooooooC                                                                         ",
+		"ooooooC                                                                         ",
+		"ooooooC                                                                         ",
+		"ooooooC                                                                         ",
+		"ooooooo                                                                         ",
+		"ooooooC                                                                         ",
+		"ooooooC                                                                         ",
+		"ooooooC                                                                         ",
+		"ooooooC                                                                         ",
+		"ooooooCooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo",
+		"oooooCCooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo",
+		"ooooCCCooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo",
+		"oooCCCC                                                                         ",
+		"ooCCCCC                                                                         ",
+		"oCCCCCC                                                                         ",
+		"CCCCCC                                                                          ",
+		"CCCCC                                                                           ",
+		"CCCC                                                                            ",
+		"CCC                                                                             ",
+		"CC                                                                              ",
+		"C                                                                               ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                ",
+		"                                                                                "
+	],
+
+	testrows: [
 		"           oooo                                                                 ",
 		"             ooooooo                                                            ",
 		"             ooooooooooooo                                                      ",
@@ -121,7 +182,7 @@ var world = {
 
 	actors: {
 		"blud": {
-			x:				1,
+			x:				5,
 			y:				1,
 			facing:			"E",
 			src:			"images/blud.png",
