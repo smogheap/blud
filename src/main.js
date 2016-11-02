@@ -1,5 +1,9 @@
 var input;
-var TILE_SIZE		= 16;
+var TILE_SIZE	= 16;
+var marginX		= 10;
+var marginY		= 6;
+
+var actors		= [];
 
 /*
 	This will be true for the first frame only, and can be used for debug
@@ -7,12 +11,18 @@ var TILE_SIZE		= 16;
 */
 var firstframe		= true;
 
-function canMove(character, x, y)
+function canMove(actor, direction)
 {
 	var tile;
+	var x	= actor.x;
+	var y	= actor.y;
 
-	x += character.x;
-	y += character.y;
+	switch (direction) {
+		case 'N': y--; break;
+		case 'E': x++; break;
+		case 'S': y++; break;
+		case 'W': x--; break;
+	}
 
 	try {
 		tile = world.rows[y].charAt(x);
@@ -26,70 +36,47 @@ function canMove(character, x, y)
 	return(!world.tiles[tile].solid);
 }
 
-function startMove(character, direction, x, y, animationOffset)
+function scrollViewport(x, y, frames)
 {
-	var		stuck	= false;
+	var vx = x - world.viewport.x;
+	var vy = y - world.viewport.y;
 
-	if (!canMove(character, x, y)) {
-		/*
-			The character isn't allowed to move in this direction, most likely
-			because there is a solid object there.
-
-			The character may be allowed to turn in that direction though.
-		*/
-		if (!character.animation && !character.wasMoving) {
-			stuck = true;
-		} else {
-			return;
-		}
+	if (vx < marginX && world.viewport.x > 0) {
+		world.viewport.x--;
+		world.viewport.offset.x = -TILE_SIZE;
 	}
 
-	if (character.animation) {
-		/*
-			The character has already started moving in another direction, so
-			don't start moving in this direction unless the previous movement
-			for the character was in this direction.
-
-			Give a preference to any direction other than the one moved in last
-			to allow for a zig-zag when 2 directions are held, and to allow
-			sliding against walls by holding 2 directions.
-		*/
-		if (direction === character.lastDirection) {
-			return;
-		}
-	}
-
-	character.animation = {
-		frame:			0,
-		dx:				stuck ? 0 : x,
-		dy:				stuck ? 0 : y,
-		stuck:			stuck
-	};
-
-	if (character.direction !== direction && character.animation &&
-		!character.wasMoving
+	if ((world.viewport.width - vx) < marginX &&
+		world.viewport.x <= world.rows[0].length - world.viewport.width
 	) {
-		/*
-			Give a moment to cancel movement while turning from a stand
-			still. If the character is already moving then keep the
-			momentum going.
-		*/
-		character.animation.frame -= 4;
+		world.viewport.x++;
+		world.viewport.offset.x = TILE_SIZE;
 	}
 
-	character.direction		= direction;
-	character.actionOffset	= animationOffset;
+	if (vy < marginY && world.viewport.y > 0) {
+		world.viewport.y--;
+		world.viewport.offset.y = -TILE_SIZE;
+	}
 
-	return;
+	if ((world.viewport.height - vy) < marginY &&
+		world.viewport.y <= world.rows.length - world.viewport.height
+	) {
+		world.viewport.y++;
+		world.viewport.offset.y = TILE_SIZE;
+	}
+
+	world.viewport.offset.steps = TILE_SIZE / frames;
 }
 
 function tick(ticks)
 {
+	WRand.setSeed((new Date()).getTime());
+
 	if (world.viewport.offset.x !== 0) {
-		world.viewport.offset.x += (world.viewport.offset.x > 0) ? -2 : 2;
+		world.viewport.offset.x += (world.viewport.offset.x > 0) ? -world.viewport.offset.steps : world.viewport.offset.steps;
 	}
 	if (world.viewport.offset.y !== 0) {
-		world.viewport.offset.y += (world.viewport.offset.y > 0) ? -2 : 2;
+		world.viewport.offset.y += (world.viewport.offset.y > 0) ? -world.viewport.offset.steps : world.viewport.offset.steps;
 	}
 
 	/* Paused? */
@@ -106,6 +93,7 @@ function tick(ticks)
 
 					case 1:
 						new Dialog({
+							icon: [ loadImage('images/blud.png'), 0, 0, TILE_SIZE, TILE_SIZE ],
 							msg: [
 								"Blud is a game about a blood",
 								"cell who finds himself in",
@@ -114,8 +102,7 @@ function tick(ticks)
 								"",
 								"Blud was created by Micah",
 								"Gorrell and Owen Swerkstrom."
-							].join('\n'),
-							icon: [ world.characters[0].image, 0, 0, TILE_SIZE, TILE_SIZE ]
+							].join('\n')
 						});
 						break;
 
@@ -142,133 +129,8 @@ function tick(ticks)
 		});
 	}
 
-	for (var c = 0, character; character = world.characters[c]; c++) {
-		/* Has the previous animation ended for this character? */
-		if (character.animation && character.animation.frame >= 8) {
-			/* The animation is complete */
-			character.x += character.animation.dx;
-			character.y += character.animation.dy;
-
-			character.animation = null;
-			character.wasMoving = true;
-		} else {
-			character.wasMoving = false;
-		}
-
-		/*
-			Determine the row offset to use when rendering this character.
-
-			If the character is moving from one row to another then it needs to
-			render with the row it is moving towards if that row is lower on
-			screen than the row it is actually still in.
-		*/
-		if (character.animation && character.animation.dy > 0) {
-			character.ry = character.y + 1;
-		} else {
-			character.ry = character.y;
-		}
-
-		var offset	= 0;
-		var offx	= 0;
-		var offy	= 0;
-
-		if (character.animation) {
-			/* Continue the previous animation */
-			var dirs = input.getDirection(false); /* Don't clear pressed state */
-
-			if (character.direction &&
-				character.animation.frame < 0 &&
-				!(dirs[character.direction] & input.HELD)
-			) {
-				/* Cancel the movement */
-				character.animation = null;
-			} else {
-				var f = character.animation.frame;
-
-				if (f < 0) {
-					/* Negative frame is used to add a delay for turning */
-					f = 0;
-				}
-
-				offset = (f + 3) * TILE_SIZE;
-				character.animation.frame++; f++;
-
-				offx = (character.animation.dx * 2 * f);
-				offy = (character.animation.dy * 2 * f);
-			}
-		}
-
-		if (!character.animation || character.animation.stuck) {
-			/* Get the current state of the various input devices */
-			var dirs	= input.getDirection(true);
-			var dir		= undefined;
-
-			/*
-				If multiple directions are being pressed then prefer the one
-				that was not animated last.
-			*/
-			character.lastDirection = character.direction;
-			if (dirs[input.N]) {
-				startMove(character, input.N,  0, -1, 48);
-			}
-			if (dirs[input.E]) {
-				startMove(character, input.E,  1,  0, 0);
-			}
-			if (dirs[input.S]) {
-				startMove(character, input.S,  0,  1, 16);
-			}
-			if (dirs[input.W]) {
-				startMove(character, input.W, -1,  0, 32);
-			}
-
-			/* Do we need to scroll the viewport?  */
-			if (character.animation) {
-				var vx = character.x - world.viewport.x + character.animation.dx;
-				var vy = character.y - world.viewport.y + character.animation.dy;
-
-				if (vx < 10 && world.viewport.x > 0) {
-					world.viewport.x--;
-					world.viewport.offset.x = -TILE_SIZE;
-				}
-				if ((world.viewport.width - vx) < 10 &&
-					world.viewport.x <= world.rows[0].length - world.viewport.width
-				) {
-					world.viewport.x++;
-					world.viewport.offset.x = TILE_SIZE;
-				}
-
-
-				if (vy < 6 && world.viewport.y > 0) {
-					world.viewport.y--;
-					world.viewport.offset.y = -TILE_SIZE;
-				}
-				if ((world.viewport.height - vy) < 6 &&
-					world.viewport.y <= world.rows.length - world.viewport.height
-				) {
-					world.viewport.y++;
-					world.viewport.offset.y = TILE_SIZE;
-				}
-			} else {
-				switch (ticks % 200) {
-					case 0:
-					case 25:
-						/* blink */
-						offset = 16;
-						break;
-
-					default:
-						/* Standing, eyes open */
-						offset = 0;
-						break;
-				}
-			}
-		}
-
-		character.offset = offset;
-		character.pos = [
-			(TILE_SIZE * (character.x - world.viewport.x)) + offx,
-			(TILE_SIZE * (character.y - world.viewport.y)) + offy
-		];
+	for (var a = 0, actor; actor = actors[a]; a++) {
+		actor.tick();
 	}
 }
 
@@ -316,7 +178,7 @@ function render(ctx)
 
 			var src = world.tiles[tile].src;
 			if (!world.images[src]) {
-				world.images[src] = loadImage(world.tiles[tile].src);
+				world.images[src] = loadImage(src);
 			}
 
 			var img		= world.images[src];
@@ -386,25 +248,12 @@ function render(ctx)
 			// TODO Draw any items that are on this spot
 		}
 
-		for (var c = 0, character; character = world.characters[c]; c++) {
-			if (!character.images) {
-				character.images = {};
-			}
+		for (var a = 0, actor; actor = actors[a]; a++) {
+			var pos = actor.renderPos();
 
-			if (character.ry !== y + world.viewport.y) {
-				continue;
+			if (pos.length === 2 && y + world.viewport.y === pos[1]) {
+				actor.render(ctx, wx, wy);
 			}
-
-			// TODO Add offset definitions for characters in world.js
-			if (!character.image) {
-				character.image = loadImage('images/' + character.name + '.png');
-			}
-
-			ctx.drawImage(character.image,
-				character.offset,
-				character.actionOffset || 0, TILE_SIZE, TILE_SIZE,
-				character.pos[0] + wx, character.pos[1] + wy,
-				TILE_SIZE, TILE_SIZE);
 		}
 	}
 }
@@ -415,7 +264,6 @@ function render(ctx)
 */
 function pointToWorldCoords(point)
 {
-	// TODO Adjust for the position of the canvas...
 	var x = (point[0] / world.scale) - world.viewport.offset.x;
 	var y = (point[1] / world.scale) - world.viewport.offset.y;
 
@@ -433,10 +281,12 @@ function pointToWorldCoords(point)
 */
 function getPlayerPosition()
 {
-	return([
-		world.characters[0].x,
-		world.characters[0].y,
-	]);
+	for (var a = 0, actor; actor = actors[a]; a++) {
+		if (actor.player) {
+			return([ actor.x, actor.y ]);
+		}
+	}
+	return([ 0, 0 ]);
 }
 
 function debug(msg)
@@ -516,6 +366,9 @@ window.addEventListener('load', function()
 		}
 	};
 
+	/* Load the actors */
+	actors.push(new Actor("blud", input));
+
 	bctx.save();
 
 	var ticksPerSec	= 30; /* animations are 30fps */
@@ -564,6 +417,7 @@ window.addEventListener('load', function()
 		bctx.save();
 		render(bctx);
 
+// TODO Keep playing with this opening intro dialog
 if (false) {
 	var size = 8;
 	var y;
