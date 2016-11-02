@@ -1,6 +1,6 @@
 var world = {
 	viewport: {
-		x:					0,
+		x:					15,
 		y:					0,
 		minwidth:			24,
 		minheight:			14,
@@ -85,17 +85,50 @@ var world = {
 			solid:			true,
 
 			/* This number is added to all offsets defined for this tile */
-			baseOffset:		[ 7, 9 ],
+			baseOffset:		[ 0, 9 ],
 
 			edges: {
-				"00000001": [ [ 2, 4 ] ],
-				"0100": [ [ 2, 5 ] ],
-				"0000": [ [ -3, 3 ] ]
+				"1000": [ [ 3, 1 ] ],
+				"0100": [ [ 4, 2 ] ],
+				"0010": [ [ 2, 4 ] ],
+				"0001": [ [ 1, 3 ] ],
+				"0000": [ [ 3, 2 ] ],
+
+				"1100": [ [ 4, 1 ] ],
+				"0110": [ [ 4, 3 ] ],
+				"0011": [ [ 1, 4 ] ],
+				"1001": [ [ 1, 3 ] ],
 			}
 		}
 	},
 
 	rows: [
+		"oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo",
+		"oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo",
+		"oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo",
+		"CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+		"CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+		"CCCCCCCCCCC       CCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+		"CCCCCCCCCCCCCCC   CCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+		"CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+		"           CCCCCCC                ooooooo                                       ",
+		"               CCC                oooooooo                                      ",
+		"                                  oooooooo                                      ",
+		"                                 oooooooo                                       ",
+		"                                oooooooo                                        ",
+		"                                oooooooo                                        ",
+		"                                oooooooo                                        ",
+		"                                 oooooooo                                       ",
+		"                                 oooooooo                                       ",
+		"                                  ooooooo                                       ",
+		"                                  ooooooo                                       ",
+		"                                  ooooooo                                       ",
+		"                                  ooooooo                                       ",
+		"                                  ooooooo                                       ",
+		"                                  ooooooo                                       ",
+	],
+
+	testrows2: [
 		"C                                                                               ",
 		"oC                                                                              ",
 		"ooC                                                                             ",
@@ -182,8 +215,8 @@ var world = {
 
 	actors: {
 		"blud": {
-			x:				5,
-			y:				1,
+			x:				29,
+			y:				9,
 			facing:			"E",
 			src:			"images/blud.png",
 
@@ -210,7 +243,7 @@ var world = {
 		},
 
 		"abby": {
-			x:				30,
+			x:				28,
 			y:				10,
 			facing:			"S",
 			src:			"images/blud.png",
