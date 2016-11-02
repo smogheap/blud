@@ -167,7 +167,7 @@ function tick(ticks)
 	}
 }
 
-function tileAt(x, y, deftile)
+function tileAt(x, y, deftile, ignoreVariants)
 {
 	var tile;
 	var row;
@@ -181,6 +181,10 @@ function tileAt(x, y, deftile)
 
 	if (!(tile = row.charAt(x)) || 1 !== tile.length) {
 		return(deftile);
+	}
+
+	if (!ignoreVariants && world.tiles[tile].variantOf) {
+		tile = world.tiles[tile].variantOf;
 	}
 
 	return(tile);
@@ -201,10 +205,22 @@ function render(ctx)
 	*/
 	for (var y = -1; y <= world.viewport.height; y++) {
 		for (var x = -1; x <= world.viewport.width; x++) {
-			var tile = tileAt(x, y, null);
+			var tile	= tileAt(x, y, null, true);
+			var vedges	= null;
 
 			if (!tile || 1 !== tile.length) {
 				continue;
+			}
+
+			/*
+				Is this a variant of another tile?
+
+				If so swap it out for that tile, but grab the edges string from
+				the variant first.
+			*/
+			if (world.tiles[tile].variantOf) {
+				vedges = world.tiles[tile].edges;
+				tile = world.tiles[tile].variantOf;
 			}
 
 			WRand.setSeed(((y + world.viewport.y) * 100) * (x + world.viewport.x));
@@ -240,7 +256,11 @@ function render(ctx)
 				];
 
 				for (var i = 0; i < edges.length; i++) {
-					key += (edges[i] !== tile) ? "1" : "0";
+					if (vedges && "1" === vedges.charAt(i)) {
+						key += "1";
+					} else {
+						key += (edges[i] !== tile) ? "1" : "0";
+					}
 				}
 
 				options =	world.tiles[tile].edges[key] ||

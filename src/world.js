@@ -80,26 +80,59 @@ var world = {
 		},
 
 		"C": {
-			name:			"cholesterol",
-			src:			"images/blud.png",
+			name:			"fat",
+			src:			"images/fat.png",
 			solid:			true,
 
 			/* This number is added to all offsets defined for this tile */
-			baseOffset:		[ 0, 9 ],
+			baseOffset:		[ 0, 0 ],
 
 			edges: {
-				"1000": [ [ 3, 1 ] ],
-				"0100": [ [ 4, 2 ] ],
-				"0010": [ [ 2, 4 ] ],
-				"0001": [ [ 1, 3 ] ],
-				"0000": [ [ 3, 2 ] ],
+				"1111": [ [ 0, 0 ] ],
+				"1011": [ [ 1, 0 ] ],
+				"1010": [ [ 2, 0 ] ],
+				"1110": [ [ 3, 0 ] ],
 
-				"1100": [ [ 4, 1 ] ],
-				"0110": [ [ 4, 3 ] ],
-				"0011": [ [ 1, 4 ] ],
-				"1001": [ [ 1, 3 ] ],
+				"1101": [ [ 0, 1 ] ],
+				"1001": [ [ 1, 1 ] ],
+				"1000": [ [ 2, 1 ] ],
+				"1100": [ [ 3, 1 ] ],
+
+				"0101": [ [ 0, 2 ] ],
+				"0001": [ [ 1, 2 ] ],
+				"0000": [ [ 2, 2 ] ],
+				"0100": [ [ 3, 2 ] ],
+
+				"0111": [ [ 0, 3 ] ],
+				"0011": [ [ 1, 3 ] ],
+				"0010": [ [ 2, 3 ] ],
+				"0110": [ [ 3, 3 ] ],
 			}
+		},
+
+		"l": {
+			name:			"fatleft",
+			solid:			true,
+
+			/*
+				This uses the tiles defined by "C" above, but with a west edge
+				always on regardless of the edges that are detected.
+			*/
+			variantOf:		"C",
+			"edges":		"0001"
+		},
+		"r": {
+			name:			"fatright",
+			solid:			true,
+
+			/*
+				This uses the tiles defined by "C" above, but with a west edge
+				always on regardless of the edges that are detected.
+			*/
+			variantOf:		"C",
+			"edges":		"0100"
 		}
+
 	},
 
 	rows: [
@@ -108,11 +141,11 @@ var world = {
 		"oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo",
 		"CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
 		"CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
-		"CCCCCCCCCCC       CCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
-		"CCCCCCCCCCCCCCC   CCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
-		"CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
-		"           CCCCCCC                ooooooo                                       ",
-		"               CCC                oooooooo                                      ",
+		"CCCCCCCCCCr       lCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+		"CCCCCCCCCCrlCCC   lCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+		"CCCCCCCCCCrlCCClCrlCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+		"           lCCClCr                ooooooo                                       ",
+		"               lCr                oooooooo                                      ",
 		"                                  oooooooo                                      ",
 		"                                 oooooooo                                       ",
 		"                                oooooooo                                        ",
