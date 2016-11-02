@@ -15,7 +15,7 @@ var firstframe		= true;
 function actorAt(x, y)
 {
 	for (var a = 0, actor; actor = actors[a]; a++) {
-		if (x === actor.x && x === actor.y) {
+		if (x === actor.x && y === actor.y) {
 			return(actor);
 		}
 
