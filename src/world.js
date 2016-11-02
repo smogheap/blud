@@ -279,20 +279,20 @@ var world = {
 			x:				28,
 			y:				10,
 			facing:			"S",
-			src:			"images/blud.png",
+			src:			"images/npc.png",
 
 			standing: {
-				N: { x: 0, y: 4 },
-				E: { x: 0, y: 4 },
-				S: { x: 0, y: 4 },
-				W: { x: 0, y: 4 }
+				N: { x: 0, y: 0 },
+				E: { x: 0, y: 0 },
+				S: { x: 0, y: 0 },
+				W: { x: 0, y: 0 }
 			},
 
 			blinking: {
-				N: { x: 0, y: 5 },
-				E: { x: 0, y: 5 },
-				S: { x: 0, y: 5 },
-				W: { x: 0, y: 5 }
+				N: { x: 0, y: 2 },
+				E: { x: 0, y: 2 },
+				S: { x: 0, y: 2 },
+				W: { x: 0, y: 2 }
 			}
 		},
 
@@ -300,20 +300,20 @@ var world = {
 			x:				9,
 			y:				10,
 			facing:			"S",
-			src:			"images/blud.png",
+			src:			"images/npc.png",
 
 			standing: {
-				N: { x: 5, y: 4 },
-				E: { x: 5, y: 4 },
-				S: { x: 5, y: 4 },
-				W: { x: 5, y: 4 }
+				N: { x: 5, y: 0 },
+				E: { x: 5, y: 0 },
+				S: { x: 5, y: 0 },
+				W: { x: 5, y: 0 }
 			},
 
 			blinking: {
-				N: { x: 5, y: 5 },
-				E: { x: 5, y: 5 },
-				S: { x: 5, y: 5 },
-				W: { x: 5, y: 5 }
+				N: { x: 5, y: 2 },
+				E: { x: 5, y: 2 },
+				S: { x: 5, y: 2 },
+				W: { x: 5, y: 2 }
 			},
 
 			dialog: [
