@@ -107,7 +107,7 @@ function tick(ticks)
 	if (input.getButton(input.START, true) & input.PRESSED) {
 		new Dialog({
 			msg:		"Paused",
-			choices:	[ "Continue", "About", "Options" ],
+			choices:	[ "Continue", "About", "Options", "kb test" ],
 
 			closecb: function(selected) {
 				switch (selected) {
@@ -150,6 +150,17 @@ function tick(ticks)
 									case 1:
 										break;
 								}
+							}
+						});
+						break;
+
+					case 3:
+						new Dialog({
+							msg:		"Who are you?",
+							kb:			true,
+
+							closecb: function(name) {
+								new Dialog("Hi " + name);
 							}
 						});
 						break;

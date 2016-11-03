@@ -14,6 +14,13 @@ var fontOffsets = {
 	pointer3:		[ 264, 8 ]
 };
 
+var kbkeys = [
+	"ABCDEFGHIJK",
+	"LMNOPQRSTUV",
+	"WXYZ-.,~`&_",
+	"0123456789 "
+];
+
 /* Build a table with offsets for each displayable character */
 for (var y = 0, line; line = fontkeys[y]; y++) {
 	for (var x = 0, key; (key = line.charAt(x)) && key.length == 1; x++) {
@@ -62,6 +69,9 @@ loadImage('images/text.png', function(img) {
 		fill	If specified the background will be filled with this color
 				instead of drawing the normal border.
 
+		kb		If true then an on screen keyboard will be displayed to allow
+				the user to enter text.
+
 		// TODO Add support for a grid of choices (useful with images)
 */
 function Dialog(options)
@@ -91,6 +101,11 @@ function Dialog(options)
 	this.selected	= 0;
 	this.icon		= options.icon;
 	this.actor		= options.actor;
+
+	this.kb			= options.kb;
+	this.upper		= 1;
+	this.value		= options.value || '';
+	this.maxLength	= options.maxLength || 20;
 
 	if (options.choices && options.choices.length > 0) {
 		this.choices = options.choices;
@@ -125,6 +140,8 @@ function Dialog(options)
 			longest = Math.max(longest, o.length);
 		}
 		longest += 1;
+	} else if (this.kb) {
+		longest = (kbkeys[0].length * 2) + 1;
 	}
 	this.width = Math.max(this.width, longest);
 
@@ -145,6 +162,9 @@ function Dialog(options)
 	this.canvas.setAttribute('width',  (this.width + 4) * fontSizeX);
 	if (this.choices) {
 		this.canvas.setAttribute('height', (this.height + 3 + this.choices.length) * fontSizeY);
+	} else if (this.kb) {
+		/* The keyboard takes up a lot of room... */
+		this.canvas.setAttribute('height', (this.height + 6 + kbkeys.length) * fontSizeY);
 	} else {
 		this.canvas.setAttribute('height', (this.height + 2) * fontSizeY);
 	}
@@ -240,6 +260,8 @@ Dialog.prototype.close = function close()
 		if (this.closecb) {
 			if (this.choices) {
 				this.closecb(this.selected);
+			} else if (this.kb) {
+				this.closecb(this.value);
 			} else {
 				this.closecb(-1);
 			}
@@ -260,13 +282,51 @@ Dialog.prototype.tick = function tick()
 		if (!this.noinput && !this.modal &&
 			input.getButton(input.BACK, true) & input.PRESSED
 		) {
+			this.value = null;
 			this.selected = -1;
 			this.close();
 		}
 
 		if (!this.noinput) {
 			if (input.getButton(input.CONTINUE, true) & input.PRESSED) {
-				if (this.drawLimit < this.msg.length) {
+				if (this.kb) {
+					if (this.value.length < this.maxLength) {
+						var keys = kbkeys.join('');
+
+						switch (this.selected - keys.length) {
+							case 0:
+								if (this.upper) {
+									this.upper = 0;
+								} else {
+									/* Sticky upper */
+									this.upper = 2;
+								}
+								break;
+
+							case 1:
+								if (this.value.length > 0) {
+									this.value = this.value.slice(this.value.length - 1);
+								}
+								break;
+
+							case 2:
+								this.close();
+								break;
+
+							default:
+								if (this.upper) {
+									this.value += keys.charAt(this.selected);
+
+									if (this.upper === 1) {
+										this.upper = 0;
+									}
+								} else {
+									this.value += keys.charAt(this.selected).toLowerCase();
+								}
+								break;
+						}
+					}
+				} else if (this.drawLimit < this.msg.length) {
 					this.drawLimit = this.msg.length;
 				} else {
 					this.close();
@@ -274,17 +334,43 @@ Dialog.prototype.tick = function tick()
 			}
 			var dirs = input.getDirection(true);
 
-			if (!this.closing && this.choices && this.drawLimit >= this.msg.length) {
-				if ((dirs[input.N] | dirs[input.E]) & input.PRESSED) {
-					this.selected--;
-					if (this.selected < 0) {
-						this.selected += this.choices.length;
+			if (!this.closing && this.drawLimit >= this.msg.length) {
+				var total;
+
+				if (this.choices) {
+					total = this.choices.length;
+
+					if ((dirs[input.N] | dirs[input.E]) & input.PRESSED) {
+						this.selected--;
+					} else if ((dirs[input.S] | dirs[input.W]) & input.PRESSED) {
+						this.selected++;
 					}
-				} else if ((dirs[input.S] | dirs[input.W]) & input.PRESSED) {
-					this.selected++;
-					if (this.selected >= this.choices.length) {
-						this.selected -= this.choices.length;
+				} else if (this.kb) {
+					/*
+						The keyboard is 4 rows of 11 (currently) and has 2 extra
+						for actions (shift, back and end).
+					*/
+					total = kbkeys.join("").length + 3;
+
+					if (dirs[input.N] & input.PRESSED) {
+						this.selected -= kbkeys[0].length;
 					}
+					if (dirs[input.E] & input.PRESSED) {
+						this.selected++;
+					}
+					if (dirs[input.S] & input.PRESSED) {
+						this.selected += kbkeys[0].length;
+					}
+					if (dirs[input.W] & input.PRESSED) {
+						this.selected--;
+					}
+				}
+
+				if (this.selected < 0) {
+					this.selected = 0;
+				}
+				if (this.selected >= total) {
+					this.selected = total - 1;
 				}
 			}
 		}
@@ -333,6 +419,43 @@ Dialog.prototype.tick = function tick()
 					fontSizeX * (2 + this.width - longest),
 					fontSizeY * (this.height + 2 + i));
 			}
+		} else if (this.kb) {
+			var i = 0;
+
+			for (var x = 0; x < this.maxLength; x++) {
+				drawText(this.value.charAt(x) || ' ', this.ctx,
+					(x + 3) * fontSizeX, (this.lineCount + 2) * fontSizeY);
+			}
+
+			for (y = 0; y < kbkeys.length; y++) {
+				for (x = 0; x < kbkeys[y].length; x++) {
+					drawText(i === this.selected ? [ 0 ] : " ", this.ctx,
+						((x * 2) + 2) * fontSizeX,
+						(fontSizeY * (y + this.lineCount + 4)));
+
+					drawText(this.upper ?
+							kbkeys[y].charAt(x) : kbkeys[y].charAt(x).toLowerCase(),
+						this.ctx,
+						((x * 2) + 3) * fontSizeX,
+						(fontSizeY * (y + this.lineCount + 4)));
+
+					i++;
+				}
+			}
+
+			var choices = [ "Shift", "Del", "End" ];
+
+			var x = this.width - (choices.join('  ').length);
+			for (var o = 0; o < choices.length; o++) {
+				drawText(i === this.selected ? [ 0 ] : " ", this.ctx,
+					(x++) * fontSizeX,
+					(fontSizeY * (kbkeys.length + this.lineCount + 4)));
+				drawText(choices[o], this.ctx,
+					(x) * fontSizeX,
+					(fontSizeY * (kbkeys.length + this.lineCount + 4)));
+				i++;
+				x += choices[o].length + 1;
+			}
 		}
 
 		return;
@@ -355,7 +478,7 @@ Dialog.prototype.tick = function tick()
 			continue;
 		}
 
-		if (1 === this.lineCount && (this.icon || this.actor) && !this.choices) {
+		if (1 === this.lineCount && (this.icon || this.actor) && !this.choices && !this.kb) {
 			oy = (this.height - 1) * fontSizeY / 2;
 		}
 
