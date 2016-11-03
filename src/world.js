@@ -254,10 +254,10 @@ var world = {
 			src:			"images/blud.png",
 
 			moving: {
-				N: { x: 3, y: 3, frames: 8, ox: 1, oy: 0 },
-				E: { x: 3, y: 0, frames: 8, ox: 1, oy: 0 },
-				S: { x: 3, y: 1, frames: 8, ox: 1, oy: 0 },
-				W: { x: 3, y: 2, frames: 8, ox: 1, oy: 0 }
+				N: { x: 3, y: 3, rate: 1, frames: 8, ox: 1, oy: 0 },
+				E: { x: 3, y: 0, rate: 1, frames: 8, ox: 1, oy: 0 },
+				S: { x: 3, y: 1, rate: 1, frames: 8, ox: 1, oy: 0 },
+				W: { x: 3, y: 2, rate: 1, frames: 8, ox: 1, oy: 0 }
 			},
 
 			standing: {
@@ -293,7 +293,19 @@ var world = {
 				E: { x: 0, y: 2 },
 				S: { x: 0, y: 2 },
 				W: { x: 0, y: 2 }
-			}
+			},
+
+			talking: {
+				N: { x: 0, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 },
+				E: { x: 0, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 },
+				S: { x: 0, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 },
+				W: { x: 0, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 }
+			},
+
+			dialog: [
+				"What's a nice cell like you don't here?",
+				"You're cute"
+			]
 		},
 
 		"saul": {
@@ -314,6 +326,13 @@ var world = {
 				E: { x: 5, y: 2 },
 				S: { x: 5, y: 2 },
 				W: { x: 5, y: 2 }
+			},
+
+			talking: {
+				N: { x: 5, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 },
+				E: { x: 5, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 },
+				S: { x: 5, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 },
+				W: { x: 5, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 }
 			},
 
 			dialog: [

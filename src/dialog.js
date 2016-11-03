@@ -53,7 +53,6 @@ loadImage('images/text.png', function(img) {
 		fill	If specified the background will be filled with this color
 				instead of drawing the normal border.
 
-		// TODO Add support for icons and/or text for choices.
 		// TODO Add support for a grid of choices (useful with images)
 */
 function Dialog(options)
@@ -82,6 +81,7 @@ function Dialog(options)
 	this.msg		= options.msg || '';
 	this.selected	= 0;
 	this.icon		= options.icon;
+	this.actor		= options.actor;
 
 	if (options.choices && options.choices.length > 0) {
 		this.choices = options.choices;
@@ -124,6 +124,11 @@ function Dialog(options)
 		this.width += this.iconWidth;
 
 		this.height = Math.max(this.height, Math.ceil(this.icon[4] / fontSizeY));
+	} else if (this.actor) {
+		this.iconWidth	= TILE_SIZE / fontSizeX;
+		this.width		+= TILE_SIZE / fontSizeX;
+
+		this.height		= Math.max(this.height, TILE_SIZE / fontSizeY);
 	} else {
 		this.iconWidth = 0;
 	}
@@ -166,13 +171,13 @@ function Dialog(options)
 
 				this.ctx.drawImage(font,
 						sx, sy, fontSizeX, fontSizeY,
-						x,  y,  fontSizeX, fontSizeY)
+						x,  y,  fontSizeX, fontSizeY);
 			}
 		}
 	}
 
 	if (this.icon) {
-		var y = 8 + ((this.height * fontSizeY) / 2) - (this.icon[4] / 2)
+		var y = 8 + ((this.height * fontSizeY) / 2) - (this.icon[4] / 2);
 
 		this.ctx.drawImage(	this.icon[0],
 							this.icon[1], this.icon[2],
@@ -235,7 +240,7 @@ Dialog.prototype.close = function close()
 		this.ticks = this.steps;
 		this.closing = true;
 	}
-}
+};
 
 Dialog.prototype.tick = function tick()
 {
@@ -262,12 +267,12 @@ Dialog.prototype.tick = function tick()
 
 			if (!this.closing && this.choices && this.drawLimit >= this.msg.length) {
 				if ((dirs[input.N] | dirs[input.E]) & input.PRESSED) {
-					this.selected--
+					this.selected--;
 					if (this.selected < 0) {
 						this.selected += this.choices.length;
 					}
 				} else if ((dirs[input.S] | dirs[input.W]) & input.PRESSED) {
-					this.selected++
+					this.selected++;
 					if (this.selected >= this.choices.length) {
 						this.selected -= this.choices.length;
 					}
@@ -341,7 +346,7 @@ Dialog.prototype.tick = function tick()
 			continue;
 		}
 
-		if (1 === this.lineCount && this.icon && !this.choices) {
+		if (1 === this.lineCount && (this.icon || this.actor) && !this.choices) {
 			oy = (this.height - 1) * fontSizeY / 2;
 		}
 
@@ -356,20 +361,35 @@ Dialog.prototype.render = function render(ctx)
 	var img = this.canvas;
 	var per	= Math.min(this.ticks / this.steps, 1);
 
-	if (img && ctx && !this.closed) {
-		var w = Math.floor(per * img.width);
-		var h = Math.floor(per * img.height);
-		var x = Math.floor(ctx.canvas.width  / 2);
-		var y = Math.floor(ctx.canvas.height / 2);
-
-		x -= Math.floor(w / 2);
-		y -= Math.floor(h / 2);
-
-		ctx.drawImage(img,
-					0, 0,
-					img.width, img.height,
-					x, y,
-					per * img.width, per * img.height);
+	if (!img || !ctx || this.closed) {
+		return;
 	}
+
+	var w = Math.floor(per * img.width);
+	var h = Math.floor(per * img.height);
+	var x = Math.floor(ctx.canvas.width  / 2);
+	var y;
+
+	x -= Math.floor(w / 2);
+
+	if (this.spoken) {
+		y = ctx.canvas.height - (img.height + 15);
+	} else {
+		y = Math.floor(ctx.canvas.height / 2);
+		y -= Math.floor(h / 2);
+	}
+
+	if (this.actor) {
+		var ay = 8 + ((this.height * fontSizeY) / 2) - (TILE_SIZE / 2);
+
+		this.ctx.fillRect(8, ay, TILE_SIZE, TILE_SIZE);
+		this.actor.renderState(this.ctx, this.actor.TALKING, "S", this.ticks, 8, ay);
+	}
+
+	ctx.drawImage(img,
+				0, 0,
+				img.width, img.height,
+				x, y,
+				per * img.width, per * img.height);
 };
 

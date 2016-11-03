@@ -27,6 +27,7 @@ Actor.prototype.BLINKING		= "blinking";
 Actor.prototype.STUCK			= "stuck";
 Actor.prototype.TURNING			= "turning";
 Actor.prototype.MOVING			= "moving";
+Actor.prototype.TALKING			= "talking";
 
 Actor.prototype.getDefinition = function getDefinition(state, direction)
 {
@@ -51,6 +52,14 @@ Actor.prototype.getDefinition = function getDefinition(state, direction)
 				/* This is the default; so it can't fall back to anything else */
 				break;
 		}
+	}
+
+	/* Fill out some sane defaults */
+	if (isNaN(def.ox)) {
+		def.ox = 0;
+	}
+	if (isNaN(def.oy)) {
+		def.oy = 0;
 	}
 
 	return(def);
@@ -93,8 +102,8 @@ Actor.prototype.talk = function talk()
 	}
 
 	new Dialog({
+		actor:		this,
 		msg:		msg,
-		icon:		[ img, def.x * TILE_SIZE, def.y * TILE_SIZE, TILE_SIZE, TILE_SIZE ],
 		spoken:		true
 	});
 };
@@ -307,28 +316,17 @@ Actor.prototype.lookingAt = function lookingAt()
 Actor.prototype.render = function render(ctx, wx, wy)
 {
 	/* Grab the definition for this character's current action and direction */
-	var def	= this.getDefinition(this.state, this.facing);
-	var src = def.src || this.definition.src;
-	var img;
-
-	if (!src) {
-		return;
-	}
+	var def		= this.getDefinition(this.state, this.facing);
 
 	/* Which tile (relative to the viewport) is the actor on */
-	var x	= this.x - world.viewport.x;
-	var y	= this.y - world.viewport.y;
+	var x		= this.x - world.viewport.x;
+	var y		= this.y - world.viewport.y;
 
 	/* Offset (relative to the tile) */
-	var ox	= wx;
-	var oy	= wy;
+	var ox		= wx;
+	var oy		= wy;
 
-	if (!(img = world.images[src])) {
-		img = world.images[src] = loadImage(src);
-	}
-
-	/* How many frames are there for this state? */
-	var frames		= 8;
+	var frames	= 1;
 
 	if (def && !isNaN(def.frames)) {
 		frames = def.frames;
@@ -355,21 +353,47 @@ Actor.prototype.render = function render(ctx, wx, wy)
 			break;
 	}
 
+	this.renderState(ctx, this.state, this.facing, this.ticks,
+							(x * TILE_SIZE) + ox, (y * TILE_SIZE) + oy);
+};
+
+Actor.prototype.renderState = function renderState(ctx, state, facing, ticks, x, y)
+{
+	/* Grab the definition for this character's current action and direction */
+	var def	= this.getDefinition(state, facing);
+	var src = def.src || this.definition.src;
+	var img;
+
+	if (!src) {
+		return;
+	}
+
+	if (!(img = world.images[src])) {
+		img = world.images[src] = loadImage(src);
+	}
+
+	/* How many frames are there for this state? */
+	var frames	= 1;
+	var rate	= 1;
+
+	if (def && !isNaN(def.frames)) {
+		frames = def.frames;
+	}
+	if (def && !isNaN(def.rate)) {
+		rate = def.rate;
+	}
+
 	/* Determine which frame to use */
 	var sx = def.x;
 	var sy = def.y;
 
-	if (!isNaN(def.frames)) {
-		// console.log("Frame", this.ticks % def.frames, this.state);
-
-		sx += (this.ticks % def.frames) * def.ox;
-		sy += (this.ticks % def.frames) * def.oy;
-	}
+	sx += (Math.floor(ticks * rate) % frames) * (def.ox || 0);
+	sy += (Math.floor(ticks * rate) % frames) * (def.oy || 0);
 
 	ctx.drawImage(img,
 			sx * TILE_SIZE, sy * TILE_SIZE,
 			TILE_SIZE, TILE_SIZE,
-			(x * TILE_SIZE) + ox, (y * TILE_SIZE) + oy,
+			x, y,
 			TILE_SIZE, TILE_SIZE);
 };
 
