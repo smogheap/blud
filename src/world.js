@@ -304,7 +304,14 @@ var world = {
 
 			dialog: [
 				"What's a nice cell like you don't here?",
-				"You're cute"
+				"You're cute",
+				[
+					"Why don't you and I get out of here",
+					"and see if we can find a nice quiet",
+					"vessel to stroll along?",
+					"",
+					"Would you like that?"
+				].join('\n')
 			]
 		},
 
