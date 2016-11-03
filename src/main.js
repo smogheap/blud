@@ -117,7 +117,12 @@ function tick(ticks)
 
 					case 1:
 						new Dialog({
-							icon: [ loadImage('images/blud.png'), 0, 0, TILE_SIZE, TILE_SIZE ],
+							actor: {
+								actor:	player,
+								action:	player.MOVING,
+								facing:	"E",
+								rate:	0.5
+							},
 							msg: [
 								"Blud is a game about a blood",
 								"cell who finds himself in",

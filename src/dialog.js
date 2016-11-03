@@ -29,6 +29,15 @@ loadImage('images/text.png', function(img) {
 	Supported options:
 		icon	An image to display to the left of the msg. This can either be
 				just an image, or an array of: [ img, x, y, w, h ]
+
+		actor	An actor (NPC, enemy, player, etc) to render instead of an icon
+
+				Alternatively this may be an option that contains:
+					actor		The actor
+					action		The action they should be doing
+					facing		Direction the actor should be facing
+					rate		Percentage (0.0 to 1.0) the animation should run
+
 		msg		The text to display
 
 		spoken	If true the text will be displayed one character at a time to
@@ -235,7 +244,7 @@ Dialog.prototype.close = function close()
 				this.closecb(-1);
 			}
 		}
-	} else {
+	} else if (!this.closing) {
 		/* Reset ticks - Count down now that we're closing */
 		this.ticks = this.steps;
 		this.closing = true;
@@ -358,38 +367,59 @@ Dialog.prototype.tick = function tick()
 
 Dialog.prototype.render = function render(ctx)
 {
-	var img = this.canvas;
-	var per	= Math.min(this.ticks / this.steps, 1);
+	var img		= this.canvas;
+	var perx	= Math.min(this.ticks / this.steps, 1);
+	var pery	= Math.min(this.ticks / this.steps, 1);
 
 	if (!img || !ctx || this.closed) {
 		return;
 	}
 
-	var w = Math.floor(per * img.width);
-	var h = Math.floor(per * img.height);
+	var w = Math.floor(perx * img.width);
+	var h = Math.floor(pery * img.height);
 	var x = Math.floor(ctx.canvas.width  / 2);
 	var y;
 
 	x -= Math.floor(w / 2);
 
 	if (this.spoken) {
-		y = ctx.canvas.height - (img.height + 15);
+		y = (ctx.canvas.height - 15) - h;
 	} else {
 		y = Math.floor(ctx.canvas.height / 2);
 		y -= Math.floor(h / 2);
 	}
 
 	if (this.actor) {
+		var actor;
+		var action	= null;
+		var facing	= null;
+		var rate;
+
+		if ((actor = this.actor.actor)) {
+			action	= this.actor.action;
+			facing	= this.actor.facing;
+			rate	= this.actor.rate;
+		} else {
+			actor	= this.actor;
+		}
+
+		if (isNaN(rate)) {
+			rate	= 1.0;
+		}
+
 		var ay = 8 + ((this.height * fontSizeY) / 2) - (TILE_SIZE / 2);
 
 		this.ctx.fillRect(8, ay, TILE_SIZE, TILE_SIZE);
-		this.actor.renderState(this.ctx, this.actor.TALKING, "S", this.ticks, 8, ay);
+		actor.renderState(this.ctx,
+						action || actor.TALKING,
+						facing || "E",
+						Math.floor(this.ticks * rate), 8, ay);
 	}
 
 	ctx.drawImage(img,
 				0, 0,
 				img.width, img.height,
 				x, y,
-				per * img.width, per * img.height);
+				perx * img.width, pery * img.height);
 };
 
