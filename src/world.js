@@ -275,6 +275,21 @@ var world = {
 			}
 		},
 
+		"arnold": {
+			src:			"images/split.png",
+			width:			32,
+
+			standing: {
+				S: { x: 0, y: 0 },
+			},
+			dividing: {
+				S: { x: 0, y: 0, rate: 1, frames: 18, ox: 1, oy: 0, repeat: false },
+			},
+			split: {
+				S: { x: 17, y: 0 },
+			},
+		},
+
 		"abby": {
 			x:				28,
 			y:				10,
@@ -282,24 +297,15 @@ var world = {
 			src:			"images/npc.png",
 
 			standing: {
-				N: { x: 0, y: 0 },
-				E: { x: 0, y: 0 },
-				S: { x: 0, y: 0 },
-				W: { x: 0, y: 0 }
+				S: { x: 0, y: 0 }
 			},
 
 			blinking: {
-				N: { x: 0, y: 2 },
-				E: { x: 0, y: 2 },
-				S: { x: 0, y: 2 },
-				W: { x: 0, y: 2 }
+				S: { x: 0, y: 2 }
 			},
 
 			talking: {
-				N: { x: 0, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 },
-				E: { x: 0, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 },
-				S: { x: 0, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 },
-				W: { x: 0, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 }
+				S: { x: 0, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 }
 			},
 
 			dialog: [
@@ -322,24 +328,15 @@ var world = {
 			src:			"images/npc.png",
 
 			standing: {
-				N: { x: 5, y: 0 },
-				E: { x: 5, y: 0 },
-				S: { x: 5, y: 0 },
-				W: { x: 5, y: 0 }
+				S: { x: 5, y: 0 }
 			},
 
 			blinking: {
-				N: { x: 5, y: 2 },
-				E: { x: 5, y: 2 },
-				S: { x: 5, y: 2 },
-				W: { x: 5, y: 2 }
+				S: { x: 5, y: 2 }
 			},
 
 			talking: {
-				N: { x: 5, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 },
-				E: { x: 5, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 },
-				S: { x: 5, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 },
-				W: { x: 5, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 }
+				S: { x: 5, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 }
 			},
 
 			dialog: [

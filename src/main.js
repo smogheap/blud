@@ -155,45 +155,69 @@ function tick(ticks)
 						break;
 
 					case 3: /* New Game */
+						var arnold		= new Actor("arnold");
+
+						arnold.state	= "standing";
+
 						new Dialog([
-							[
+							{ actor: arnold, msg: [
 								"Once upon a time there was a little",
 								"blood cell named Blud, but everyone",
 								"called him Arnold."
-							].join('\n'),
-							[
+							].join('\n')},
+
+							{ actor: arnold, msg: [
 								"Arnold was,",
 								"   to be blunt,",
 								"      a bit of a dick."
-							].join('\n'),
-							[
+							].join('\n')},
+
+							{ actor: arnold, msg: [
 								"Luckily this story isn't about Arnold."
-							].join('\n'),
-							[
-								"One day, Arnold divided, as cells",
-								"do and a new cell was born. The new",
-								"cell was named Blud as well, but",
-								"everyone called them...",
-							].join('\n'),
+							].join('\n')},
+
+							{
+								actor: {
+									actor:		arnold,
+									action:		"dividing",
+									delay:		20,
+									rate:		0.5
+								},
+								msg: [
+									"One day, Arnold divided, as cells",
+									"do and a new cell was born. The new",
+									"cell was named Blud as well, but",
+									"everyone called them...",
+								].join('\n')
+							},
+
 							{
 								msg: [
 									"Umm...",
 									"Help me out here...",
 									"What did they call them?"
 								].join('\n'),
+								actor: player,
 								kb: true,
 								closecb: function(name) {
 									if (!name) {
 										name = "Sue";
 									}
 									new Dialog([
-										[
-											"The new cell was named Blud and",
-											"everyone called them " + name + "."
-										].join('\n'),
-										[
-											"This is a story about " + name + "."
-										].join('\n'),
+										{
+											actor: player,
+											msg: [
+												"The new cell was named Blud and",
+												"everyone called them " + name + "."
+											].join('\n')
+										},
+
+										{
+											actor: player,
+											msg: [
+												"This is a story about " + name + "."
+											].join('\n')
+										},
 									]);
 								}
 							}

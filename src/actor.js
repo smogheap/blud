@@ -12,6 +12,9 @@ function Actor(id, controls)
 	this.state		= this.STANDING;
 	this.definition	= world.actors[id];
 
+	this.width		= this.definition.width  || TILE_SIZE;
+	this.height		= this.definition.height || TILE_SIZE;
+
 	/* Set defaults from the definition */
 	this.x			= this.definition.x;
 	this.y			= this.definition.y;
@@ -34,7 +37,7 @@ Actor.prototype.getDefinition = function getDefinition(state, direction)
 	var def = null;
 
 	if (this.definition[state]) {
-		def = this.definition[state][direction];
+		def = this.definition[state][direction] || this.definition[state]['S'];
 	}
 
 	if (!def) {
@@ -375,6 +378,7 @@ Actor.prototype.renderState = function renderState(ctx, state, facing, ticks, x,
 	/* How many frames are there for this state? */
 	var frames	= 1;
 	var rate	= 1;
+	var frame;
 
 	if (def && !isNaN(def.frames)) {
 		frames = def.frames;
@@ -387,13 +391,18 @@ Actor.prototype.renderState = function renderState(ctx, state, facing, ticks, x,
 	var sx = def.x;
 	var sy = def.y;
 
-	sx += (Math.floor(ticks * rate) % frames) * (def.ox || 0);
-	sy += (Math.floor(ticks * rate) % frames) * (def.oy || 0);
+	frame = Math.floor(ticks * rate);
+	if (def.repeat !== undefined && !def.repeat && frame >= frames) {
+		frame = frames - 1;
+	}
+
+	sx += (frame % frames) * (def.ox || 0);
+	sy += (frame % frames) * (def.oy || 0);
 
 	ctx.drawImage(img,
-			sx * TILE_SIZE, sy * TILE_SIZE,
-			TILE_SIZE, TILE_SIZE,
+			sx * this.width, sy * this.height,
+			this.width, this.height,
 			x, y,
-			TILE_SIZE, TILE_SIZE);
+			this.width, this.height);
 };
 

@@ -105,12 +105,25 @@ function Dialog(options)
 	this.msg		= options.msg || '';
 	this.selected	= 0;
 	this.icon		= options.icon;
-	this.actor		= options.actor;
-
 	this.kb			= options.kb;
 	this.upper		= 1;
 	this.value		= options.value || '';
 	this.maxLength	= options.maxLength || 20;
+
+	if (options.actor) {
+		if (options.actor.actor) {
+			this.actor = options.actor;
+		} else {
+			this.actor = {
+				actor:		options.actor,
+				facing:		"S",
+				action:		options.actor.TALKING
+			};
+		}
+
+		this.actor.width	= this.actor.width	|| this.actor.actor.width;
+		this.actor.height	= this.actor.width	|| this.actor.actor.height;
+	}
 
 	if (options.choices && options.choices.length > 0) {
 		this.choices = options.choices;
@@ -161,10 +174,10 @@ function Dialog(options)
 
 		this.height = Math.max(this.height, Math.ceil(this.icon[4] / fontSizeY));
 	} else if (this.actor) {
-		this.iconWidth	= TILE_SIZE / fontSizeX;
-		this.width		+= TILE_SIZE / fontSizeX;
+		this.iconWidth	= this.actor.width / fontSizeX;
+		this.width		+= this.iconWidth;
 
-		this.height		= Math.max(this.height, TILE_SIZE / fontSizeY);
+		this.height		= Math.max(this.height, this.actor.height / fontSizeY);
 	} else {
 		this.iconWidth = 0;
 	}
@@ -610,30 +623,27 @@ Dialog.prototype.render = function render(ctx)
 	}
 
 	if (this.actor) {
-		var actor;
-		var action	= null;
-		var facing	= null;
-		var rate;
-
-		if ((actor = this.actor.actor)) {
-			action	= this.actor.action;
-			facing	= this.actor.facing;
-			rate	= this.actor.rate;
-		} else {
-			actor	= this.actor;
-		}
+		var rate	= this.actor.rate;
+		var delay	= this.actor.delay || 0;
+		var ticks;
 
 		if (isNaN(rate)) {
 			rate	= 1.0;
 		}
 
-		var ay = 8 + ((this.height * fontSizeY) / 2) - (TILE_SIZE / 2);
+		ticks = Math.floor(this.ticks * rate);
+		ticks -= delay;
 
-		this.ctx.fillRect(8, ay, TILE_SIZE, TILE_SIZE);
-		actor.renderState(this.ctx,
-						action || actor.TALKING,
-						facing || "E",
-						Math.floor(this.ticks * rate), 8, ay);
+		if (ticks < 0) {
+			ticks = 0;
+		}
+
+		var ay = 8 + ((this.height * fontSizeY) / 2) - (this.actor.actor.height / 2);
+
+		this.ctx.fillRect(8, ay, this.actor.actor.width, this.actor.actor.height);
+		this.actor.actor.renderState(this.ctx,
+						this.actor.action, this.actor.facing,
+						ticks, 8, ay);
 	}
 
 	ctx.drawImage(img,
