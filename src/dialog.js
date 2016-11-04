@@ -404,9 +404,28 @@ Dialog.prototype.tick = function tick()
 						The keyboard is 4 rows of 11 (currently) and has 2 extra
 						for actions (shift, back and end).
 					*/
-					total = kbkeys.join("").length + 3;
+					var kblen	= kbkeys.join("").length;
+
+					/* There are currently 3 buttons (Shift, Del, End) */
+					total = kblen + 3;
 
 					if (dirs[input.N] & input.PRESSED) {
+						if (this.selected >= kblen) {
+							var i = this.selected - kblen;
+
+							/* Try to line up with the key above */
+							switch (i) {
+								case 0:
+									this.selected += 3;
+									break;
+								case 1:
+									this.selected += 6;
+									break;
+								case 2:
+									this.selected += 7;
+									break;
+							}
+						}
 						this.selected -= kbkeys[0].length;
 					}
 					if (dirs[input.E] & input.PRESSED) {
@@ -414,6 +433,20 @@ Dialog.prototype.tick = function tick()
 					}
 					if (dirs[input.S] & input.PRESSED) {
 						this.selected += kbkeys[0].length;
+
+						/* Select the right action button... */
+						if (this.selected > kblen) {
+							var i = this.selected - kblen;
+
+							this.selected -= i;
+
+							if (i >= 6) {
+								this.selected++;
+							}
+							if (i >= 9) {
+								this.selected++;
+							}
+						}
 					}
 					if (dirs[input.W] & input.PRESSED) {
 						this.selected--;
