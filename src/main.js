@@ -107,7 +107,7 @@ function tick(ticks)
 	if (input.getButton(input.START, true) & input.PRESSED) {
 		new Dialog({
 			msg:		"Paused",
-			choices:	[ "Continue", "About", "Options", "kb test" ],
+			choices:	[ "Continue", "About", "Options", "New Game" ],
 
 			closecb: function(selected) {
 				switch (selected) {
@@ -154,19 +154,50 @@ function tick(ticks)
 						});
 						break;
 
-					case 3:
-						new Dialog({
-							msg:		"Who are you?",
-							kb:			true,
-
-							closecb: function(name) {
-								if (name) {
-									new Dialog("Hi " + name);
-								} else {
-									new Dialog("Fine, don't tell me who you are. Ass.");
+					case 3: /* New Game */
+						new Dialog([
+							[
+								"Once upon a time there was a little",
+								"blood cell named Blud, but everyone",
+								"called him Arnold."
+							].join('\n'),
+							[
+								"Arnold was,",
+								"   to be blunt,",
+								"      a bit of a dick."
+							].join('\n'),
+							[
+								"Luckily this story isn't about Arnold."
+							].join('\n'),
+							[
+								"One day, Arnold divided, as cells",
+								"do and a new cell was born. The new",
+								"cell was named Blud as well, but",
+								"everyone called them...",
+							].join('\n'),
+							{
+								msg: [
+									"Umm...",
+									"Help me out here...",
+									"What did they call them?"
+								].join('\n'),
+								kb: true,
+								closecb: function(name) {
+									if (!name) {
+										name = "Sue";
+									}
+									new Dialog([
+										[
+											"The new cell was named Blud and",
+											"everyone called them " + name + "."
+										].join('\n'),
+										[
+											"This is a story about " + name + "."
+										].join('\n'),
+									]);
 								}
 							}
-						});
+						]);
 						break;
 				}
 			}

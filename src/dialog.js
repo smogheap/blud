@@ -76,8 +76,13 @@ loadImage('images/text.png', function(img) {
 */
 function Dialog(options)
 {
+	if (Array.isArray(options)) {
+		this.next = options;
+		options = this.next.shift();
+	}
+
 	if ("string" === typeof options) {
-		options = { msg: options };
+		options = { msg: options, spoken: true };
 	}
 
 	/*
@@ -264,6 +269,11 @@ Dialog.prototype.close = function close()
 
 		/* Clear the input kbhandler */
 		input.kbhandler = null;
+
+		if (this.next && this.next.length) {
+			/* Open the next dialog */
+			new Dialog(this.next);
+		}
 
 		if (this.closecb) {
 			if (this.choices) {
