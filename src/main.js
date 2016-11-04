@@ -139,24 +139,28 @@ function switchArea(x, y)
 	if (name) {
 		loadArea(name);
 
+		/*
+			New player position assumes there is one row or column of identical
+			tiles shared by the new area and the old.
+		*/
 		if (oy < 0) {
 			/* Move player to bottom of new area */
-			player.y = world.rows.length - 1;
+			player.y = world.rows.length - 2;
 
 			world.viewport.y = world.rows.length - world.viewport.height;
 		} else if (oy > 0) {
 			/* Move player to top of new area */
-			player.y = 0;
+			player.y = 1;
 			world.viewport.y = 0;
 		}
 
 		if (ox < 0) {
 			/* Move player to right edge of new area */
-			player.x = world.rows[0].length - 1;
+			player.x = world.rows[0].length - 2;
 			world.viewport.x = world.rows[0].length - world.viewport.width;
 		} else if (ox > 0) {
 			/* Move player to left edge of new area */
-			player.x = 0;
+			player.x = 1;
 			world.viewport.x = 0;
 		}
 
