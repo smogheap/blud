@@ -132,6 +132,11 @@ function Dialog(options)
 
 	disableSmoothing(this.ctx);
 
+	if (this.kb) {
+		/* Eat keyboard events while the keyboard is displayed */
+		input.kbhandler = this.handleKBEvent.bind(this);
+	}
+
 	/* Pad box to fit the largest option */
 	var longest = 0;
 
@@ -257,6 +262,9 @@ Dialog.prototype.close = function close()
 		this.closed = true;
 		dialog = null;
 
+		/* Clear the input kbhandler */
+		input.kbhandler = null;
+
 		if (this.closecb) {
 			if (this.choices) {
 				this.closecb(this.selected);
@@ -271,6 +279,56 @@ Dialog.prototype.close = function close()
 		this.ticks = this.steps;
 		this.closing = true;
 	}
+};
+
+Dialog.prototype.handleKBEvent = function handleKBEvent(name, key, upper)
+{
+	name = name.replace(/^Key/, '');
+	console.log(name, key);
+
+	switch (name.toLowerCase()) {
+/*
+		case "enter":
+			this.close();
+			break;
+*/
+
+		case "backspace":
+			if (this.value.length > 0) {
+				this.value = this.value.slice(0, this.value.length - 1);
+			}
+			break;
+
+		case "escape":
+			this.value = null;
+			this.selected = -1;
+			this.close();
+			break;
+
+		default:
+			if (!key) {
+				/* Support older browsers as much as possible */
+				key = name;
+			}
+
+			if (-1 != kbkeys.join('').indexOf(key.toUpperCase()) &&
+					this.value.length < this.maxLength
+			) {
+				if (upper) {
+					this.value += key.toUpperCase();
+				} else {
+					this.value += key.toLowerCase();
+				}
+
+				/* Move selector to "End" so that enter will finish */
+				this.selected = kbkeys.join("").length + 3;
+			} else {
+				return(false);
+			}
+			break;
+	}
+
+	return(true);
 };
 
 Dialog.prototype.tick = function tick()
@@ -305,7 +363,7 @@ Dialog.prototype.tick = function tick()
 
 							case 1:
 								if (this.value.length > 0) {
-									this.value = this.value.slice(this.value.length - 1);
+									this.value = this.value.slice(0, this.value.length - 1);
 								}
 								break;
 

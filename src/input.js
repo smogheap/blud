@@ -165,7 +165,15 @@ function InputHandler(canvas)
 	window.addEventListener('keydown', function(e)
 	{
 		if (!e.altKey && !e.ctrlKey) {
-			this.devices.kb[e.code.toLowerCase()] = this.PRESSED | this.HELD;
+			if (this.kbhandler && this.kbhandler(e.code, e.key, e.shiftKey)) {
+				/*
+					The current registered handler ate the keypress, so don't
+					bother setting that state. We still track held though.
+				*/
+				this.devices.kb[e.code.toLowerCase()] = this.HELD;
+			} else {
+				this.devices.kb[e.code.toLowerCase()] = this.PRESSED | this.HELD;
+			}
 			e.preventDefault();
 		}
 	}.bind(this));
