@@ -287,11 +287,7 @@ Dialog.prototype.handleKBEvent = function handleKBEvent(name, key, upper)
 	console.log(name, key);
 
 	switch (name.toLowerCase()) {
-/*
-		case "enter":
-			this.close();
-			break;
-*/
+		/* Ignore enter; The arrows and enter can still be used */
 
 		case "backspace":
 			if (this.value.length > 0) {

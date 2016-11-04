@@ -160,7 +160,11 @@ function tick(ticks)
 							kb:			true,
 
 							closecb: function(name) {
-								new Dialog("Hi " + name);
+								if (name) {
+									new Dialog("Hi " + name);
+								} else {
+									new Dialog("Fine, don't tell me who you are. Ass.");
+								}
 							}
 						});
 						break;
