@@ -20,6 +20,9 @@ function Actor(id, controls)
 	this.y			= this.definition.y;
 	this.facing		= this.definition.facing;
 
+	this.area		= this.definition.area;
+	this.visible	= this.area && this.area === world.area;
+
 	if (id === "blud") {
 		this.player	= true;
 	}
@@ -161,6 +164,11 @@ Actor.prototype.tick = function tick()
 				if (newpos) {
 					this.x = newpos[0];
 					this.y = newpos[1];
+
+					/* Did that movement take us to a different area? */
+					if (this.player) {
+						switchArea(this.x, this.y);
+					}
 				}
 
 				this.setState(this.STANDING);

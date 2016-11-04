@@ -65,6 +65,8 @@ function scrollViewport(x, y, frames)
 	var vx = x - world.viewport.x;
 	var vy = y - world.viewport.y;
 
+	frames = frames || 1;
+
 	if (vx < marginX && world.viewport.x > 0) {
 		world.viewport.x--;
 		world.viewport.offset.x = -TILE_SIZE;
@@ -90,6 +92,97 @@ function scrollViewport(x, y, frames)
 	}
 
 	world.viewport.offset.steps = TILE_SIZE / frames;
+}
+
+/*
+	Determine which area the specified coords are linked to and then switch to
+	that area if one is found.
+*/
+function switchArea(x, y)
+{
+	var ox = 0;
+	var oy = 0;
+	var name	= null;
+
+	// TODO Look through list of spots that are configured as doors to another
+	//		area...
+
+	if (y == 0) {
+		/* Top edge of area */
+		oy = -1;
+	} else if (y == world.rows.length - 1) {
+		/* Bottom edge of area */
+		oy = 1;
+	}
+
+	if (x == 0) {
+		/* Left edge of area */
+		ox = -1;
+	} else if (x == world.rows[0].length - 1) {
+		/* Right edge of area */
+		ox = 1;
+	}
+
+	for (var y = 0; y < world.layout.length; y++) {
+		for (var x = 0; x < world.layout[y].length; x++) {
+			if (world.layout[y][x] === world.area) {
+				if (world.layout[y + oy] &&
+					world.layout[y + oy][x + ox]
+				) {
+					name = world.layout[y + oy][x + ox];
+				}
+				break;
+			}
+		}
+	}
+
+	if (name) {
+		loadArea(name);
+
+		if (oy < 0) {
+			/* Move player to bottom of new area */
+			player.y = world.rows.length - 1;
+
+			world.viewport.y = world.rows.length - world.viewport.height;
+		} else if (oy > 0) {
+			/* Move player to top of new area */
+			player.y = 0;
+			world.viewport.y = 0;
+		}
+
+		if (ox < 0) {
+			/* Move player to right edge of new area */
+			player.x = world.rows[0].length - 1;
+			world.viewport.x = world.rows[0].length - world.viewport.width;
+		} else if (ox > 0) {
+			/* Move player to left edge of new area */
+			player.x = 0;
+			world.viewport.x = 0;
+		}
+
+		if (world.viewport.x < 0) {
+			world.viewport.x = 0;
+		}
+		if (world.viewport.y < 0) {
+			world.viewport.y = 0;
+		}
+		scrollViewport(player.x, player.y);
+	}
+}
+
+function loadArea(name)
+{
+	// TODO Slide the new area in...
+	world.area = name;
+	world.rows = world.areas[name];
+
+	for (var a = 0, actor; actor = actors[a]; a++) {
+		if (actor.player || (actor.area && actor.area === name)) {
+			actor.visible = true;
+		} else {
+			actor.visible = false;
+		}
+	}
 }
 
 function tick(ticks)
@@ -238,7 +331,9 @@ function tick(ticks)
 	}
 
 	for (var a = 0, actor; actor = actors[a]; a++) {
-		actor.tick();
+		if (actor.visible) {
+			actor.tick();
+		}
 	}
 }
 
@@ -377,6 +472,10 @@ function render(ctx)
 		}
 
 		for (var a = 0, actor; actor = actors[a]; a++) {
+			if (!actor.visible) {
+				continue;
+			}
+
 			var pos = actor.renderPos();
 
 			if (pos.length === 2 && y + world.viewport.y === pos[1]) {
@@ -476,6 +575,9 @@ window.addEventListener('load', function()
 	var frametime	= 0;
 	var ticks		= 0;
 
+	/* Load the town center */
+	loadArea("towncenter");
+
 	var doAnimationFrame = function doAnimationFrame(time)
 	{
 		requestAnimationFrame(doAnimationFrame);
@@ -515,23 +617,6 @@ window.addEventListener('load', function()
 
 		bctx.save();
 		render(bctx);
-
-// TODO Keep playing with this opening intro dialog
-if (false) {
-	var size = 8;
-	var y;
-
-	drawText("BLUD", bctx,
-			(buffer.width  / 2) - (size * 8 * 2),
-			y = ((buffer.height / 3) - (size * 8)),
-			size, true);
-	y += size * 8;
-
-	size = 2;
-	drawText("A tiny game.", bctx,
-			(buffer.width  / 2) - (size * 8 * 6),
-			y + (size * 8), size, true);
-}
 
 		if (dialog && !dialog.closed) {
 			dialog.render(bctx);
