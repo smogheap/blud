@@ -62,8 +62,6 @@ function scrollViewport(x, y, frames)
 	var vx = x - world.viewport.x;
 	var vy = y - world.viewport.y;
 
-	frames = frames || 1;
-
 	if (vx < marginX && world.viewport.x > 0) {
 		world.viewport.x--;
 		world.viewport.offset.x = -TILE_SIZE;
@@ -88,7 +86,7 @@ function scrollViewport(x, y, frames)
 		world.viewport.offset.y = TILE_SIZE;
 	}
 
-	world.viewport.offset.steps = TILE_SIZE / frames;
+	world.viewport.offset.steps = Math.floor(TILE_SIZE / (frames || 1));
 }
 
 function findNearbyArea(ox, oy)
