@@ -651,7 +651,7 @@ window.addEventListener('load', function()
 
 	bctx.save();
 
-	var ticksPerSec	= 30; /* animations are 30fps */
+	var ticksPerSec	= 60;
 	var tickWait	= Math.floor(1000 / ticksPerSec);
 	var lastFrame	= 0;
 	var frametime	= 0;

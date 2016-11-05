@@ -258,10 +258,10 @@ var world = {
 			src:			"images/blud.png",
 
 			moving: {
-				N: { x: 3, y: 3, rate: 1, frames: 8, ox: 1, oy: 0 },
-				E: { x: 3, y: 0, rate: 1, frames: 8, ox: 1, oy: 0 },
-				S: { x: 3, y: 1, rate: 1, frames: 8, ox: 1, oy: 0 },
-				W: { x: 3, y: 2, rate: 1, frames: 8, ox: 1, oy: 0 }
+				N: { x: 3, y: 3, rate: 0.5, frames: 8, ox: 1, oy: 0 },
+				E: { x: 3, y: 0, rate: 0.5, frames: 8, ox: 1, oy: 0 },
+				S: { x: 3, y: 1, rate: 0.5, frames: 8, ox: 1, oy: 0 },
+				W: { x: 3, y: 2, rate: 0.5, frames: 8, ox: 1, oy: 0 }
 			},
 
 			standing: {

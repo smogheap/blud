@@ -131,10 +131,15 @@ Actor.prototype.tick = function tick()
 	switch (this.state) {
 		case this.STUCK:
 		case this.MOVING:
-			var frames		= 8;
+			var frames	= 8;
+			var rate	= 1;
 
 			if (def && !isNaN(def.frames)) {
 				frames = def.frames;
+			}
+
+			if (def && !isNaN(def.rate)) {
+				rate = def.rate;
 			}
 
 			/* Calculate the destination coordinates */
@@ -144,11 +149,11 @@ Actor.prototype.tick = function tick()
 				newpos = this.lookingAt();
 
 				if (this.player && 1 === this.ticks) {
-					scrollViewport(newpos[0], newpos[1], frames);
+					scrollViewport(newpos[0], newpos[1], frames / rate);
 				}
 			}
 
-			if (this.ticks <= frames) {
+			if (Math.floor(this.ticks * rate) <= frames) {
 				if (orgstate !== this.STUCK) {
 					/* Animation still in progress */
 					break;
@@ -338,9 +343,14 @@ Actor.prototype.render = function render(ctx, wx, wy)
 	var oy		= wy;
 
 	var frames	= 1;
+	var rate	= 1;
 
 	if (def && !isNaN(def.frames)) {
 		frames = def.frames;
+	}
+
+	if (def && !isNaN(def.rate)) {
+		rate = def.rate;
 	}
 
 	switch (this.state) {
@@ -352,10 +362,10 @@ Actor.prototype.render = function render(ctx, wx, wy)
 			var steps = TILE_SIZE / frames;
 
 			switch (this.facing) {
-				case 'N': oy += -this.ticks * steps; break;
-				case 'E': ox +=  this.ticks * steps; break;
-				case 'S': oy +=  this.ticks * steps; break;
-				case 'W': ox += -this.ticks * steps; break;
+				case 'N': oy -= Math.floor(this.ticks * steps * rate); break;
+				case 'E': ox += Math.floor(this.ticks * steps * rate); break;
+				case 'S': oy += Math.floor(this.ticks * steps * rate); break;
+				case 'W': ox -= Math.floor(this.ticks * steps * rate); break;
 			}
 			break;
 
