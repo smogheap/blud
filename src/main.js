@@ -48,12 +48,9 @@ function canMove(actor, direction)
 		return(false);
 	}
 
-	try {
-		tile = world.rows[y].charAt(x);
-		if (!tile || 1 !== tile.length) {
-			return(false);
-		}
-	} catch (e) {
+	tile = tileAt(x, y);
+
+	if (!tile || 1 !== tile.length || !world.tiles[tile]) {
 		return(false);
 	}
 
@@ -72,8 +69,12 @@ function scrollViewport(x, y, frames)
 		world.viewport.offset.x = -TILE_SIZE;
 	}
 
+	/*
+		world.rows has a 1 tile border all the way arround, so subtract 2 from
+		the length in either dimension to get the actual size.
+	*/
 	if ((world.viewport.width - vx) < marginX &&
-		world.viewport.x <= world.rows[0].length - world.viewport.width
+		world.viewport.x <= (world.rows[0].length - 3) - world.viewport.width
 	) {
 		world.viewport.x++;
 		world.viewport.offset.x = TILE_SIZE;
@@ -85,7 +86,7 @@ function scrollViewport(x, y, frames)
 	}
 
 	if ((world.viewport.height - vy) < marginY &&
-		world.viewport.y <= world.rows.length - world.viewport.height
+		world.viewport.y <= (world.rows.length - 3) - world.viewport.height
 	) {
 		world.viewport.y++;
 		world.viewport.offset.y = TILE_SIZE;
@@ -94,34 +95,9 @@ function scrollViewport(x, y, frames)
 	world.viewport.offset.steps = TILE_SIZE / frames;
 }
 
-/*
-	Determine which area the specified coords are linked to and then switch to
-	that area if one is found.
-*/
-function switchArea(x, y)
+function findNearbyArea(ox, oy)
 {
-	var ox = 0;
-	var oy = 0;
 	var name	= null;
-
-	// TODO Look through list of spots that are configured as doors to another
-	//		area...
-
-	if (y == 0) {
-		/* Top edge of area */
-		oy = -1;
-	} else if (y == world.rows.length - 1) {
-		/* Bottom edge of area */
-		oy = 1;
-	}
-
-	if (x == 0) {
-		/* Left edge of area */
-		ox = -1;
-	} else if (x == world.rows[0].length - 1) {
-		/* Right edge of area */
-		ox = 1;
-	}
 
 	for (var y = 0; y < world.layout.length; y++) {
 		for (var x = 0; x < world.layout[y].length; x++) {
@@ -136,49 +112,136 @@ function switchArea(x, y)
 		}
 	}
 
-	if (name) {
-		loadArea(name);
+	return(name);
+}
 
-		/*
-			New player position assumes there is one row or column of identical
-			tiles shared by the new area and the old.
-		*/
-		if (oy < 0) {
-			/* Move player to bottom of new area */
-			player.y = world.rows.length - 2;
+/*
+	Determine which area the specified coords are linked to and then switch to
+	that area if one is found.
 
-			world.viewport.y = world.rows.length - world.viewport.height;
-		} else if (oy > 0) {
-			/* Move player to top of new area */
-			player.y = 1;
-			world.viewport.y = 0;
-		}
+	Keep in mind that world.rows includes a 1 tile border all the way arround
+	from the edges of the surrounding areas. Stepping onto that border means the
+	player is in the new area.
 
-		if (ox < 0) {
-			/* Move player to right edge of new area */
-			player.x = world.rows[0].length - 2;
-			world.viewport.x = world.rows[0].length - world.viewport.width;
-		} else if (ox > 0) {
-			/* Move player to left edge of new area */
-			player.x = 1;
-			world.viewport.x = 0;
-		}
+	The player coords are relative to this area though, not the border, so the
+	top left corner is actually -1, -1.
+*/
+function switchArea(x, y)
+{
+	var ox = 0;
+	var oy = 0;
 
-		if (world.viewport.x < 0) {
-			world.viewport.x = 0;
-		}
-		if (world.viewport.y < 0) {
-			world.viewport.y = 0;
-		}
-		scrollViewport(player.x, player.y);
+	if (y < 0) {
+		/* Top edge of area */
+		oy = -1;
+	} else if (y >= world.rows.length - 2) {
+		/* Bottom edge of area */
+		oy = 1;
 	}
+
+	if (x < 0) {
+		/* Left edge of area */
+		ox = -1;
+	} else if (x >= world.rows[0].length - 2) {
+		/* Right edge of area */
+		ox = 1;
+	}
+
+	if (0 === ox && 0 === oy) {
+		return;
+	}
+
+	var name = findNearbyArea(ox, oy);
+
+	if (!name) {
+		return;
+	}
+
+	loadArea(name);
+
+	/*
+		New player position assumes there is one row or column of identical
+		tiles shared by the new area and the old.
+	*/
+	if (oy < 0) {
+		/* Move player to bottom of new area */
+		player.y = world.rows.length - 3;
+
+		world.viewport.y = world.rows.length - world.viewport.height;
+	} else if (oy > 0) {
+		/* Move player to top of new area */
+		player.y = 0;
+		world.viewport.y = 0;
+	}
+
+	if (ox < 0) {
+		/* Move player to right edge of new area */
+		player.x = world.rows[0].length - 3;
+		world.viewport.x = world.rows[0].length - world.viewport.width;
+	} else if (ox > 0) {
+		/* Move player to left edge of new area */
+		player.x = 0;
+		world.viewport.x = 0;
+	}
+
+	if (world.viewport.x < 0) {
+		world.viewport.x = 0;
+	}
+	if (world.viewport.y < 0) {
+		world.viewport.y = 0;
+	}
+	scrollViewport(player.x, player.y);
 }
 
 function loadArea(name)
 {
-	// TODO Slide the new area in...
+	var rows = [];
+
 	world.area = name;
-	world.rows = world.areas[name];
+
+	var	c = world.areas[name];
+	var n = world.areas[findNearbyArea( 0, -1)];
+	var e = world.areas[findNearbyArea( 1,  0)];
+	var s = world.areas[findNearbyArea( 0,  1)];
+	var w = world.areas[findNearbyArea(-1,  0)];
+
+	/*
+		Build the rows for the current area with a border filled out from the
+		surrounding areas.
+	*/
+	if (n) {
+		rows.push("-" + n[n.length - 1] + "-");
+	} else {
+		rows.push(Array(c[0].length + 3).join("-"));
+	}
+
+	for (var y = 0; y < c.length; y++) {
+		var row = '';
+
+		if (w) {
+			row += w[y].charAt(w[y].length - 1);
+		} else {
+			row += '-';
+		}
+
+		row += c[y];
+
+		if (e) {
+			row += e[y].charAt(0);
+		} else {
+			row += '-';
+		}
+
+		rows.push(row);
+	}
+
+	if (s) {
+		rows.push("-" + s[0] + "-");
+	} else {
+		rows.push(Array(c[0].length + 3).join("-"));
+	}
+
+	world.rows = rows;
 
 	for (var a = 0, actor; actor = actors[a]; a++) {
 		if (actor.player || (actor.area && actor.area === name)) {
@@ -346,8 +409,12 @@ function tileAt(x, y, deftile, ignoreVariants)
 	var tile;
 	var row;
 
-	x += world.viewport.x;
-	y += world.viewport.y;
+	/*
+		world.rows has a border of tiles from the surrounding areas, so the
+		coords are off by one.
+	*/
+	x++;
+	y++;
 
 	if (!(row = world.rows[y])) {
 		return(deftile);
@@ -377,8 +444,8 @@ function render(ctx)
 		Render each row from the top down, so a row closer to the player can
 		draw over the row behind it.
 	*/
-	for (var y = -1; y <= world.viewport.height; y++) {
-		for (var x = -1; x <= world.viewport.width; x++) {
+	for (var y = world.viewport.y - 1; y <= world.viewport.y + world.viewport.height; y++) {
+		for (var x = world.viewport.x - 1; x <= world.viewport.x + world.viewport.width; x++) {
 			var tile	= tileAt(x, y, null, true);
 			var vedges	= null;
 
@@ -397,14 +464,15 @@ function render(ctx)
 				tile = world.tiles[tile].variantOf;
 			}
 
-			WRand.setSeed(((y + world.viewport.y) * 100) * (x + world.viewport.x));
+			WRand.setSeed((y * 100) * x);
 
 			var src = world.tiles[tile].src;
-			if (!world.images[src]) {
+
+			if (src && !world.images[src]) {
 				world.images[src] = loadImage(src);
 			}
 
-			var img		= world.images[src];
+			var img		= src ? world.images[src] : null;
 			var offsets	= null;
 			var options	= null;
 
@@ -422,11 +490,11 @@ function render(ctx)
 				*/
 				var key = "";
 				var edges =	[
-					tileAt(x, y - 1, tile), tileAt(x + 1, y, tile),
-					tileAt(x, y + 1, tile), tileAt(x - 1, y, tile),
+					tileAt(x, y - 1, tile),		tileAt(x + 1, y, tile),
+					tileAt(x, y + 1, tile),		tileAt(x - 1, y, tile),
 
-					tileAt(x - 1, y - 1, tile), tileAt(x + 1, y - 1, tile),
-					tileAt(x - 1, y + 1, tile), tileAt(x + 1, y + 1, tile)
+					tileAt(x - 1, y - 1, tile),	tileAt(x + 1, y - 1, tile),
+					tileAt(x - 1, y + 1, tile),	tileAt(x + 1, y + 1, tile)
 				];
 
 				for (var i = 0; i < edges.length; i++) {
@@ -453,8 +521,8 @@ function render(ctx)
 			} else {
 				/* Pick any tile in the image */
 				offsets = [
-					WRand() % (img.width  / TILE_SIZE),
-					WRand() % (img.height / TILE_SIZE)
+					WRand() % ((img ? img.width  : 0) / TILE_SIZE),
+					WRand() % ((img ? img.height : 0) / TILE_SIZE)
 				];
 			}
 
@@ -465,12 +533,14 @@ function render(ctx)
 				];
 			}
 
-			ctx.drawImage(img,
-					offsets[0] * TILE_SIZE, offsets[1] * TILE_SIZE,
-					TILE_SIZE, TILE_SIZE,
-					(TILE_SIZE * x) + wx,
-					(TILE_SIZE * y) + wy,
-					(TILE_SIZE), (TILE_SIZE));
+			if (img) {
+				ctx.drawImage(img,
+						offsets[0] * TILE_SIZE, offsets[1] * TILE_SIZE,
+						TILE_SIZE, TILE_SIZE,
+						(TILE_SIZE * (x - world.viewport.x)) + wx,
+						(TILE_SIZE * (y - world.viewport.y)) + wy,
+						(TILE_SIZE), (TILE_SIZE));
+			}
 
 			// TODO Draw any items that are on this spot
 		}
@@ -482,7 +552,7 @@ function render(ctx)
 
 			var pos = actor.renderPos();
 
-			if (pos.length === 2 && y + world.viewport.y === pos[1]) {
+			if (pos.length === 2 && y === pos[1]) {
 				actor.render(ctx, wx, wy);
 			}
 		}

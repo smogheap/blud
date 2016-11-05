@@ -14,6 +14,10 @@ var world = {
 	},
 
 	tiles: {
+		"-": {
+			solid:			true
+		},
+
 		" ": {
 			name:			"ground",
 			src:			"images/blud.png",
@@ -146,8 +150,8 @@ var world = {
 			"CCCCCCCCCCrlCCr   lCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
 			"CCCCCCCCCCrlCCrlCrlCCCCCCCCCCCCCCCCCooCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
 			"           lCCrlCr                ooooooo                                       ",
-			"               lCr                oooooooo                                      ",
-			"                                  oooooooo                                      ",
+			"o              lCr                oooooooo                                     o",
+			"                                                                                ",
 			"                                 oooooooo                                       ",
 			"                                oooooooo                                        ",
 			"                                oooooooo                                        ",
@@ -159,7 +163,7 @@ var world = {
 			"                                  ooooooo                                       ",
 			"                                  ooooooo                                       ",
 			"                                  ooooooo                                       ",
-			"                                  ooooooo                                       "
+			"                               o  ooooooo                                       "
 		],
 
 		"towneast": [
@@ -172,7 +176,7 @@ var world = {
 			"CCCCC                                                                           ",
 			"CCCCC                                                                           ",
 			"                                                                                ",
-			"                                                                                ",
+			"o                                                                               ",
 			"                                                                                ",
 			"                                                                                ",
 			"                                                                                ",
@@ -198,7 +202,7 @@ var world = {
 			"                                                                           CCCCC",
 			"                                                                           CCCCC",
 			"                                                                                ",
-			"                                                                                ",
+			"                                                                               o",
 			"                                                                                ",
 			"                                                                                ",
 			"                                                                                ",
@@ -215,6 +219,7 @@ var world = {
 		],
 
 		"townsouth": [
+			"                               o  ooooooo                                       ",
 			"                                  ooooooo                                       ",
 			"                                  ooooooo                                       ",
 			"                                  ooooooo                                       ",
