@@ -311,7 +311,7 @@ var world = {
 			},
 
 			talking: {
-				S: { x: 0, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 }
+				S: { x: 0, y: 0, rate: 0.1, frames: 2, ox: 0, oy: 1 }
 			},
 
 			dialog: [
@@ -344,7 +344,7 @@ var world = {
 			},
 
 			talking: {
-				S: { x: 5, y: 0, rate: 0.2, frames: 2, ox: 0, oy: 1 }
+				S: { x: 5, y: 0, rate: 0.1, frames: 2, ox: 0, oy: 1 }
 			},
 
 			dialog: [
