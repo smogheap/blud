@@ -362,6 +362,10 @@ InputHandler.prototype.getGamepads = function getGamepads()
 		gamepads = [];
 	}
 
+	if (!gamepads[0]) {
+		gamepads = [];
+	}
+
 	return(gamepads);
 };
 
@@ -373,6 +377,10 @@ InputHandler.prototype.getGamepads = function getGamepads()
 InputHandler.prototype.poll = function poll()
 {
 	var gamepads = this.getGamepads();
+
+	if (!gamepads[0]) {
+		return[];
+	}
 
 	for (var i = 0, pad; pad = gamepads[i]; i++) {
 		if (!this.devices.js[i]) {
@@ -441,7 +449,7 @@ InputHandler.prototype.loadJSBindings = function loadJSBindings(device)
 {
 	var gamepads	= this.getGamepads();
 
-	if (!gamepads.length) {
+	if (!gamepads[0]) {
 		return(false);
 	}
 
