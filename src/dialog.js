@@ -289,12 +289,10 @@ Dialog.prototype.close = function close()
 		}
 
 		if (this.closecb) {
-			if (this.choices) {
-				this.closecb(this.selected);
-			} else if (this.kb) {
+			if (this.kb) {
 				this.closecb(this.value);
 			} else {
-				this.closecb(-1);
+				this.closecb(this.selected);
 			}
 		}
 	} else if (!this.closing) {

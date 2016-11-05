@@ -29,12 +29,20 @@ function InputHandler(canvas)
 
 	this.axisThreshold	= 0.5;
 
-	/* The status of each device. The details may vary from device to device */
+	/* The status of each device. The details may vary from device to device. */
 	this.devices = {
 		js:		[],
 		kb:		{},
 		other:	{}
 	};
+
+	/* Timestamps of the last time each button was pressed. */
+	this.timestamps = {
+		js:		[],
+		kb:		{},
+		other:	{}
+	};
+
 
 	this.bindings = {
 		js: [
@@ -168,6 +176,27 @@ function InputHandler(canvas)
 		]
 	};
 
+	this.deviceBindings = {
+		"8Bitdo": [
+			{"action":"N",			"key":"axis1-"},
+			{"action":"E",			"key":"axis0+"},
+			{"action":"S",			"key":"axis1+"},
+			{"action":"W",			"key":"axis0-"},
+			{"action":"A",			"key":"button1"},
+			{"action":"continue",	"key":"button1"},
+			{"action":"B",			"key":"button0"},
+			{"action":"back",		"key":"button0"},
+			{"action":"X",			"key":"button4"},
+			{"action":"Y",			"key":"button3"},
+			{"action":"start",		"key":"button11"},
+			{"action":"continue",	"key":"button11"},
+			{"action":"pause",		"key":"button11"},
+			{"action":"select",		"key":"button10"},
+			{"action":"RB",			"key":"button7"},
+			{"action":"LB",			"key":"button6"}
+		]
+	};
+
 	window.addEventListener('keydown', function(e)
 	{
 		if (!e.altKey && !e.ctrlKey) {
@@ -179,6 +208,7 @@ function InputHandler(canvas)
 				this.devices.kb[e.code.toLowerCase()] = this.HELD;
 			} else {
 				this.devices.kb[e.code.toLowerCase()] = this.PRESSED | this.HELD;
+				this.timestamps.kb[e.code.toLowerCase()] = new Date();
 			}
 			e.preventDefault();
 		}
@@ -195,21 +225,21 @@ function InputHandler(canvas)
 	window.addEventListener("gamepadconnected", function(e)
 	{
 		console.log(e.gamepad);
-		// TODO Look for a preset or previously configured mapping for this
-		//		controller
 
-		this.remapjs("An unrecognized controller has been connected");
+		if (!this.loadJSBindings(e.gamepad.id)) {
+			this.remapjs("An unrecognized controller has been connected");
+		}
 	}.bind(this));
 	if (this.getGamepads().length > 0) {
-		// TODO Look for a preset or previously configured mapping for this
-		//		controller
-
-		this.remapjs("An unrecognized controller has been connected");
+		if (!this.loadJSBindings()) {
+			this.remapjs("An unrecognized controller has been connected");
+		}
 	}
 
 	window.onpagehide = window.onblur = function(e)
 	{
 		this.devices.other[this.PAUSE] = this.PRESSED;
+		this.timestamps.other[this.PAUSE] = new Date();
 	}.bind(this);
 
 	return(this);
@@ -314,7 +344,9 @@ InputHandler.prototype.clearPressed = function clearPressed(device)
 	var keys	= Object.keys(device);
 
 	for (var i = 0, key; key = keys[i]; i++) {
-		device[key] &= ~this.PRESSED;
+		if (!isNaN(device[key])) {
+			device[key] &= ~this.PRESSED;
+		}
 	}
 };
 
@@ -347,6 +379,9 @@ InputHandler.prototype.poll = function poll()
 			this.devices.js[i] = {};
 			this.devices.js[i].id = pad.id;
 		}
+		if (!this.timestamps.js[i]) {
+			this.timestamps.js[i] = {};
+		}
 
 		for (var a = 0; a < pad.axes.length; a++) {
 			var axis	= pad.axes[a];
@@ -366,6 +401,7 @@ InputHandler.prototype.poll = function poll()
 			if (on) {
 				if (!this.devices.js[i][key]) {
 					this.devices.js[i][key] = this.PRESSED;
+					this.timestamps.js[i][key] = new Date();
 				}
 
 				this.devices.js[i][key] |= this.HELD;
@@ -389,6 +425,7 @@ InputHandler.prototype.poll = function poll()
 			if (on) {
 				if (!this.devices.js[i][key]) {
 					this.devices.js[i][key] = this.PRESSED;
+					this.timestamps.js[i][key] = new Date();
 				}
 				this.devices.js[i][key] |= this.HELD;
 			} else {
@@ -398,6 +435,29 @@ InputHandler.prototype.poll = function poll()
 	}
 
 	// debug(JSON.stringify(this.devices.js));
+};
+
+InputHandler.prototype.loadJSBindings = function loadJSBindings(device)
+{
+	var gamepads	= this.getGamepads();
+
+	if (!gamepads.length) {
+		return(false);
+	}
+
+	if (!device) {
+		device = gamepads[0].id;
+	}
+
+	var keys = Object.keys(this.deviceBindings);
+
+	for (var i = 0, key; key = keys[i]; i++) {
+		if (-1 != device.indexOf(key)) {
+			this.bindings.js = this.deviceBindings[key];
+			return(true);
+		}
+	}
+	return(false);
 };
 
 InputHandler.prototype.remapjs = function remapjs(msg)
@@ -455,46 +515,54 @@ InputHandler.prototype.remapjs = function remapjs(msg)
 		var keys = Object.keys(todo);
 		var key;
 
+		var addToMap = function addToMap(action, key, device) {
+			/* We found a new button */
+			map.push({
+				action: action,
+				key:	key
+			});
+
+			/* Add alternate button names as well */
+			if (action === this.A || action === this.START) {
+				map.push({
+					action: this.CONTINUE,
+					key:	key
+				});
+			}
+			if (action === this.B) {
+				map.push({
+					action: this.BACK,
+					key:	key
+				});
+			}
+			if (action === this.START) {
+				map.push({
+					action: this.PAUSE,
+					key:	key
+				});
+			}
+		}.bind(this);
+
+		var current = null;
 		var readInput = function readInput() {
 			this.poll();
 
 			for (var p = 0; p < this.devices.js.length; p++) {
-				var pad		= this.devices.js[p];
-				var pkeys	= Object.keys(pad);
+				var pkeys = Object.keys(this.devices.js[p]);
 
 				for (var i = 0; i < pkeys.length; i++) {
-					if (pad[pkeys[i]] & this.PRESSED) {
-						/* We found a new button */
-						map.push({
-							action: key,
-							key:	pkeys[i],
-							device:	pad.id
-						});
+					var duration;
 
-						/* Add alternate button names as well */
-						if (key === this.A || key === this.START) {
-							map.push({
-								action: this.CONTINUE,
-								key:	pkeys[i],
-								device:	pad.id
-							});
-						}
-						if (key === this.B) {
-							map.push({
-								action: this.BACK,
-								key:	pkeys[i],
-								device:	pad.id
-							});
-						}
-						if (key === this.START) {
-							map.push({
-								action: this.PAUSE,
-								key:	pkeys[i],
-								device:	pad.id
-							});
-						}
+					if (this.devices.js[p][pkeys[i]] & this.HELD) {
+						duration = (new Date()) - this.timestamps.js[p][pkeys[i]];
+					}
 
+					if (duration > 700 && duration < 3000) {
+						this.timestamps.js[p][pkeys[i]] = -1;
+
+						addToMap(key, pkeys[i], this.devices.js[p].id);
 						nextInput();
+						return;
 					}
 				}
 			}
@@ -509,6 +577,11 @@ InputHandler.prototype.remapjs = function remapjs(msg)
 		var nextInput = function nextInput() {
 			if (!map) {
 				return;
+			}
+
+			this.poll();
+			for (var p = 0; p < this.devices.js.length; p++) {
+				this.clearPressed(this.devices.js[p]);
 			}
 
 			if (!(key = keys.shift())) {
@@ -527,7 +600,6 @@ InputHandler.prototype.remapjs = function remapjs(msg)
 					].join('\n'),
 					closecb: function(value) {
 						clearTimeout(t);
-
 						if (-1 != value && map) {
 							this.bindings.js = map;
 						} else {
@@ -550,10 +622,6 @@ InputHandler.prototype.remapjs = function remapjs(msg)
 			ctx.drawImage(img, 12 * 16, offsets[0] * 16, 16, 16, 0,  0, 16, 16);
 			ctx.drawImage(img, 13 * 16, offsets[1] * 16, 16, 16, 16, 0, 16, 16);
 
-			for (var p = 0; p < this.devices.js.length; p++) {
-				this.clearPressed(this.devices.js[p]);
-			}
-
 			dialog = new Dialog({
 				steps:	0,
 				msg: [
@@ -566,6 +634,7 @@ InputHandler.prototype.remapjs = function remapjs(msg)
 			});
 			dialog.tick();
 		}.bind(this);
+
 		nextInput.bind(this)();
 	}.bind(this));
 };
