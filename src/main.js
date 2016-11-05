@@ -445,12 +445,8 @@ function render(ctx)
 		draw over the row behind it.
 	*/
 	for (var y = world.viewport.y - 1; y <= world.viewport.y + world.viewport.height; y++) {
-		if (y >= world.height) {
-			break;
-		}
-
 		for (var x = world.viewport.x - 1; x <= world.viewport.x + world.viewport.width; x++) {
-			if (x >= world.width) {
+			if (y >= world.height || x >= world.width) {
 				break;
 			}
 
@@ -611,8 +607,8 @@ window.addEventListener('load', function()
 					break;
 				}
 			}
-			world.viewport.width	= Math.floor(w / (world.scale * TILE_SIZE)) + 1;
-			world.viewport.height	= Math.floor(h / (world.scale * TILE_SIZE)) + 1;
+			world.viewport.width	= Math.floor(w / (world.scale * TILE_SIZE));
+			world.viewport.height	= Math.floor(h / (world.scale * TILE_SIZE));
 
 			world.viewport.width	= Math.min(world.viewport.width, world.viewport.maxwidth);
 			world.viewport.height	= Math.min(world.viewport.height, world.viewport.maxheight);
