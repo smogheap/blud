@@ -15,6 +15,7 @@ function InputHandler(canvas)
 	this.SOUTH			= this.S = 'S';
 	this.WEST			= this.W = 'W';
 
+	this.PAUSE			= 'pause';
 	this.CONTINUE		= 'continue';
 	this.BACK			= 'back';
 	this.START			= 'start';
@@ -28,13 +29,11 @@ function InputHandler(canvas)
 
 	this.axisThreshold	= 0.5;
 
-	/* The status of buttons as presented to the consumer */
-	this.buttons = {};
-
 	/* The status of each device. The details may vary from device to device */
 	this.devices = {
 		js:		[],
-		kb:		{}
+		kb:		{},
+		other:	{}
 	};
 
 	this.bindings = {
@@ -92,6 +91,10 @@ function InputHandler(canvas)
 				key:		"button3"
 			},
 
+			{
+				action:		this.PAUSE,
+				key:		"button7"
+			},
 			{
 				action:		this.START,
 				key:		"button7"
@@ -156,6 +159,9 @@ function InputHandler(canvas)
 				action:		this.START,
 				key:		"escape"
 			}, {
+				action:		this.PAUSE,
+				key:		"escape"
+			}, {
 				action:		this.SELECT,
 				key:		"tab"
 			}
@@ -185,6 +191,11 @@ function InputHandler(canvas)
 			e.preventDefault();
 		}
 	}.bind(this));
+
+	window.onpagehide = window.onblur = function(e)
+	{
+		this.devices.other[this.PAUSE] = this.PRESSED;
+	}.bind(this);
 
 	return(this);
 }
@@ -241,6 +252,16 @@ InputHandler.prototype.getButton = function getButton(name, clear)
 
 	if ("string" === typeof name) {
 		name = [ name ];
+	}
+
+	for (var n = 0; n < name.length; n++) {
+		if (this.devices.other[name[n]]) {
+			btn |= this.devices.other[name[n]];
+
+			if (clear) {
+				this.devices.other[name[n]] &= ~this.PRESSED;
+			}
+		}
 	}
 
 	/* Merge results from the keyboard */
@@ -419,6 +440,13 @@ InputHandler.prototype.remapjs = function remapjs()
 						if (key === this.B) {
 							map.push({
 								action: this.BACK,
+								key:	pkeys[i],
+								device:	pad.id
+							});
+						}
+						if (key === this.START) {
+							map.push({
+								action: this.PAUSE,
 								key:	pkeys[i],
 								device:	pad.id
 							});

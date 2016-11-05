@@ -265,12 +265,18 @@ function tick(ticks)
 	}
 
 	/* Paused? */
-	if (input.getButton(input.START, true) & input.PRESSED) {
+	if (input.getButton(input.PAUSE, true) & input.PRESSED) {
 		new Dialog({
 			msg:		"Paused",
 			choices:	[ "Continue", "About", "Options", "New Game" ],
 
 			closecb: function(selected) {
+				/*
+					Clear any additional pause events that may have happened
+					while the game was paused.
+				*/
+				input.getButton(input.PAUSE, true);
+
 				switch (selected) {
 					default:
 					case 0:
