@@ -555,7 +555,7 @@ Dialog.prototype.tick = function tick()
 
 			var choices = [ "Shift", "Del", "End" ];
 
-			var x = this.width - (choices.join('  ').length);
+			var x = 8;
 			for (var o = 0; o < choices.length; o++) {
 				drawText(i === this.selected ? [ 0 ] : " ", this.ctx,
 					(x++) * fontSizeX,

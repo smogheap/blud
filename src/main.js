@@ -354,15 +354,15 @@ function tick(ticks)
 									"One day, Arnold divided, as cells",
 									"do and a new cell was born. The new",
 									"cell was named Blud as well, but",
-									"everyone called them...",
+									"everyone called it...",
 								].join('\n')
 							},
 
 							{
 								msg: [
-									"Umm...",
-									"Help me out here...",
-									"What did they call them?"
+									"Uh, Help me out here...",
+									"What did they call the",
+									"new cell?"
 								].join('\n'),
 								actor: player,
 								kb: true,
