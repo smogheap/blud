@@ -323,19 +323,19 @@ function tick(ticks)
 						arnold.state	= "standing";
 
 						new Dialog([
-							{ actor: arnold, msg: [
+							{ actor: player, msg: [
 								"Once upon a time there was a little",
 								"blood cell named Blud, but everyone",
 								"called him Arnold."
 							].join('\n')},
 
-							{ actor: arnold, msg: [
+							{ actor: player, msg: [
 								"Arnold was,",
 								"   to be blunt,",
 								"      a bit of a dick."
 							].join('\n')},
 
-							{ actor: arnold, msg: [
+							{ actor: player, msg: [
 								"Luckily this story isn't about Arnold."
 							].join('\n')},
 
@@ -344,7 +344,7 @@ function tick(ticks)
 									actor:		arnold,
 									action:		"dividing",
 									delay:		20,
-									rate:		0.5
+									rate:		0.25
 								},
 								msg: [
 									"One day, Arnold divided, as cells",

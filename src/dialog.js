@@ -505,7 +505,7 @@ Dialog.prototype.tick = function tick()
 	if (this.drawLimit < this.msg.length && this.ticks > this.steps) {
 		/* Adjust this increment to change the speed text is "spoken" */
 		// TODO Play a noise with this?
-		this.drawLimit += 2;
+		this.drawLimit += 1;
 	}
 
 	if (this.drawn >= this.drawLimit) {

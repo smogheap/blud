@@ -223,17 +223,19 @@ Actor.prototype.tick = function tick()
 				dirs = {};
 			}
 
-			switch (this.state) {
-				case this.STANDING:
-					if (0 == (WRand() % 40)) {
-						// console.log('blink');
-						this.state = this.BLINKING;
-					}
-					break;
+			if (0 == (this.ticks % 3)) {
+				switch (this.state) {
+					case this.STANDING:
+						if (0 == (WRand() % 40)) {
+							// console.log('blink');
+							this.state = this.BLINKING;
+						}
+						break;
 
-				case this.BLINKING:
-					this.state = this.STANDING;
-					break;
+					case this.BLINKING:
+						this.state = this.STANDING;
+						break;
+				}
 			}
 
 			for (var i = 0, d; (d = order.charAt(i)) && d.length > 0; i++) {
