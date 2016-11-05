@@ -187,6 +187,9 @@ function switchArea(x, y)
 		world.viewport.y = 0;
 	}
 	scrollViewport(player.x, player.y);
+
+	/* Save the direction so we can slide the screen that way */
+	world.scroll = { x: -ox, y: -oy };
 }
 
 function loadArea(name)
@@ -583,6 +586,7 @@ window.addEventListener('load', function()
 	var ctx			= canvas.getContext('2d');
 	var buffer		= document.createElement('canvas');
 	var bctx		= buffer.getContext('2d');
+	var oldarea		= null;
 
 	document.body.appendChild(canvas);
 
@@ -592,9 +596,9 @@ window.addEventListener('load', function()
 
 	var w = 0;
 	var h = 0;
-	var resizeCanvas = function()
+	var resizeCanvas = function(force)
 	{
-		if (w != window.innerWidth || h != window.innerHeight) {
+		if (force || w != window.innerWidth || h != window.innerHeight) {
 			w = window.innerWidth;
 			h = window.innerHeight;
 
@@ -652,9 +656,10 @@ window.addEventListener('load', function()
 	var lastFrame	= 0;
 	var frametime	= 0;
 	var ticks		= 0;
+	var area;
 
 	/* Load the town center */
-	loadArea("towncenter");
+	loadArea((area = "towncenter"));
 
 	var doAnimationFrame = function doAnimationFrame(time)
 	{
@@ -678,35 +683,81 @@ window.addEventListener('load', function()
 		lastFrame = time;
 
 		while (frametime >= tickWait) {
-			if (dialog && !dialog.closed) {
-				dialog.tick(ticks);
-			} else {
-				tick(ticks);
+			if (!oldarea) {
+				if (dialog && !dialog.closed) {
+					dialog.tick(ticks);
+				} else {
+					tick(ticks);
+				}
 			}
+
 			ticks++;
 			frametime -= tickWait;
 			// frametime /= 1.5;
 		}
 
-		resizeCanvas();
+		if (area != world.area) {
+			area = world.area;
 
-		/* Clear the canvas */
-		bctx.clearRect(0, 0, buffer.width, buffer.height);
+			/* Setup a slide from one area to a new one */
+			oldarea	= {
+				image:		buffer,
+				x:			0,
+				y:			0
+			};
+			buffer	= document.createElement('canvas');
+			bctx	= buffer.getContext('2d');
 
-		bctx.save();
-		render(bctx);
-
-		if (dialog && !dialog.closed) {
-			dialog.render(bctx);
+			resizeCanvas(true);
+			render(bctx);
 		}
-		firstframe = false;
-		bctx.restore();
+
+		if (!oldarea) {
+			resizeCanvas();
+
+			/* Clear the canvas */
+			bctx.clearRect(0, 0, buffer.width, buffer.height);
+
+			bctx.save();
+			render(bctx);
+
+			if (dialog && !dialog.closed) {
+				dialog.render(bctx);
+			}
+			firstframe = false;
+			bctx.restore();
+		}
 
 		/* Draw (and scale) the image to the main canvas now */
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		ctx.drawImage(buffer,
 				0, 0, buffer.width, buffer.height,
-				0, 0, buffer.width * world.scale, buffer.height * world.scale);
+
+				oldarea ? oldarea.x - (world.scroll.x * world.scale * buffer.width)  : 0,
+				oldarea ? oldarea.y - (world.scroll.y * world.scale * buffer.height) : 0,
+
+				buffer.width * world.scale, buffer.height * world.scale);
+
+		if (oldarea) {
+			ctx.drawImage(oldarea.image,
+					0, 0, buffer.width, buffer.height,
+
+					oldarea ? oldarea.x : 0,
+					oldarea ? oldarea.y : 0,
+
+					buffer.width * world.scale, buffer.height * world.scale);
+
+			var slidespeed = 16;
+			oldarea.x += slidespeed * world.scroll.x;
+			oldarea.y += slidespeed * world.scroll.y;
+
+			if (Math.abs(oldarea.x) >= (buffer.width  * world.scale) ||
+				Math.abs(oldarea.y) >= (buffer.height * world.scale)
+			) {
+				/* Done */
+				oldarea = null;
+			}
+		}
 	};
 	requestAnimationFrame(doAnimationFrame);
 });
