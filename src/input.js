@@ -192,6 +192,21 @@ function InputHandler(canvas)
 		}
 	}.bind(this));
 
+	window.addEventListener("gamepadconnected", function(e)
+	{
+		console.log(e.gamepad);
+		// TODO Look for a preset or previously configured mapping for this
+		//		controller
+
+		this.remapjs("An unrecognized controller has been connected");
+	}.bind(this));
+	if (this.getGamepads().length > 0) {
+		// TODO Look for a preset or previously configured mapping for this
+		//		controller
+
+		this.remapjs("An unrecognized controller has been connected");
+	}
+
 	window.onpagehide = window.onblur = function(e)
 	{
 		this.devices.other[this.PAUSE] = this.PRESSED;
@@ -303,12 +318,7 @@ InputHandler.prototype.clearPressed = function clearPressed(device)
 	}
 };
 
-/*
-	Some devices (gamepads with the current js API for example) require polling
-	instead of acting on events. Calling this function as frequently as possible
-	is required to avoid missing button presses on these devices.
-*/
-InputHandler.prototype.poll = function poll()
+InputHandler.prototype.getGamepads = function getGamepads()
 {
 	var gamepads;
 
@@ -319,6 +329,18 @@ InputHandler.prototype.poll = function poll()
 	} else {
 		gamepads = [];
 	}
+
+	return(gamepads);
+};
+
+/*
+	Some devices (gamepads with the current js API for example) require polling
+	instead of acting on events. Calling this function as frequently as possible
+	is required to avoid missing button presses on these devices.
+*/
+InputHandler.prototype.poll = function poll()
+{
+	var gamepads = this.getGamepads();
 
 	for (var i = 0, pad; pad = gamepads[i]; i++) {
 		if (!this.devices.js[i]) {
@@ -378,12 +400,32 @@ InputHandler.prototype.poll = function poll()
 	// debug(JSON.stringify(this.devices.js));
 };
 
-InputHandler.prototype.remapjs = function remapjs()
+InputHandler.prototype.remapjs = function remapjs(msg)
 {
+	if (msg) {
+		var d = new Dialog({
+			msg:		msg,
+			noinput:	true
+		});
+
+		setTimeout(function() {
+			d.close();
+			this.remapjs();
+		}.bind(this), 3000);
+		return;
+	}
+
+	for (var p = 0; p < this.devices.js.length; p++) {
+		this.clearPressed(this.devices.js[p]);
+	}
+
 	loadImage('images/blud.png', function(img) {
 		var map		= [];
 		var canvas	= document.createElement('canvas');
 		var ctx		= canvas.getContext('2d');
+
+		var original = this.bindings.js;
+		this.bindings.js = [];
 
 		var todo	= {};
 						/* Left image, Right Image, Name */
@@ -456,16 +498,49 @@ InputHandler.prototype.remapjs = function remapjs()
 					}
 				}
 			}
+
+			if (this.getButton(this.BACK, true) & this.PRESSED) {
+				map = null;
+				this.bindings.js = original;
+				dialog.close();
+			}
 		}.bind(this);
 
 		var nextInput = function nextInput() {
+			if (!map) {
+				return;
+			}
+
 			if (!(key = keys.shift())) {
 				// TODO Save locally and then load again at startup
-
-				// console.log(JSON.stringify(map));
+				console.log(JSON.stringify(map));
 
 				this.bindings.js = map;
-				new Dialog("Done");
+
+				var t = null;
+				var d = new Dialog({
+					msg: [
+						"Success",
+						"",
+						"Press start to save or wait",
+						"5 seconds to restart mapping"
+					].join('\n'),
+					closecb: function(value) {
+						clearTimeout(t);
+
+						if (-1 != value && map) {
+							this.bindings.js = map;
+						} else {
+							this.bindings.js = original;
+						}
+					}.bind(this)
+				});
+
+				t = setTimeout(function() {
+					d.close();
+					this.remapjs();
+				}.bind(this), 5000);
+
 				return;
 			}
 
@@ -481,14 +556,17 @@ InputHandler.prototype.remapjs = function remapjs()
 
 			dialog = new Dialog({
 				steps:	0,
-				msg:	"Press the highlighted button\non your controller",
+				msg: [
+					"Press and hold the highlighted",
+					"button on your controller."
+				].join('\n'),
 				icon:	[ canvas, 0, 0, 32, 16 ],
-				closecb: nextInput,
-				inputcb: readInput
+				closecb: nextInput.bind(this),
+				inputcb: readInput.bind(this)
 			});
 			dialog.tick();
 		}.bind(this);
-		nextInput();
+		nextInput.bind(this)();
 	}.bind(this));
 };
 
