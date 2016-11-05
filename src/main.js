@@ -69,12 +69,8 @@ function scrollViewport(x, y, frames)
 		world.viewport.offset.x = -TILE_SIZE;
 	}
 
-	/*
-		world.rows has a 1 tile border all the way arround, so subtract 2 from
-		the length in either dimension to get the actual size.
-	*/
 	if ((world.viewport.width - vx) < marginX &&
-		world.viewport.x <= (world.rows[0].length - 3) - world.viewport.width
+		world.viewport.x < world.width - world.viewport.width
 	) {
 		world.viewport.x++;
 		world.viewport.offset.x = TILE_SIZE;
@@ -86,7 +82,7 @@ function scrollViewport(x, y, frames)
 	}
 
 	if ((world.viewport.height - vy) < marginY &&
-		world.viewport.y <= (world.rows.length - 3) - world.viewport.height
+		world.viewport.y < world.height - world.viewport.height
 	) {
 		world.viewport.y++;
 		world.viewport.offset.y = TILE_SIZE;
@@ -165,9 +161,9 @@ function switchArea(x, y)
 	*/
 	if (oy < 0) {
 		/* Move player to bottom of new area */
-		player.y = world.rows.length - 3;
+		player.y = world.height - 1;
 
-		world.viewport.y = world.rows.length - world.viewport.height;
+		world.viewport.y = world.height - world.viewport.height;
 	} else if (oy > 0) {
 		/* Move player to top of new area */
 		player.y = 0;
@@ -176,8 +172,8 @@ function switchArea(x, y)
 
 	if (ox < 0) {
 		/* Move player to right edge of new area */
-		player.x = world.rows[0].length - 3;
-		world.viewport.x = world.rows[0].length - world.viewport.width;
+		player.x = world.width - 1;
+		world.viewport.x = world.width - world.viewport.width;
 	} else if (ox > 0) {
 		/* Move player to left edge of new area */
 		player.x = 0;
@@ -197,9 +193,13 @@ function loadArea(name)
 {
 	var rows = [];
 
-	world.area = name;
-
 	var	c = world.areas[name];
+
+	/* Set the name before calling findNearbyArea() */
+	world.area		= name;
+	world.width		= c[0].length;
+	world.height	= c.length;
+
 	var n = world.areas[findNearbyArea( 0, -1)];
 	var e = world.areas[findNearbyArea( 1,  0)];
 	var s = world.areas[findNearbyArea( 0,  1)];
@@ -445,7 +445,15 @@ function render(ctx)
 		draw over the row behind it.
 	*/
 	for (var y = world.viewport.y - 1; y <= world.viewport.y + world.viewport.height; y++) {
+		if (y >= world.height) {
+			break;
+		}
+
 		for (var x = world.viewport.x - 1; x <= world.viewport.x + world.viewport.width; x++) {
+			if (x >= world.width) {
+				break;
+			}
+
 			var tile	= tileAt(x, y, null, true);
 			var vedges	= null;
 
