@@ -194,6 +194,33 @@ function InputHandler(canvas)
 			{"action":"select",		"key":"button10"},
 			{"action":"RB",			"key":"button7"},
 			{"action":"LB",			"key":"button6"}
+		],
+		"X-Box 360": [
+			/* Left stick (usually) */
+			{ action: this.N,		key: "axis1-" },
+			{ action: this.E,		key: "axis0+" },
+			{ action: this.S,		key: "axis1+" },
+			{ action: this.W,		key: "axis0-" },
+
+			/* dpad (usually) */
+			{ action: this.N,		key: "axis7-" },
+			{ action: this.E,		key: "axis6+" },
+			{ action: this.S,		key: "axis7+" },
+			{ action: this.W,		key: "axis6-" },
+
+			/* Buttons */
+			{ action: this.CONTINUE,key: "button0" },
+			{ action: this.BACK,	key: "button1" },
+
+			{ action: this.A,		key: "button0" },
+			{ action: this.B,		key: "button1" },
+			{ action: this.X,		key: "button2" },
+			{ action: this.Y,		key: "button3" },
+
+			{ action: this.PAUSE,	key: "button7" },
+			{ action: this.START,	key: "button7" },
+			{ action: this.CONTINUE,key: "button7" },
+			{ action: this.SELECT,	key: "button6" }
 		]
 	};
 
