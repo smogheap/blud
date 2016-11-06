@@ -392,8 +392,6 @@ window.addEventListener('load', function()
 
 	var doAnimationFrame = function doAnimationFrame(time)
 	{
-		requestAnimationFrame(doAnimationFrame);
-
 		/*
 			Poll input devices (mainly gamepads) as frequently as possible
 			regardless of the tick rate.
@@ -401,6 +399,7 @@ window.addEventListener('load', function()
 		input.poll();
 
 		if (time - lastFrame < TILE_SIZE) {  /* 60fps max */
+			requestAnimationFrame(doAnimationFrame);
 			return;
 		}
 
@@ -487,6 +486,8 @@ window.addEventListener('load', function()
 				oldarea = null;
 			}
 		}
+
+		requestAnimationFrame(doAnimationFrame);
 	};
 
 	loadLevelData(function() {

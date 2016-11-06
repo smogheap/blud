@@ -256,9 +256,6 @@ function InputHandler(canvas)
 	{
 		console.log(e.gamepad);
 
-		/* Refresh our gamepad list */
-		this.gamepads = null;
-
 		if (!this.loadJSBindings(e.gamepad.id)) {
 			this.remapjs("An unrecognized controller has been connected");
 		}
@@ -390,10 +387,6 @@ InputHandler.prototype.getGamepads = function getGamepads()
 {
 	var gamepads;
 
-	if (this.gamepads) {
-		return(this.gamepads);
-	}
-
 	if (navigator.getGamepads) {
 		gamepads = navigator.getGamepads();
 	} else if (navigator.webkitGetGamepads) {
@@ -406,8 +399,7 @@ InputHandler.prototype.getGamepads = function getGamepads()
 		gamepads = [];
 	}
 
-	this.gamepads = gamepads;
-	return(this.gamepads);
+	return(gamepads);
 };
 
 /*
