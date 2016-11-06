@@ -1,4 +1,4 @@
-function Actor(id, controls)
+function Actor(world, id, level, controls)
 {
 	if (!id || !world.actors[id]) {
 		console.log("Could not find definition for actor:" + id);
@@ -6,6 +6,7 @@ function Actor(id, controls)
 	}
 
 	this.id			= id;
+	this.level		= level;
 
 	this.ticks		= 0;
 	this.controls	= controls;
@@ -20,11 +21,16 @@ function Actor(id, controls)
 	this.y			= this.definition.y;
 	this.facing		= this.definition.facing;
 
+	this.renderOff	= {
+		x:			0,
+		y:			0
+	};
+
 	this.area		= this.definition.area;
-	this.visible	= this.area && this.area === world.area;
 
 	if (id === "blud") {
 		this.player	= true;
+		this.level.scrollTo(true, this.x * TILE_SIZE, this.y * TILE_SIZE);
 	}
 };
 
@@ -103,8 +109,8 @@ Actor.prototype.talk = function talk()
 	var src = def.src || this.definition.src;
 	var img;
 
-	if (!(img = world.images[src])) {
-		img = world.images[src] = loadImage(src);
+	if (!(img = this.level.images[src])) {
+		img = this.level.images[src] = loadImage(src);
 	}
 
 	new Dialog({
@@ -148,9 +154,6 @@ Actor.prototype.tick = function tick()
 			if (this.MOVING === orgstate) {
 				newpos = this.lookingAt();
 
-				if (this.player && 1 === this.ticks) {
-					scrollViewport(newpos[0], newpos[1], frames / rate);
-				}
 			}
 
 			if (Math.floor(this.ticks * rate) <= frames) {
@@ -172,7 +175,7 @@ Actor.prototype.tick = function tick()
 
 					/* Did that movement take us to a different area? */
 					if (this.player) {
-						switchArea(this.x, this.y);
+						this.level.switchArea(this.x, this.y, this);
 					}
 				}
 
@@ -298,6 +301,49 @@ Actor.prototype.tick = function tick()
 			}
 			break;
 	}
+
+	/*
+		Calculate the rendering offset to use if the character is currently
+		moving from one tile to another.
+	*/
+	this.renderOff.x = 0;
+	this.renderOff.y = 0;
+
+	/* Grab the definition for this character's current action and direction */
+	var def		= this.getDefinition(this.state, this.facing);
+
+	var frames	= 1;
+	var rate	= 1;
+
+	if (def && !isNaN(def.frames)) {
+		frames = def.frames;
+	}
+
+	if (def && !isNaN(def.rate)) {
+		rate = def.rate;
+	}
+
+	switch (this.state) {
+		default:
+			break;
+
+		case this.MOVING:
+			var steps = TILE_SIZE / frames;
+
+			switch (this.facing) {
+				case 'N': this.renderOff.y -= Math.floor(this.ticks * steps * rate); break;
+				case 'E': this.renderOff.x += Math.floor(this.ticks * steps * rate); break;
+				case 'S': this.renderOff.y += Math.floor(this.ticks * steps * rate); break;
+				case 'W': this.renderOff.x -= Math.floor(this.ticks * steps * rate); break;
+			}
+
+			if (this.player) {
+				this.level.scrollTo(false,
+					(this.x * TILE_SIZE) + this.renderOff.x,
+					(this.y * TILE_SIZE) + this.renderOff.y);
+			}
+			break;
+	}
 };
 
 /* Return true if this actor should be rendered on the specified row */
@@ -327,51 +373,15 @@ Actor.prototype.lookingAt = function lookingAt()
 
 Actor.prototype.render = function render(ctx, wx, wy)
 {
-	/* Grab the definition for this character's current action and direction */
-	var def		= this.getDefinition(this.state, this.facing);
-
 	/* Which tile (relative to the viewport) is the actor on */
-	var x		= this.x - world.viewport.x;
-	var y		= this.y - world.viewport.y;
+	var x		= (this.x * TILE_SIZE) - wx;
+	var y		= (this.y * TILE_SIZE) - wy;
 
-	/* Offset (relative to the tile) */
-	var ox		= wx;
-	var oy		= wy;
+	/* Add the offset if the character is moving between tiles */
+	x += this.renderOff.x;
+	y += this.renderOff.y;
 
-	var frames	= 1;
-	var rate	= 1;
-
-	if (def && !isNaN(def.frames)) {
-		frames = def.frames;
-	}
-
-	if (def && !isNaN(def.rate)) {
-		rate = def.rate;
-	}
-
-	switch (this.state) {
-		case this.STUCK:
-		case this.TURNING:
-			break;
-
-		case this.MOVING:
-			var steps = TILE_SIZE / frames;
-
-			switch (this.facing) {
-				case 'N': oy -= Math.floor(this.ticks * steps * rate); break;
-				case 'E': ox += Math.floor(this.ticks * steps * rate); break;
-				case 'S': oy += Math.floor(this.ticks * steps * rate); break;
-				case 'W': ox -= Math.floor(this.ticks * steps * rate); break;
-			}
-			break;
-
-		case this.BLINKING:
-		case this.STANDING:
-			break;
-	}
-
-	this.renderState(ctx, this.state, this.facing, this.ticks,
-							(x * TILE_SIZE) + ox, (y * TILE_SIZE) + oy);
+	this.renderState(ctx, this.state, this.facing, this.ticks, x, y);
 };
 
 Actor.prototype.renderState = function renderState(ctx, state, facing, ticks, x, y)
@@ -385,8 +395,8 @@ Actor.prototype.renderState = function renderState(ctx, state, facing, ticks, x,
 		return;
 	}
 
-	if (!(img = world.images[src])) {
-		img = world.images[src] = loadImage(src);
+	if (!(img = this.level.images[src])) {
+		img = this.level.images[src] = loadImage(src);
 	}
 
 	/* How many frames are there for this state? */

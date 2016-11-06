@@ -1,7 +1,6 @@
-var input;
 var TILE_SIZE	= 16;
-var marginX		= 10;
-var marginY		= 6;
+var input;
+var level;
 
 var actors		= [];
 var player		= null;
@@ -45,56 +44,20 @@ function canMove(actor, direction)
 		return(false);
 	}
 
-	tile = tileAt(x, y);
+	tile = level.tileAt(x, y);
 
-	if (!tile || !world.tiles[tile]) {
+	if (!tile || !level.tiles[tile]) {
 		return(false);
 	}
 
-	return(!world.tiles[tile].solid);
-}
-
-function scrollViewport(x, y, frames)
-{
-	var vx = x - world.viewport.x;
-	var vy = y - world.viewport.y;
-
-	if (vx < marginX && world.viewport.x > 0) {
-		world.viewport.x--;
-		world.viewport.offset.x = -TILE_SIZE;
-	}
-
-	if ((world.viewport.width - vx) < marginX &&
-		world.viewport.x < world.width - world.viewport.width
-	) {
-		world.viewport.x++;
-		world.viewport.offset.x = TILE_SIZE;
-	}
-
-	if (vy < marginY && world.viewport.y > 0) {
-		world.viewport.y--;
-		world.viewport.offset.y = -TILE_SIZE;
-	}
-
-	if ((world.viewport.height - vy) < marginY &&
-		world.viewport.y < world.height - world.viewport.height
-	) {
-		world.viewport.y++;
-		world.viewport.offset.y = TILE_SIZE;
-	}
-
-	world.viewport.offset.steps = Math.floor(TILE_SIZE / (frames || 1));
+	return(!level.tiles[tile].solid);
 }
 
 function tick(ticks)
 {
-	WRand.setSeed((new Date()).getTime());
-
-	if (world.viewport.offset.x !== 0) {
-		world.viewport.offset.x += (world.viewport.offset.x > 0) ? -world.viewport.offset.steps : world.viewport.offset.steps;
-	}
-	if (world.viewport.offset.y !== 0) {
-		world.viewport.offset.y += (world.viewport.offset.y > 0) ? -world.viewport.offset.steps : world.viewport.offset.steps;
+	if (!level.tick()) {
+		/* Nothing else is active while the level is sliding */
+		return(false);
 	}
 
 	/* Paused? */
@@ -238,7 +201,7 @@ function tick(ticks)
 	}
 
 	for (var a = 0, actor; actor = actors[a]; a++) {
-		if (actor.visible) {
+		if (actor.player || actor.area === level.area) {
 			actor.tick();
 		}
 	}
@@ -246,53 +209,14 @@ function tick(ticks)
 
 function render(ctx)
 {
-	if (!world.images) {
-		world.images = {};
-	}
+	level.render(ctx);
 
-	var wx = world.viewport.offset.x;
-	var wy = world.viewport.offset.y;
-	var square, tile, src, img;
+	/* Use the level's offsets when rendering actors */
+	var wx = level.viewport.x;
+	var wy = level.viewport.y;
 
-	/*
-		Render each row from the top down, so a row closer to the player can
-		draw over the row behind it.
-	*/
-	for (var y = world.viewport.y - 1; y <= world.viewport.y + world.viewport.height; y++) {
-		for (var x = world.viewport.x - 1; x <= world.viewport.x + world.viewport.width; x++) {
-			if (y >= world.height || x >= world.width) {
-				break;
-			}
-
-			if (!(square = squareAt(x, y))) {
-				continue;
-			}
-			tile = tileAt(x, y);
-			src = world.tiles[tile].src;
-
-			if (src && !world.images[src]) {
-				world.images[src] = loadImage(src);
-			}
-
-			img = src ? world.images[src] : null;
-
-			if (img) {
-				ctx.drawImage(img,
-						square[1] * TILE_SIZE, square[2] * TILE_SIZE,
-						TILE_SIZE, TILE_SIZE,
-						(TILE_SIZE * (x - world.viewport.x)) + wx,
-						(TILE_SIZE * (y - world.viewport.y)) + wy,
-						(TILE_SIZE), (TILE_SIZE));
-			}
-
-			// TODO Draw any items that are on this spot
-		}
-
-		for (var a = 0, actor; actor = actors[a]; a++) {
-			if (!actor.visible || !actor.renderRow(y)) {
-				continue;
-			}
-
+	for (var a = 0, actor; actor = actors[a]; a++) {
+		if (actor.player || actor.area === level.area) {
 			actor.render(ctx, wx, wy);
 		}
 	}
@@ -314,17 +238,15 @@ function debug(msg)
 
 window.addEventListener('load', function()
 {
+	var scale		= 1;
 	var canvas		= document.createElement('canvas');
 	var ctx			= canvas.getContext('2d');
 	var buffer		= document.createElement('canvas');
 	var bctx		= buffer.getContext('2d');
-	var oldarea		= null;
 
 	document.body.appendChild(canvas);
 
 	input = new InputHandler(canvas);
-
-	world.scale = 1;
 
 	var w = 0;
 	var h = 0;
@@ -338,22 +260,22 @@ window.addEventListener('load', function()
 				if ((i * TILE_SIZE * world.viewport.minwidth  <= w) &&
 					(i * TILE_SIZE * world.viewport.minheight <= h)
 				) {
-					world.scale = i;
+					scale = i;
 				} else {
 					break;
 				}
 			}
-			world.viewport.width	= Math.floor(w / (world.scale * TILE_SIZE));
-			world.viewport.height	= Math.floor(h / (world.scale * TILE_SIZE));
+			world.viewport.width	= Math.floor(w / (scale * TILE_SIZE));
+			world.viewport.height	= Math.floor(h / (scale * TILE_SIZE));
 
 			world.viewport.width	= Math.min(world.viewport.width, world.viewport.maxwidth);
 			world.viewport.height	= Math.min(world.viewport.height, world.viewport.maxheight);
 
 			console.log("Using viewport size:", world.viewport.width, world.viewport.height);
 
-			w = Math.min(world.scale * TILE_SIZE * world.viewport.width,  window.innerWidth);
-			h = Math.min(world.scale * TILE_SIZE * world.viewport.height, window.innerHeight);;
-			// console.log(world.scale, w, h, window.innerWidth, window.innerHeight);
+			w = Math.min(scale * TILE_SIZE * world.viewport.width,  window.innerWidth);
+			h = Math.min(scale * TILE_SIZE * world.viewport.height, window.innerHeight);;
+			// console.log(scale, w, h, window.innerWidth, window.innerHeight);
 
 			canvas.setAttribute('width',  w);
 			canvas.setAttribute('height', h);
@@ -373,13 +295,10 @@ window.addEventListener('load', function()
 			/* Store the current actual size so we can detect when it changes */
 			w = window.innerWidth;
 			h = window.innerHeight;
+
+			level.resize(buffer.width, buffer.height);
 		}
 	};
-
-	/* Load the actors; Only the first gets input */
-	actors.push((player = new Actor("blud", input)));
-	actors.push(new Actor("abby"));
-	actors.push(new Actor("saul"));
 
 	bctx.save();
 
@@ -411,12 +330,10 @@ window.addEventListener('load', function()
 		lastFrame = time;
 
 		while (frametime >= tickWait) {
-			if (!oldarea) {
-				if (dialog && !dialog.closed) {
-					dialog.tick(ticks);
-				} else {
-					tick(ticks);
-				}
+			if (dialog && !dialog.closed) {
+				dialog.tick(ticks);
+			} else {
+				tick(ticks);
 			}
 
 			ticks++;
@@ -424,75 +341,38 @@ window.addEventListener('load', function()
 			// frametime /= 1.5;
 		}
 
-		if (area != world.area) {
-			area = world.area;
+		resizeCanvas();
 
-			/* Setup a slide from one area to a new one */
-			oldarea	= {
-				image:		buffer,
-				x:			0,
-				y:			0
-			};
-			buffer	= document.createElement('canvas');
-			bctx	= buffer.getContext('2d');
+		/* Clear the canvas */
+		bctx.clearRect(0, 0, buffer.width, buffer.height);
 
-			resizeCanvas(true);
-			render(bctx);
+		bctx.save();
+		render(bctx);
+
+		if (dialog && !dialog.closed) {
+			dialog.render(bctx);
 		}
-
-		if (!oldarea) {
-			resizeCanvas();
-
-			/* Clear the canvas */
-			bctx.clearRect(0, 0, buffer.width, buffer.height);
-
-			bctx.save();
-			render(bctx);
-
-			if (dialog && !dialog.closed) {
-				dialog.render(bctx);
-			}
-			firstframe = false;
-			bctx.restore();
-		}
+		firstframe = false;
+		bctx.restore();
 
 		/* Draw (and scale) the image to the main canvas now */
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		ctx.drawImage(buffer,
 				0, 0, buffer.width, buffer.height,
-
-				oldarea ? oldarea.x - (world.scroll.x * world.scale * buffer.width)  : 0,
-				oldarea ? oldarea.y - (world.scroll.y * world.scale * buffer.height) : 0,
-
-				buffer.width * world.scale, buffer.height * world.scale);
-
-		if (oldarea) {
-			ctx.drawImage(oldarea.image,
-					0, 0, buffer.width, buffer.height,
-
-					oldarea ? oldarea.x : 0,
-					oldarea ? oldarea.y : 0,
-
-					buffer.width * world.scale, buffer.height * world.scale);
-
-			var slidespeed = 24;
-			oldarea.x += slidespeed * world.scroll.x;
-			oldarea.y += slidespeed * world.scroll.y;
-
-			if (Math.abs(oldarea.x) >= (buffer.width  * world.scale) ||
-				Math.abs(oldarea.y) >= (buffer.height * world.scale)
-			) {
-				/* Done */
-				oldarea = null;
-			}
-		}
+				0, 0, buffer.width * scale, buffer.height * scale);
 
 		requestAnimationFrame(doAnimationFrame);
 	};
 
-	loadLevelData(function() {
+	level = new Level(world, function() {
 		/* Load the town center */
-		loadArea((area = "towncenter"));
+		level.loadArea("towncenter");
+		level.resize(buffer.width, buffer.height);
+
+		/* Load the actors; Only the first gets input */
+		actors.push((player = new Actor(world, "blud", level, input)));
+		actors.push(new Actor(world, "abby", level));
+		actors.push(new Actor(world, "saul", level));
 
 		requestAnimationFrame(doAnimationFrame);
 	});
