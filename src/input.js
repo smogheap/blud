@@ -229,7 +229,7 @@ function InputHandler(canvas)
 
 	window.addEventListener('keydown', function(e)
 	{
-		if (!e.altKey && !e.ctrlKey) {
+		if (!e.altKey && !e.ctrlKey && !e.code.match(/F[0-9]*$/)) {
 			if (this.kbhandler && this.kbhandler(e.code, e.key, e.shiftKey)) {
 				/*
 					The current registered handler ate the keypress, so don't
