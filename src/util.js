@@ -43,7 +43,7 @@ window.addEventListener('load', function() {
 function disableSmoothing(ctx)
 {
 	ctx.mozImageSmoothingEnabled		= false;
-	ctx.webkitImageSmoothingEnabled		= false;
+	// ctx.webkitImageSmoothingEnabled		= false; /* Chrome gives an annoying warning */
 	ctx.msImageSmoothingEnabled			= false;
 	ctx.imageSmoothingEnabled			= false;
 }
