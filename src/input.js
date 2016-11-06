@@ -26,8 +26,11 @@ function InputHandler(canvas)
 	this.Y				= 'Y';
 	this.LB				= 'LB';
 	this.RB				= 'RB';
+	this.directions		= [ this.N, this.E, this.S, this.W ];
 
 	this.axisThreshold	= 0.5;
+
+	this._direction		= { N: 0, E: 0, S: 0, W: 0 };
 
 	/* The status of each device. The details may vary from device to device. */
 	this.devices = {
@@ -253,6 +256,9 @@ function InputHandler(canvas)
 	{
 		console.log(e.gamepad);
 
+		/* Refresh our gamepad list */
+		this.gamepads = null;
+
 		if (!this.loadJSBindings(e.gamepad.id)) {
 			this.remapjs("An unrecognized controller has been connected");
 		}
@@ -280,7 +286,10 @@ function InputHandler(canvas)
 */
 InputHandler.prototype.getDirection = function getDirection(clear)
 {
-	var d = {};
+	this._direction.N = 0;
+	this._direction.E = 0;
+	this._direction.S = 0;
+	this._direction.W = 0;
 
 	/* Merge results from the keyboard */
 	for (var i = 0, b; b = this.bindings.kb[i]; i++) {
@@ -288,8 +297,8 @@ InputHandler.prototype.getDirection = function getDirection(clear)
 			continue;
 		}
 
-		if ([ this.N, this.E, this.S, this.W ].includes(b.action)) {
-			d[b.action] |= this.devices.kb[b.key];
+		if (this.directions.includes(b.action)) {
+			this._direction[b.action] |= this.devices.kb[b.key];
 
 			if (clear) {
 				this.devices.kb[b.key] &= ~this.PRESSED;
@@ -304,9 +313,9 @@ InputHandler.prototype.getDirection = function getDirection(clear)
 			continue;
 		}
 
-		if ([ this.N, this.E, this.S, this.W ].includes(b.action)) {
+		if (this.directions.includes(b.action)) {
 			for (var p = 0; p < this.devices.js.length; p++) {
-				d[b.action] |= this.devices.js[p][b.key];
+				this._direction[b.action] |= this.devices.js[p][b.key];
 
 				if (clear) {
 					this.devices.js[p][b.key] &= ~this.PRESSED;
@@ -315,7 +324,7 @@ InputHandler.prototype.getDirection = function getDirection(clear)
 		}
 	}
 
-	return(d);
+	return(this._direction);
 };
 
 InputHandler.prototype.getButton = function getButton(name, clear)
@@ -381,6 +390,10 @@ InputHandler.prototype.getGamepads = function getGamepads()
 {
 	var gamepads;
 
+	if (this.gamepads) {
+		return(this.gamepads);
+	}
+
 	if (navigator.getGamepads) {
 		gamepads = navigator.getGamepads();
 	} else if (navigator.webkitGetGamepads) {
@@ -393,7 +406,8 @@ InputHandler.prototype.getGamepads = function getGamepads()
 		gamepads = [];
 	}
 
-	return(gamepads);
+	this.gamepads = gamepads;
+	return(this.gamepads);
 };
 
 /*
