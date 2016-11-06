@@ -295,16 +295,13 @@ window.addEventListener('load', function()
 
 	var doAnimationFrame = function doAnimationFrame(time)
 	{
+		requestAnimationFrame(doAnimationFrame);
+
 		/*
 			Poll input devices (mainly gamepads) as frequently as possible
 			regardless of the tick rate.
 		*/
 		input.poll();
-
-		if (time - lastFrame < TILE_SIZE) {  /* 60fps max */
-			requestAnimationFrame(doAnimationFrame);
-			return;
-		}
 
 		if (frametime) {
 			frametime += time - lastFrame;
@@ -344,8 +341,6 @@ window.addEventListener('load', function()
 		ctx.drawImage(buffer,
 				0, 0, buffer.width, buffer.height,
 				0, 0, buffer.width * scale, buffer.height * scale);
-
-		requestAnimationFrame(doAnimationFrame);
 	};
 
 	level = new Level(world, function() {
