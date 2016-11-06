@@ -328,23 +328,17 @@ InputHandler.prototype.getButton = function getButton(name, clear)
 {
 	var		btn = 0;
 
-	if ("string" === typeof name) {
-		name = [ name ];
-	}
+	if (this.devices.other[name]) {
+		btn |= this.devices.other[name];
 
-	for (var n = 0; n < name.length; n++) {
-		if (this.devices.other[name[n]]) {
-			btn |= this.devices.other[name[n]];
-
-			if (clear) {
-				this.devices.other[name[n]] &= ~this.PRESSED;
-			}
+		if (clear) {
+			this.devices.other[name] &= ~this.PRESSED;
 		}
 	}
 
 	/* Merge results from the keyboard */
 	for (var i = 0, b; b = this.bindings.kb[i]; i++) {
-		if (!b || !b.key || !name.includes(b.action)) {
+		if (!b || !b.key || name !== b.action) {
 			continue;
 		}
 
@@ -357,7 +351,7 @@ InputHandler.prototype.getButton = function getButton(name, clear)
 	/* Merge results from gamepads */
 	this.poll();
 	for (var i = 0, b; b = this.bindings.js[i]; i++) {
-		if (!b || !b.key || !name.includes(b.action)) {
+		if (!b || !b.key || name !== b.action) {
 			continue;
 		}
 
