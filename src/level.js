@@ -238,8 +238,7 @@ function loadAreaData(name)
 	This also loads a border surrounding the area from the tiles surrounding it
 	that is used when calculating which tiles can be walked on.
 */
-// TODO Preload the images for all tiles before actually doing any of this
-function loadLevelData()
+function calculateLevelData()
 {
 	/*
 		Insert a dummy value in the tiles array because it is easier to check
@@ -390,6 +389,36 @@ function loadLevelData()
 
 	world.areas = newareas;
 	world.tiles = newtiles;
+}
+
+function loadLevelData(cb)
+{
+	var tilenames	= Object.keys(world.tiles);
+	var count		= 1;
+	var src;
+
+	if (!world.images) {
+		world.images = {};
+	}
+
+	var imageLoaded = function() {
+		count--;
+
+		if (0 === count) {
+			calculateLevelData();
+			cb();
+		}
+	};
+
+	for (var i = 0, tile; tile = tilenames[i]; i++) {
+		if ((src = world.tiles[tile].src)) {
+			count++;
+			world.images[src] = loadImage(src, imageLoaded);
+		}
+	}
+
+	/* Final time to account for the extra item in count */
+	imageLoaded();
 }
 
 

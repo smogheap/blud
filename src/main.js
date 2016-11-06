@@ -333,8 +333,6 @@ window.addEventListener('load', function()
 
 	world.scale = 1;
 
-	loadLevelData();
-
 	var w = 0;
 	var h = 0;
 	var resizeCanvas = function(force)
@@ -398,9 +396,6 @@ window.addEventListener('load', function()
 	var frametime	= 0;
 	var ticks		= 0;
 	var area;
-
-	/* Load the town center */
-	loadArea((area = "towncenter"));
 
 	var doAnimationFrame = function doAnimationFrame(time)
 	{
@@ -500,7 +495,13 @@ window.addEventListener('load', function()
 			}
 		}
 	};
-	requestAnimationFrame(doAnimationFrame);
+
+	loadLevelData(function() {
+		/* Load the town center */
+		loadArea((area = "towncenter"));
+
+		requestAnimationFrame(doAnimationFrame);
+	});
 });
 
 
