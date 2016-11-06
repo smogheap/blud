@@ -19,11 +19,8 @@ function actorAt(x, y)
 			return(actor);
 		}
 
-		var rpos = actor.renderPos();
-
-		if (x === rpos[0] && y === rpos[1]) {
-			return(actor);
-		}
+		// TODO Check the position the character is moving to (regardless of the
+		//		direction it is moving)?
 	}
 
 	return(null);
@@ -292,15 +289,11 @@ function render(ctx)
 		}
 
 		for (var a = 0, actor; actor = actors[a]; a++) {
-			if (!actor.visible) {
+			if (!actor.visible || !actor.renderRow(y)) {
 				continue;
 			}
 
-			var pos = actor.renderPos();
-
-			if (pos.length === 2 && y === pos[1]) {
-				actor.render(ctx, wx, wy);
-			}
+			actor.render(ctx, wx, wy);
 		}
 	}
 }

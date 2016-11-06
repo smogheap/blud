@@ -300,19 +300,13 @@ Actor.prototype.tick = function tick()
 	}
 };
 
-/*
-	Return the coords of the position at which this actor should be rendered.
-
-	This will usually just be the actor's actual position, but if the actor is
-	moving south then it needs to be rendered one row lower to avoid tiles below
-	being drawn over it.
-*/
-Actor.prototype.renderPos = function renderPos()
+/* Return true if this actor should be rendered on the specified row */
+Actor.prototype.renderRow = function renderRow(y)
 {
 	if ('S' === this.facing && this.MOVING === this.state) {
-		return([ this.x, this.y + 1 ]);
+		return(y === this.y + 1);
 	} else {
-		return([ this.x, this.y ]);
+		return(y === this.y);
 	}
 };
 
