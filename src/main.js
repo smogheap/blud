@@ -196,6 +196,10 @@ function loadArea(name)
 
 	var	c = world.areas[name];
 
+	if (!c) {
+		return;
+	}
+
 	/* Set the name before calling findNearbyArea() */
 	world.area		= name;
 	world.width		= c[0].length;
@@ -205,42 +209,47 @@ function loadArea(name)
 	var e = world.areas[findNearbyArea( 1,  0)];
 	var s = world.areas[findNearbyArea( 0,  1)];
 	var w = world.areas[findNearbyArea(-1,  0)];
+	var row;
 
 	/*
 		Build the rows for the current area with a border filled out from the
 		surrounding areas.
 	*/
-	if (n) {
-		rows.push("-" + n[n.length - 1] + "-");
-	} else {
-		rows.push(Array(c[0].length + 3).join("-"));
+	row = [];
+	for (var x = -1; x <= c[0].length; x++) {
+		var tmp;
+
+		if (n && (tmp = n[n.length - 1].charAt(x))) {
+			row.push(tmp);
+		} else {
+			row.push('-');
+		}
 	}
+	rows.push(row);
 
 	for (var y = 0; y < c.length; y++) {
-		var row = '';
+		row = [];
 
-		if (w) {
-			row += w[y].charAt(w[y].length - 1);
-		} else {
-			row += '-';
+		row.push(w ? w[y].charAt(w[y].length - 1) : '-');
+		for (var x = 0; x < c[y].length; x++) {
+			row.push(c[y].charAt(x));
 		}
-
-		row += c[y];
-
-		if (e) {
-			row += e[y].charAt(0);
-		} else {
-			row += '-';
-		}
+		row.push(e ? e[y].charAt(0) : '-');
 
 		rows.push(row);
 	}
 
-	if (s) {
-		rows.push("-" + s[0] + "-");
-	} else {
-		rows.push(Array(c[0].length + 3).join("-"));
+	row = [];
+	for (var x = -1; x <= c[0].length; x++) {
+		var tmp;
+
+		if (s && (tmp = s[0].charAt(x))) {
+			row.push(tmp);
+		} else {
+			row.push('-');
+		}
 	}
+	rows.push(row);
 
 	world.rows = rows;
 
@@ -414,7 +423,6 @@ function tick(ticks)
 function tileAt(x, y, deftile, ignoreVariants)
 {
 	var tile;
-	var row;
 
 	/*
 		world.rows has a border of tiles from the surrounding areas, so the
@@ -423,11 +431,7 @@ function tileAt(x, y, deftile, ignoreVariants)
 	x++;
 	y++;
 
-	if (!(row = world.rows[y])) {
-		return(deftile);
-	}
-
-	if (!(tile = row.charAt(x)) || 1 !== tile.length) {
+	if (!world.rows[y] || !(tile = world.rows[y][x])) {
 		return(deftile);
 	}
 
