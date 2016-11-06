@@ -3,7 +3,7 @@ var world = {
 		x:					15,
 		y:					0,
 		minwidth:			24,
-		minheight:			14,
+		minheight:			15,
 		maxwidth:			34,
 		maxheight:			19,
 
