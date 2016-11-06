@@ -55,11 +55,6 @@ function canMove(actor, direction)
 
 function tick(ticks)
 {
-	if (!level.tick()) {
-		/* Nothing else is active while the level is sliding */
-		return(false);
-	}
-
 	/* Paused? */
 	if (input.getButton(input.PAUSE, true) & input.PRESSED) {
 		new Dialog({
@@ -200,26 +195,15 @@ function tick(ticks)
 		}
 	}
 
-	for (var a = 0, actor; actor = actors[a]; a++) {
-		if (actor.player || actor.area === level.area) {
-			actor.tick();
-		}
+	if (!level.tick()) {
+		/* Nothing else is active while the level is sliding */
+		return(false);
 	}
 }
 
 function render(ctx)
 {
 	level.render(ctx);
-
-	/* Use the level's offsets when rendering actors */
-	var wx = level.viewport.x;
-	var wy = level.viewport.y;
-
-	for (var a = 0, actor; actor = actors[a]; a++) {
-		if (actor.player || actor.area === level.area) {
-			actor.render(ctx, wx, wy);
-		}
-	}
 }
 
 function debug(msg)
@@ -373,6 +357,11 @@ window.addEventListener('load', function()
 		actors.push((player = new Actor(world, "blud", level, input)));
 		actors.push(new Actor(world, "abby", level));
 		actors.push(new Actor(world, "saul", level));
+
+		/* The level is responsible for rendering the actors */
+		for (var a = 0, actor; actor = actors[a]; a++) {
+			level.addChild(actor);
+		}
 
 		requestAnimationFrame(doAnimationFrame);
 	});

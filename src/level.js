@@ -7,11 +7,14 @@ function Level(definition, loadedcb)
 	var loadCount	= 1;
 	var src;
 
+	this.slideFrames= 30;
 	this.marginX	= TILE_SIZE * 10;
 	this.marginY	= TILE_SIZE * 6;
 
 	this.viewport	= { x: 0, y: 0, w: 100, h: 100 };
 	this.playerpos	= { x: 0, y: 0 };
+
+	this.children	= [];
 
 	var imageLoaded = function()
 	{
@@ -45,6 +48,11 @@ function Level(definition, loadedcb)
 
 	/* Final time to account for the extra item in count */
 	imageLoaded();
+};
+
+Level.prototype.addChild = function resize(child)
+{
+	this.children.push(child);
 };
 
 Level.prototype.resize = function resize(w, h)
@@ -408,10 +416,11 @@ Level.prototype.switchArea = function switchArea(x, y, player)
 	canvas.setAttribute('height',	this.viewport.h * (oy === 0 ? 1 : 2));
 	disableSmoothing(ctx);
 
-	this.render(ctx,
-		ox < 0 ? this.viewport.w : 0,
-		oy < 0 ? this.viewport.h : 0
-	);
+	ctx.save();
+	ctx.translate(	ox < 0 ? this.viewport.w : 0,
+					oy < 0 ? this.viewport.h : 0);
+	this.render(ctx);
+	ctx.restore();
 
 	/* Now actually load the new area */
 	if (!this.loadArea(name)) {
@@ -421,35 +430,40 @@ Level.prototype.switchArea = function switchArea(x, y, player)
 	/* And position everything properly */
 	if (player) {
 		/*
-			New player position assumes there is one row or column of identical
-			tiles shared by the new area and the old.
+			Set the player position so that the call to player.tick() below will
+			cause the player to move into the correct new spot.
 		*/
 		if (oy < 0) {
 			/* Move player to bottom of new area */
-			player.y = this.height - 1;
+			player.y = this.height;
 		} else if (oy > 0) {
 			/* Move player to top of new area */
-			player.y = 0;
+			player.y = -1;
 		}
 
 		if (ox < 0) {
 			/* Move player to right edge of new area */
-			player.x = this.width - 1;
+			player.x = this.width;
 		} else if (ox > 0) {
 			/* Move player to left edge of new area */
-			player.x = 0;
+			player.x = -1;
 		}
 
+		player.tick();
 		this.scrollTo(true,
 			(player.x * TILE_SIZE) + player.renderOff.x,
 			(player.y * TILE_SIZE) + player.renderOff.y);
+
+		/* The player has moved to the new area */
+		player.area = name;
 	}
 
 	/* and render the new area to the temporary image */
-	this.render(ctx,
-		ox > 0 ? this.viewport.w : 0,
-		oy > 0 ? this.viewport.h : 0
-	);
+	ctx.save();
+	ctx.translate(	ox > 0 ? this.viewport.w : 0,
+					oy > 0 ? this.viewport.h : 0);
+	this.render(ctx);
+	ctx.restore();
 
 	this.slide = {
 		cake:		canvas,
@@ -468,11 +482,6 @@ Level.prototype.switchArea = function switchArea(x, y, player)
 			y:		this.viewport.y
 		}
 	};
-
-	/* Clear this.area so that actors are not rendered during the slide */
-	// TODO	Perhaps just move the actor rendering into here and bake them onto
-	//		the slide image?
-	this.area = null;
 
 	/*
 		Ensure we have done at least one tick or the slide will not be setup
@@ -639,8 +648,8 @@ Level.prototype.bake = function bake()
 Level.prototype.tick = function tick()
 {
 	if (this.slide) {
-		this.slide.x += this.slide.ox * (this.viewport.w / 30);
-		this.slide.y += this.slide.oy * (this.viewport.h / 30);
+		this.slide.x += this.slide.ox * (this.viewport.w / this.slideFrames);
+		this.slide.y += this.slide.oy * (this.viewport.h / this.slideFrames);
 
 		/*
 			The viewport is used for rendering the actors at the correct
@@ -670,14 +679,19 @@ Level.prototype.tick = function tick()
 	}
 
 	this.scrollTo(false);
+
+	/* Update the children (NPCs, other non-static objects) */
+	for (var c = 0, child; child = this.children[c]; c++) {
+		if (child.player || !child.area || child.area === this.area) {
+			child.tick();
+		}
+	}
+
 	return(true);
 };
 
-Level.prototype.render = function render(ctx, dx, dy)
+Level.prototype.render = function render(ctx)
 {
-	dx = dx || 0;
-	dy = dy || 0;
-
 	if (this.slide) {
 		/* Sliding from one area to another */
 		var x = Math.abs(this.slide.ox) * Math.floor(this.slide.x);
@@ -693,15 +707,22 @@ Level.prototype.render = function render(ctx, dx, dy)
 		ctx.drawImage(this.slide.cake,
 			x, y,
 			this.viewport.w, this.viewport.h,
-			dx, dy,
+			0, 0,
 			this.viewport.w, this.viewport.h);
 	} else if (this.cake) {
 		/* Here is one I prepared earlier... */
 		ctx.drawImage(this.cake,
 			this.viewport.x, this.viewport.y,
 			this.viewport.w, this.viewport.h,
-			dx, dy,
+			0, 0,
 			this.viewport.w, this.viewport.h);
+
+		/* Draw the children (NPCs, other non-static objects) */
+		for (var c = 0, child; child = this.children[c]; c++) {
+			if (!child.area || child.area === this.area) {
+				child.render(ctx, this.viewport.x, this.viewport.y);
+			}
+		}
 	}
 };
 
