@@ -483,7 +483,7 @@ window.addEventListener('load', function()
 
 					buffer.width * world.scale, buffer.height * world.scale);
 
-			var slidespeed = 16;
+			var slidespeed = 24;
 			oldarea.x += slidespeed * world.scroll.x;
 			oldarea.y += slidespeed * world.scroll.y;
 
