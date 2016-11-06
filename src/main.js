@@ -50,7 +50,7 @@ function canMove(actor, direction)
 
 	tile = tileAt(x, y);
 
-	if (!tile || 1 !== tile.length || !world.tiles[tile]) {
+	if (!tile || !world.tiles[tile]) {
 		return(false);
 	}
 
@@ -89,13 +89,15 @@ function scrollViewport(x, y, frames)
 	world.viewport.offset.steps = Math.floor(TILE_SIZE / (frames || 1));
 }
 
-function findNearbyArea(ox, oy)
+function findNearbyArea(ox, oy, area)
 {
 	var name	= null;
 
+	area = area || world.area;
+
 	for (var y = 0; y < world.layout.length; y++) {
 		for (var x = 0; x < world.layout[y].length; x++) {
-			if (world.layout[y][x] === world.area) {
+			if (world.layout[y][x] === area) {
 				if (world.layout[y + oy] &&
 					world.layout[y + oy][x + ox]
 				) {
@@ -192,67 +194,18 @@ function switchArea(x, y)
 
 function loadArea(name)
 {
-	var rows = [];
-
-	var	c = world.areas[name];
-
-	if (!c) {
+	if (!world.areas[name]) {
 		return;
 	}
 
-	/* Set the name before calling findNearbyArea() */
+	world.rows		= world.areas[name];
 	world.area		= name;
-	world.width		= c[0].length;
-	world.height	= c.length;
 
-	var n = world.areas[findNearbyArea( 0, -1)];
-	var e = world.areas[findNearbyArea( 1,  0)];
-	var s = world.areas[findNearbyArea( 0,  1)];
-	var w = world.areas[findNearbyArea(-1,  0)];
-	var row;
+	/* Do not include the border in the width/height */
+	world.width		= world.rows[0].length - 2;
+	world.height	= world.rows.length - 2;
 
-	/*
-		Build the rows for the current area with a border filled out from the
-		surrounding areas.
-	*/
-	row = [];
-	for (var x = -1; x <= c[0].length; x++) {
-		var tmp;
-
-		if (n && (tmp = n[n.length - 1].charAt(x))) {
-			row.push(tmp);
-		} else {
-			row.push('-');
-		}
-	}
-	rows.push(row);
-
-	for (var y = 0; y < c.length; y++) {
-		row = [];
-
-		row.push(w ? w[y].charAt(w[y].length - 1) : '-');
-		for (var x = 0; x < c[y].length; x++) {
-			row.push(c[y].charAt(x));
-		}
-		row.push(e ? e[y].charAt(0) : '-');
-
-		rows.push(row);
-	}
-
-	row = [];
-	for (var x = -1; x <= c[0].length; x++) {
-		var tmp;
-
-		if (s && (tmp = s[0].charAt(x))) {
-			row.push(tmp);
-		} else {
-			row.push('-');
-		}
-	}
-	rows.push(row);
-
-	world.rows = rows;
-
+	/* Hide/show the appropriate NPCs */
 	for (var a = 0, actor; actor = actors[a]; a++) {
 		if (actor.player || (actor.area && actor.area === name)) {
 			actor.visible = true;
@@ -450,6 +403,9 @@ function render(ctx)
 
 	var wx = world.viewport.offset.x;
 	var wy = world.viewport.offset.y;
+	var key, edges, vedges, tile, src, img, offsets, options;
+
+	edges = [];
 
 	/*
 		Render each row from the top down, so a row closer to the player can
@@ -461,10 +417,10 @@ function render(ctx)
 				break;
 			}
 
-			var tile	= tileAt(x, y, null, true);
-			var vedges	= null;
+			tile = tileAt(x, y, null, true);
+			vedges = null;
 
-			if (!tile || 1 !== tile.length) {
+			if (!tile) {
 				continue;
 			}
 
@@ -481,15 +437,15 @@ function render(ctx)
 
 			WRand.setSeed((y * 100) * x);
 
-			var src = world.tiles[tile].src;
+			src = world.tiles[tile].src;
 
 			if (src && !world.images[src]) {
 				world.images[src] = loadImage(src);
 			}
 
-			var img		= src ? world.images[src] : null;
-			var offsets	= null;
-			var options	= null;
+			img = src ? world.images[src] : null;
+			offsets	= null;
+			options	= null;
 
 			if (world.tiles[tile].edges) {
 				/*
@@ -503,14 +459,17 @@ function render(ctx)
 					then 4 since the kitty corner values may not matter in most
 					cases.
 				*/
-				var key = "";
-				var edges =	[
-					tileAt(x, y - 1, tile),		tileAt(x + 1, y, tile),
-					tileAt(x, y + 1, tile),		tileAt(x - 1, y, tile),
+				key = "";
 
-					tileAt(x - 1, y - 1, tile),	tileAt(x + 1, y - 1, tile),
-					tileAt(x - 1, y + 1, tile),	tileAt(x + 1, y + 1, tile)
-				];
+				edges[0] = tileAt(x, y - 1, tile);
+				edges[1] = tileAt(x + 1, y, tile);
+				edges[2] = tileAt(x, y + 1, tile);
+				edges[3] = tileAt(x - 1, y, tile);
+
+				edges[4] = tileAt(x - 1, y - 1, tile);
+				edges[5] = tileAt(x + 1, y - 1, tile);
+				edges[6] = tileAt(x - 1, y + 1, tile);
+				edges[7] = tileAt(x + 1, y + 1, tile);
 
 				for (var i = 0; i < edges.length; i++) {
 					if (vedges && "1" === vedges.charAt(i)) {
@@ -588,6 +547,125 @@ function debug(msg)
 	div.innerText = msg;
 }
 
+function loadAreaData(name)
+{
+	var rows = [];
+
+	var	c = world.areas[name];
+
+	if (!c) {
+		return;
+	}
+
+	var n = world.areas[findNearbyArea( 0, -1, name)];
+	var e = world.areas[findNearbyArea( 1,  0, name)];
+	var s = world.areas[findNearbyArea( 0,  1, name)];
+	var w = world.areas[findNearbyArea(-1,  0, name)];
+	var row;
+
+	/*
+		Build the rows for the current area with a border filled out from the
+		surrounding areas.
+	*/
+	row = [];
+	for (var x = -1; x <= c[0].length; x++) {
+		var tmp;
+
+		if (n && (tmp = n[n.length - 1].charAt(x))) {
+			row.push(tmp);
+		} else {
+			row.push('-');
+		}
+	}
+	rows.push(row);
+
+	for (var y = 0; y < c.length; y++) {
+		row = [];
+
+		row.push(w ? w[y].charAt(w[y].length - 1) : '-');
+		for (var x = 0; x < c[y].length; x++) {
+			row.push(c[y].charAt(x));
+		}
+		row.push(e ? e[y].charAt(0) : '-');
+
+		rows.push(row);
+	}
+
+	row = [];
+	for (var x = -1; x <= c[0].length; x++) {
+		var tmp;
+
+		if (s && (tmp = s[0].charAt(x))) {
+			row.push(tmp);
+		} else {
+			row.push('-');
+		}
+	}
+	rows.push(row);
+
+	return(rows);
+}
+
+/*
+	The areas are defined as arrays of strings to make them easier to edit
+	but this isn't very efficient, and requires calling charAt() constantly
+	which creates new String objects, and causes the garbage collector to
+	go nuts.
+
+	So, convert the areas to arrays of arrays of numbers instead. This means
+	we also have to convert the tiles list.
+
+	This also loads a border surrounding the area from the tiles surrounding it
+	that is used when calculating which tiles can be walked on.
+*/
+function loadLevelData()
+{
+	/*
+		Insert a dummy value in the tiles array because it is easier to check
+		the validity of a tile value with 'if (tile)' than 'if (!isNaN(tile))'
+	*/
+	var newtiles	= [ {} ];
+	var newareas	= {};
+	var tilenames	= Object.keys(world.tiles);
+	var areanames	= Object.keys(world.areas);
+	var tilemap		= {};
+
+	/* Move the tiles into an indexed array */
+	for (var i = 0, tile; tile = tilenames[i]; i++) {
+		tilemap[tile] = newtiles.length;
+		newtiles.push(world.tiles[tile]);
+	}
+
+	/* Adjust the variantOf values */
+	for (var i = 0; i < newtiles.length; i++) {
+		var v;
+
+		if ((v = newtiles[i].variantOf)) {
+			newtiles[i].variantOf = tilemap[v];
+		}
+	}
+
+	for (var i = 0, name; name = areanames[i]; i++) {
+		/*
+			Convert the area into an array of arrays (from an array of strings)
+			and load the border (from surrounding areas).
+		*/
+		var data	= loadAreaData(name);
+
+		/* Replace the tile names with an index */
+		for (var y = 0; y < data.length; y++) {
+			for (var x = 0; x < data[y].length; x++) {
+				data[y][x] = tilemap[data[y][x]];
+			}
+		}
+
+		newareas[name] = data;
+	}
+
+	world.areas = newareas;
+	world.tiles = newtiles;
+}
+
 window.addEventListener('load', function()
 {
 	var canvas		= document.createElement('canvas');
@@ -601,6 +679,8 @@ window.addEventListener('load', function()
 	input = new InputHandler(canvas);
 
 	world.scale = 1;
+
+	loadLevelData();
 
 	var w = 0;
 	var h = 0;
