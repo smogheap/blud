@@ -354,12 +354,12 @@ var world = {
 			]
 		},
 
-		"virus": {
+		"rotavirus": {
 			x:				37,
 			y:				10,
 			facing:			"S",
 			area:			"towncenter",
-			src:			"images/virus.png",
+			src:			"images/enemy.png",
 
 			"standing": {
 				S: { x: 0, y: 0 }

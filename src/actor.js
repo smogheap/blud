@@ -42,8 +42,8 @@ function Actor(world, id, level, controls)
 			this.level.scrollTo(true, this.x * TILE_SIZE, this.y * TILE_SIZE);
 			break;
 
-		case "virus":
-			this.controls = new VirusControls(this);
+		case "rotavirus":
+			this.controls = new RotaVirusControls(this);
 			break;
 	}
 

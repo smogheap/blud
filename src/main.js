@@ -352,7 +352,7 @@ window.addEventListener('load', function()
 		new Actor(world, "abby", level);
 		new Actor(world, "saul", level);
 
-		new Actor(world, "virus", level);
+		new Actor(world, "rotavirus", level);
 
 		/* The level is responsible for rendering the actors */
 		for (var a = 0, actor; actor = actors[a]; a++) {

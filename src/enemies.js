@@ -1,28 +1,21 @@
-function VirusControls(actor)
+function RotaVirusControls(actor)
 {
 	this.actor			= actor;
 	this._direction		= { N: 0, E: 0, S: 0, W: 0 };
 }
 
-VirusControls.prototype.getDirection = function getDirection(clear)
+RotaVirusControls.prototype.getDirection = function getDirection(clear)
 {
 	this._direction.N = 0;
 	this._direction.E = 0;
 	this._direction.S = 0;
 	this._direction.W = 0;
 
-	// TODO Check to see if the player is directly above, below or to the side
-	//		of the virus, and if so move in the player's direction rather
-	//		quickly.
-
-	var player = null;
-
-	for (var a = 0, actor; actor = actors[a]; a++) {
-		if (actor.player) {
-			player = actor;
-			break;
-		}
-	}
+	/*
+		This simple enemy has very basic logic. If it is lined up either
+		vertically or horizontally with the player then it will attempt to move
+		towards them.
+	*/
 
 	if (player) {
 		if (player.area === this.actor.area) {
