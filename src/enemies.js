@@ -15,10 +15,6 @@ VirusControls.prototype.getDirection = function getDirection(clear)
 	//		of the virus, and if so move in the player's direction rather
 	//		quickly.
 
-if (this.actor.renderOff.x != 0 || this.actor.renderOff.y != 0) {
-	console.log(this.actor.renderOff);
-}
-
 	var player = null;
 
 	for (var a = 0, actor; actor = actors[a]; a++) {
