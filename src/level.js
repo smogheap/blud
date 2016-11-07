@@ -52,6 +52,9 @@ function Level(definition, loadedcb)
 
 Level.prototype.addChild = function resize(child)
 {
+	if (!child.area) {
+		child.area = this.area;
+	}
 	this.children.push(child);
 };
 

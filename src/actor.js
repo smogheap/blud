@@ -1,3 +1,11 @@
+/*
+	Keep a global list of all active actors, since many actors need to find
+	others that may be nearby.
+*/
+// TODO Find a better way to track this. Perhaps keep a list of actors on the
+//		level that only includes those that are in the current area?
+var actors = [];
+
 function Actor(world, id, level, controls)
 {
 	if (!id || !world.actors[id]) {
@@ -9,9 +17,9 @@ function Actor(world, id, level, controls)
 	this.level		= level;
 
 	this.ticks		= 0;
-	this.controls	= controls;
 	this.state		= this.STANDING;
 	this.definition	= world.actors[id];
+	this.controls	= controls;
 
 	this.width		= this.definition.width  || TILE_SIZE;
 	this.height		= this.definition.height || TILE_SIZE;
@@ -28,10 +36,18 @@ function Actor(world, id, level, controls)
 
 	this.area		= this.definition.area;
 
-	if (id === "blud") {
-		this.player	= true;
-		this.level.scrollTo(true, this.x * TILE_SIZE, this.y * TILE_SIZE);
+	switch (id) {
+		case "blud":
+			this.player	= true;
+			this.level.scrollTo(true, this.x * TILE_SIZE, this.y * TILE_SIZE);
+			break;
+
+		case "virus":
+			this.controls = new VirusControls(this);
+			break;
 	}
+
+	actors.push(this);
 };
 
 Actor.prototype.STANDING		= "standing";
@@ -137,10 +153,19 @@ Actor.prototype.tick = function tick()
 	switch (this.state) {
 		case this.STUCK:
 		case this.MOVING:
+			/*
+				How many frames does it take to move this character (in this
+				state) one tile?
+
+				In most cases the number of frames will match the number of
+				steps, but it is also possible for the animation to repeat.
+			*/
 			var frames	= 8;
 			var rate	= 1;
 
-			if (def && !isNaN(def.frames)) {
+			if (def && !isNaN(def.steps)) {
+				frames = def.steps
+			} else if (def && !isNaN(def.frames)) {
 				frames = def.frames;
 			}
 
@@ -315,7 +340,9 @@ Actor.prototype.tick = function tick()
 	var frames	= 1;
 	var rate	= 1;
 
-	if (def && !isNaN(def.frames)) {
+	if (def && !isNaN(def.steps)) {
+		frames = def.steps
+	} else if (def && !isNaN(def.frames)) {
 		frames = def.frames;
 	}
 

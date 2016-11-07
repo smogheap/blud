@@ -2,7 +2,6 @@ var TILE_SIZE	= 16;
 var input;
 var level;
 
-var actors		= [];
 var player		= null;
 
 /*
@@ -349,9 +348,11 @@ window.addEventListener('load', function()
 		level.resize(buffer.width, buffer.height);
 
 		/* Load the actors; Only the first gets input */
-		actors.push((player = new Actor(world, "blud", level, input)));
-		actors.push(new Actor(world, "abby", level));
-		actors.push(new Actor(world, "saul", level));
+		(player = new Actor(world, "blud", level, input));
+		new Actor(world, "abby", level);
+		new Actor(world, "saul", level);
+
+		new Actor(world, "virus", level);
 
 		/* The level is responsible for rendering the actors */
 		for (var a = 0, actor; actor = actors[a]; a++) {

@@ -352,6 +352,22 @@ var world = {
 				"What do you want?",
 				"Why are you bugging me? Go away!"
 			]
+		},
+
+		"virus": {
+			x:				37,
+			y:				10,
+			facing:			"S",
+			area:			"towncenter",
+			src:			"images/virus.png",
+
+			"standing": {
+				S: { x: 0, y: 0 }
+			},
+
+			moving: {
+				S: { x: 0, y: 0, rate: 1, steps: 8, frames: 2, ox: 1, oy: 0 }
+			}
 		}
 	}
 };
