@@ -109,7 +109,7 @@ function tick(ticks)
 						break;
 
 					case 3: /* New Game */
-						var arnold		= new Actor("arnold");
+						var arnold		= new Actor(world, "arnold", level);
 
 						arnold.state	= "standing";
 
