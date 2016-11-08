@@ -124,6 +124,21 @@ Actor.prototype.isAt = function isAt(x, y)
 	return(false);
 };
 
+/*
+	Return the distance between this actor and the one specified in pixels
+	taking into account the rendering offset.
+*/
+Actor.prototype.distance = function distance(actor)
+{
+	var x1 = (this.x * TILE_SIZE) + this.renderOff.x;
+	var y1 = (this.y * TILE_SIZE) + this.renderOff.y;
+	var x2 = (actor.x * TILE_SIZE) + actor.renderOff.x;
+	var y2 = (actor.y * TILE_SIZE) + actor.renderOff.y;
+
+	// console.log(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
+	return(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
+};
+
 Actor.prototype.setState = function setState(state, dest)
 {
 	if (state && this.state !== state) {
@@ -188,7 +203,7 @@ Actor.prototype.talk = function talk()
 	});
 };
 
-Actor.prototype.canMove = function canMove(direction)
+Actor.prototype.canMove = function canMove(direction, mindistance)
 {
 	var tile;
 	var x	= this.x;
@@ -204,8 +219,26 @@ Actor.prototype.canMove = function canMove(direction)
 	}
 
 	for (var a = 0, actor; actor = actors[a]; a++) {
-		if (actor !== this && actor.isAt(x, y) && actor.area === this.area) {
+		if (actor === this || actor.area !== this.area) {
+			continue;
+		}
+
+		if (actor.newpos.x === x && actor.newpos.y === y) {
+			/*
+				Regardless of mindistance you can never take the exact same
+				spot that another actor is moving to.
+			*/
 			return(false);
+		}
+
+		if (isNaN(mindistance)) {
+			if (actor.x === x && actor.y === y) {
+				return(false);
+			}
+		} else {
+			if (actor.distance(this) < mindistance) {
+				return(false);
+			}
 		}
 	}
 

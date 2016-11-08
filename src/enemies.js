@@ -46,8 +46,9 @@ RotaVirusControls.prototype.tick = function tick()
 		actor.facing = facing;
 	}
 
-	if (found) {
-		actor.setState(actor.MOVING, actor.lookingAt());
+	var movingto = actor.lookingAt();
+	if (found && actor.canMove(actor.facing, TILE_SIZE * 0.75)) {
+		actor.setState(actor.MOVING, movingto);
 
 		if (this.speed < this.maxSpeed) {
 			this.speed += this.accelRate;
@@ -65,8 +66,6 @@ RotaVirusControls.prototype.tick = function tick()
 			actor.setState(actor.STANDING);
 		}
 	}
-
-	var movingto = actor.lookingAt();
 
 	if (this.speed > 0 && actor.state === actor.MOVING) {
 		var x = 0;
@@ -90,10 +89,10 @@ RotaVirusControls.prototype.tick = function tick()
 			actor.renderOff.y  = 0;
 		}
 
-		if (Math.abs(actor.renderOff.x) >= (TILE_SIZE * 0.75) ||
-			Math.abs(actor.renderOff.y) >= (TILE_SIZE * 0.75)
+		if (Math.abs(actor.renderOff.x) >= (TILE_SIZE * 0.5) ||
+			Math.abs(actor.renderOff.y) >= (TILE_SIZE * 0.5)
 		) {
-			if (actor.canMove()) {
+			if (actor.canMove(actor.facing, TILE_SIZE * 0.75)) {
 				actor.x = movingto.x;
 				actor.y = movingto.y;
 
@@ -127,13 +126,15 @@ RotaVirusControls.prototype.tick = function tick()
 	}
 
 	if (actor.state === actor.MOVING && (
-		Math.abs(actor.renderOff.x) > (TILE_SIZE / 2) ||
-		Math.abs(actor.renderOff.y) > (TILE_SIZE / 2)
+		Math.abs(actor.renderOff.x) > 2 ||
+		Math.abs(actor.renderOff.y) > 2
 	)) {
 		var a;
 
-		if ((a = actorAt(movingto.x, movingto.y))) {
-			a.damage(5);
+		for (a = 0; actors[a]; a++) {
+			if (actor.distance(actors[a]) < (TILE_SIZE)) {
+				actors[a].damage(5);
+			}
 		}
 	}
 };
