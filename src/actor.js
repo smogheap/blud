@@ -7,7 +7,7 @@
 var actors = [];
 var player = null;
 
-function Actor(world, id, level, controls)
+function Actor(world, id, level, area, x, y)
 {
 	if (!id || !world.actors[id]) {
 		console.log("Could not find definition for actor:" + id);
@@ -26,8 +26,8 @@ function Actor(world, id, level, controls)
 
 	/* Set defaults from the definition */
 	this.facing		= this.definition.facing;
-	this.x			= this.definition.x;
-	this.y			= this.definition.y;
+	this.x			= x || this.definition.x;
+	this.y			= y || this.definition.y;
 
 	this.health		= 100;
 
@@ -46,7 +46,7 @@ function Actor(world, id, level, controls)
 		y:			0
 	};
 
-	this.area		= this.definition.area;
+	this.area		= area || this.definition.area;
 
 	switch (id) {
 		case "blud":

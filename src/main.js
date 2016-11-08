@@ -347,7 +347,9 @@ window.addEventListener('load', function()
 		new Actor(world, "abby", level);
 		new Actor(world, "saul", level);
 
-		new Actor(world, "rotavirus", level);
+		new Actor(world, "rotavirus", level, "towncenter", 37, 10);
+		new Actor(world, "rotavirus", level, "towncenter", 39, 10);
+		new Actor(world, "rotavirus", level, "towncenter", 10, 20);
 
 		/* The level is responsible for rendering the actors */
 		for (var a = 0, actor; actor = actors[a]; a++) {
