@@ -43,9 +43,6 @@ RotaVirusControls.prototype.tick = function tick()
 
 	if (actor.state !== actor.MOVING) {
 		this.speed = this.minSpeed;
-		actor.renderOff.x = 0;
-		actor.renderOff.y = 0;
-
 		actor.facing = facing;
 	}
 
