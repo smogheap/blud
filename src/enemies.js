@@ -118,7 +118,10 @@ RotaVirusControls.prototype.tick = function tick()
 		}
 	}
 
-	if (actor.state === actor.MOVING) {
+	if (actor.state === actor.MOVING && (
+		Math.abs(actor.renderOff.x) > (TILE_SIZE / 2) ||
+		Math.abs(actor.renderOff.y) > (TILE_SIZE / 2)
+	)) {
 		var a;
 
 		if ((a = actorAt(movingto.x, movingto.y))) {
