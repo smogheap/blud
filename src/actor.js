@@ -70,6 +70,7 @@ Actor.prototype.STUCK			= "stuck";
 Actor.prototype.TURNING			= "turning";
 Actor.prototype.MOVING			= "moving";
 Actor.prototype.TALKING			= "talking";
+Actor.prototype.DEAD			= "dead";
 
 Actor.prototype.getDefinition = function getDefinition(state, direction)
 {
@@ -171,11 +172,15 @@ Actor.prototype.damage = function damage(ammount)
 		this.health = 100;
 	}
 
-	if (this.player && this.health <= 0) {
-		new Dialog({
-			msg:		"You died",
-			noinput:	true
-		});
+	if (this.health <= 0) {
+		this.setState(this.DEAD);
+
+		if (this.player) {
+			new Dialog({
+				msg:		"You died",
+				noinput:	true
+			});
+		}
 	}
 };
 
