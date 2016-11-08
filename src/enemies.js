@@ -25,13 +25,19 @@ RotaVirusControls.prototype.getDirection = function getDirection(clear)
 				} else {
 					this._direction.N = input.HELD;
 				}
-			}
 
-			if (player.y === this.actor.y) {
+				if (Math.abs(player.y - this.actor.y) <= 1) {
+					player.damage(5);
+				}
+			} else if (player.y === this.actor.y) {
 				if (player.x > this.actor.x) {
 					this._direction.E = input.HELD;
 				} else {
 					this._direction.W = input.HELD;
+				}
+
+				if (Math.abs(player.x - this.actor.x) <= 1) {
+					player.damage(5);
 				}
 			}
 		}

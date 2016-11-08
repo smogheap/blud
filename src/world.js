@@ -366,7 +366,7 @@ var world = {
 			},
 
 			moving: {
-				S: { x: 0, y: 0, rate: 1, steps: 8, frames: 2, ox: 1, oy: 0 }
+				S: { x: 0, y: 0, rate: 0.25, steps: 8, frames: 2, ox: 1, oy: 0 }
 			}
 		}
 	}

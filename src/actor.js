@@ -18,6 +18,7 @@ function Actor(world, id, level, controls)
 	this.level		= level;
 
 	this.ticks		= 0;
+	this.frame		= 0;
 	this.state		= this.STANDING;
 	this.definition	= world.actors[id];
 	this.controls	= controls;
@@ -124,7 +125,32 @@ Actor.prototype.setState = function setState(state)
 {
 	if (state && this.state !== state) {
 		this.state = state;
-		this.ticks = 0;
+		this.frame = 0;
+	}
+};
+
+Actor.prototype.damage = function damage(ammount)
+{
+	// TODO Knock back?
+
+	/* Invinsibility frames */
+	if (this.ticks - this.lastDamage < 30) {
+		return;
+	}
+	this.lastDamage = this.ticks;
+
+	this.health -= ammount;
+	if (this.health < 0) {
+		this.health = 0;
+	} else if (this.health > 100) {
+		this.health = 100;
+	}
+
+	if (this.player && this.health <= 0) {
+		new Dialog({
+			msg:		"You died",
+			noinput:	true
+		});
 	}
 };
 
@@ -148,7 +174,7 @@ Actor.prototype.talk = function talk()
 	}
 
 	var def	= this.getDefinition(this.STANDING, "S");
-	var msg = this.definition.dialog[this.ticks % this.definition.dialog.length];
+	var msg = this.definition.dialog[this.frame % this.definition.dialog.length];
 	var src = def.src || this.definition.src;
 	var img;
 
@@ -165,12 +191,14 @@ Actor.prototype.talk = function talk()
 
 Actor.prototype.tick = function tick()
 {
+/*
 	if (0 === (this.ticks % 10)) {
 		this.health--;
 		if (this.health < 0) {
 			this.health = 100;
 		}
 	}
+*/
 
 	/*
 		Keep some information about the current state that may be referenced
@@ -182,7 +210,9 @@ Actor.prototype.tick = function tick()
 	/* Grab the definition for this character's current action and direction */
 	var def			= this.getDefinition(this.state, this.facing);
 
+	/* this.frames resets when the state changes, this.ticks does not */
 	this.ticks++;
+	this.frame++;
 
 	this.newpos.x	= this.x;
 	this.newpos.y	= this.y;
@@ -220,7 +250,7 @@ Actor.prototype.tick = function tick()
 				this.newpos.y = movingto.y;
 			}
 
-			if (Math.floor(this.ticks * rate) <= frames) {
+			if (Math.floor(this.frame * rate) <= frames) {
 				if (orgstate !== this.STUCK) {
 					/* Animation still in progress */
 					break;
@@ -355,7 +385,7 @@ Actor.prototype.tick = function tick()
 				break;
 			}
 
-			if (this.ticks > 4) {
+			if (this.frame > 4) {
 				/*
 					The directional input was held long enough to complete the
 					turn and start moving in the new direction.
@@ -397,10 +427,10 @@ Actor.prototype.tick = function tick()
 			var steps = TILE_SIZE / frames;
 
 			switch (this.facing) {
-				case 'N': this.renderOff.y -= Math.floor(this.ticks * steps * rate); break;
-				case 'E': this.renderOff.x += Math.floor(this.ticks * steps * rate); break;
-				case 'S': this.renderOff.y += Math.floor(this.ticks * steps * rate); break;
-				case 'W': this.renderOff.x -= Math.floor(this.ticks * steps * rate); break;
+				case 'N': this.renderOff.y -= Math.floor(this.frame * steps * rate); break;
+				case 'E': this.renderOff.x += Math.floor(this.frame * steps * rate); break;
+				case 'S': this.renderOff.y += Math.floor(this.frame * steps * rate); break;
+				case 'W': this.renderOff.x -= Math.floor(this.frame * steps * rate); break;
 			}
 
 			if (this.player) {
@@ -447,7 +477,7 @@ Actor.prototype.render = function render(ctx, wx, wy)
 	x += this.renderOff.x;
 	y += this.renderOff.y;
 
-	this.renderState(ctx, this.state, this.facing, this.ticks, x, y);
+	this.renderState(ctx, this.state, this.facing, this.frame, x, y);
 };
 
 Actor.prototype.renderState = function renderState(ctx, state, facing, ticks, x, y)
