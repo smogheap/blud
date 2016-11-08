@@ -361,10 +361,13 @@ var world = {
 			area:			"towncenter",
 			src:			"images/enemy.png",
 
-			"standing": {
-				S: { x: 0, y: 0 }
+			standing: {
+				S: { x: 2, y: 0 }
 			},
 
+			stuck: {
+				S: { x: 0, y: 0, rate: 0.25, steps: 8, frames: 2, ox: 1, oy: 0 }
+			},
 			moving: {
 				S: { x: 0, y: 0, rate: 0.25, steps: 8, frames: 2, ox: 1, oy: 0 }
 			}

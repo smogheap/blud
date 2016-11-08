@@ -19,9 +19,7 @@ function Actor(world, id, level, controls)
 
 	this.ticks		= 0;
 	this.frame		= 0;
-	this.state		= this.STANDING;
 	this.definition	= world.actors[id];
-	this.controls	= controls;
 
 	this.width		= this.definition.width  || TILE_SIZE;
 	this.height		= this.definition.height || TILE_SIZE;
@@ -55,6 +53,7 @@ function Actor(world, id, level, controls)
 			player = this;
 			this.player	= true;
 			this.level.scrollTo(true, this.x * TILE_SIZE, this.y * TILE_SIZE);
+			this.controls = new PlayerControls(this);
 			break;
 
 		case "rotavirus":
@@ -62,6 +61,7 @@ function Actor(world, id, level, controls)
 			break;
 	}
 
+	this.setState(this.STANDING);
 	actors.push(this);
 };
 
@@ -75,6 +75,9 @@ Actor.prototype.TALKING			= "talking";
 Actor.prototype.getDefinition = function getDefinition(state, direction)
 {
 	var def = null;
+
+	state = state || this.state;
+	direction = direction || this.facing;
 
 	if (this.definition[state]) {
 		def = this.definition[state][direction] || this.definition[state]['S'];
@@ -162,18 +165,6 @@ Actor.prototype.damage = function damage(ammount)
 	}
 };
 
-Actor.prototype.isActive = function isActive(state)
-{
-	switch (state || this.state) {
-		case this.MOVING:
-		case this.STUCK:
-			return(true);
-
-		default:
-			return(false);
-	}
-}
-
 Actor.prototype.talk = function talk()
 {
 	// TODO Add actual logic to control what the actor can say
@@ -203,7 +194,7 @@ Actor.prototype.canMove = function canMove(direction)
 	var x	= this.x;
 	var y	= this.y;
 
-	direction	= direction || this.direction;
+	direction	= direction || this.facing;
 
 	switch (direction) {
 		case 'N': y--; break;
@@ -212,14 +203,13 @@ Actor.prototype.canMove = function canMove(direction)
 		case 'W': x--; break;
 	}
 
-	var a;
-
-	if ((a = actorAt(x, y)) && a !== this)  {
-		return(false);
+	for (var a = 0, actor; actor = actors[a]; a++) {
+		if (actor !== this && actor.isAt(x, y) && actor.area === this.area) {
+			return(false);
+		}
 	}
 
 	tile = this.level.tileAt(x, y);
-
 	if (!tile || !this.level.tiles[tile]) {
 		return(false);
 	}
@@ -229,246 +219,33 @@ Actor.prototype.canMove = function canMove(direction)
 
 Actor.prototype.tick = function tick()
 {
-/*
-	if (0 === (this.ticks % 10)) {
-		this.health--;
-		if (this.health < 0) {
-			this.health = 100;
-		}
-	}
-*/
-
-	/*
-		Keep some information about the current state that may be referenced
-		below after the state has changed.
-	*/
-	var orgfacing	= this.facing;
-	var orgstate	= this.state;
-
-	/* Grab the definition for this character's current action and direction */
-	var def			= this.getDefinition(this.state, this.facing);
-
 	/* this.frames resets when the state changes, this.ticks does not */
 	this.ticks++;
 	this.frame++;
 
+	if (this.controls && this.controls.tick) {
+		this.controls.tick();
+	}
+
+	/* Grab the definition for this character's current action and direction */
+	var def			= this.getDefinition(this.state, this.facing);
+
+
 	switch (this.state) {
-		case this.STUCK:
-		case this.MOVING:
-			/*
-				How many frames does it take to move this character (in this
-				state) one tile?
-
-				In most cases the number of frames will match the number of
-				steps, but it is also possible for the animation to repeat.
-			*/
-			var frames	= 8;
-			var rate	= 1;
-
-			if (def && !isNaN(def.steps)) {
-				frames = def.steps
-			} else if (def && !isNaN(def.frames)) {
-				frames = def.frames;
-			}
-
-			if (def && !isNaN(def.rate)) {
-				rate = def.rate;
-			}
-
-			/* Calculate the destination coordinates */
-			var movingto = null;
-
-			if (this.MOVING === orgstate) {
-				movingto = this.lookingAt();
-			}
-
-			if (Math.floor(this.frame * rate) <= frames) {
-				if (orgstate !== this.STUCK) {
-					/* Animation still in progress */
-					break;
-				} else {
-					/*
-						Fallthrough; Let input break a character out an
-						animation for the stuck state.
-					*/
-					// console.log('stuck');
-				}
-			} else {
-				/* The animation has completed */
-				if (movingto) {
-					this.x = movingto.x;
-					this.y = movingto.y;
-
-					/* Did that movement take us to a different area? */
-					if (this.player) {
-						this.level.switchArea(this.x, this.y, this);
-					}
-				}
-
-				this.setState(this.STANDING);
-				/* Fallthrough to handle input again */
-			}
-
 		case this.BLINKING:
 		case this.STANDING:
-			var nesw	= "NESW";
-			var order	= "";
-			var others	= "";
-			var dirs;
-
-			/*
-				Adjust the order we try each direction so that directions that
-				the actor can move to are preferred, and the last direction
-				that the actor travelled in is not preferred.
-
-				This should ensure that a player holding multiple directions
-				will see the expected behavior.
-					1) Holding 2 directions will cause the actor to slide along
-					a wall that is blocking movement in one of those directions.
-
-					2) A character will zigzag when holding 2 directions with
-					nothing blocking the path.
-			*/
-			for (var i = 0, d; (d = nesw.charAt(i)) && d.length === 1; i++) {
-				if (this.canMove(d)) {
-					if (d !== this.facing) {
-						order = d + order;
-					} else {
-						order = order + d;
-					}
-				} else {
-					others = others + d;
-				}
-			}
-			order = order + others;
-			// debug(order);
-
-			if (this.controls) {
-				dirs = this.controls.getDirection(true);
-			} else {
-				// TODO Load a different set of controls depending on the actor
-				//		type. This will likely be based on a schedule set in
-				//		the definition file.
-				dirs = {};
-			}
-
 			if (0 == (this.ticks % 3)) {
 				switch (this.state) {
 					case this.STANDING:
 						if (0 == (WRand() % 40)) {
-							// console.log('blink');
-							this.state = this.BLINKING;
+							this.setState(this.BLINKING);
 						}
 						break;
 
 					case this.BLINKING:
-						this.state = this.STANDING;
+						this.setState(this.STANDING);
 						break;
 				}
-			}
-
-			for (var i = 0, d; (d = order.charAt(i)) && d.length > 0; i++) {
-				if (dirs[d]) {
-					this.facing = d;
-
-					if (!this.canMove(d)) {
-						/*
-							Change to the stuck state (pushing against a solid
-							block) right away. There is no need to change to
-							turning since the actor can't move so no need to let
-							the turn be cancelled.
-						*/
-						this.setState(this.STUCK);
-					} else if (orgfacing !== d && !this.isActive(orgstate)) {
-						/*
-							The character was not moving and is now turning to a
-							new direction. This state exists to provide a small
-							delay before moving so that the player can turn the
-							character in place without moving by tapping a
-							directional input.
-						*/
-						this.setState(this.TURNING);
-						break;
-					} else {
-						/* Start moving */
-						this.setState(this.MOVING, this.lookingAt());
-						break;
-					}
-				}
-			}
-			break;
-
-		case this.TURNING:
-			var dirs;
-
-			if (this.controls) {
-				dirs = this.controls.getDirection(false);
-			} else {
-				dirs = {};
-			}
-
-			if (this.facing && !(dirs[this.facing] & input.HELD)) {
-				/*
-					The direction input was released before the actor started
-					moving. Leave the actor on the same spot but facing the new
-					direction.
-				*/
-				this.setState(this.STANDING);
-				break;
-			}
-
-			if (this.frame > 4) {
-				/*
-					The directional input was held long enough to complete the
-					turn and start moving in the new direction.
-				*/
-				this.setState(this.MOVING, this.lookingAt());
-				break;
-			}
-			break;
-	}
-
-	/*
-		Calculate the rendering offset to use if the character is currently
-		moving from one tile to another.
-	*/
-	this.renderOff.x = 0;
-	this.renderOff.y = 0;
-
-	/* Grab the definition for this character's current action and direction */
-	var def		= this.getDefinition(this.state, this.facing);
-
-	var frames	= 1;
-	var rate	= 1;
-
-	if (def && !isNaN(def.steps)) {
-		frames = def.steps
-	} else if (def && !isNaN(def.frames)) {
-		frames = def.frames;
-	}
-
-	if (def && !isNaN(def.rate)) {
-		rate = def.rate;
-	}
-
-	switch (this.state) {
-		default:
-			break;
-
-		case this.MOVING:
-			var steps = TILE_SIZE / frames;
-
-			switch (this.facing) {
-				case 'N': this.renderOff.y -= Math.floor(this.frame * steps * rate); break;
-				case 'E': this.renderOff.x += Math.floor(this.frame * steps * rate); break;
-				case 'S': this.renderOff.y += Math.floor(this.frame * steps * rate); break;
-				case 'W': this.renderOff.x -= Math.floor(this.frame * steps * rate); break;
-			}
-
-			if (this.player) {
-				this.level.scrollTo(false,
-					(this.x * TILE_SIZE) + this.renderOff.x,
-					(this.y * TILE_SIZE) + this.renderOff.y);
 			}
 			break;
 	}

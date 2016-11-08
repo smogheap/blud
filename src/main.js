@@ -343,7 +343,7 @@ window.addEventListener('load', function()
 		level.resize(buffer.width, buffer.height);
 
 		/* Load the actors; Only the first gets input */
-		(player = new Actor(world, "blud", level, input));
+		(player = new Actor(world, "blud", level));
 		new Actor(world, "abby", level);
 		new Actor(world, "saul", level);
 

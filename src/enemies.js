@@ -1,49 +1,106 @@
 function RotaVirusControls(actor)
 {
-	this.actor			= actor;
-	this._direction		= { N: 0, E: 0, S: 0, W: 0 };
+	this.actor	= actor;
+	this.speed	= -2;
 }
 
-RotaVirusControls.prototype.getDirection = function getDirection(clear)
+RotaVirusControls.prototype.tick = function tick()
 {
-	this._direction.N = 0;
-	this._direction.E = 0;
-	this._direction.S = 0;
-	this._direction.W = 0;
-
 	/*
 		This simple enemy has very basic logic. If it is lined up either
 		vertically or horizontally with the player then it will attempt to move
 		towards them.
 	*/
+	var actor	= this.actor;
+	var found	= true;
 
-	if (player) {
-		if (player.area === this.actor.area) {
-			if (player.x === this.actor.x) {
-				if (player.y > this.actor.y) {
-					this._direction.S = input.HELD;
-				} else {
-					this._direction.N = input.HELD;
-				}
+	if (!player || player.area !== actor.area) {
+		return;
+	}
 
-				if (Math.abs(player.y - this.actor.y) <= 1) {
-					player.damage(5);
-				}
-			} else if (player.y === this.actor.y) {
-				if (player.x > this.actor.x) {
-					this._direction.E = input.HELD;
-				} else {
-					this._direction.W = input.HELD;
-				}
+	if (player.x === actor.x) {
+		if (player.y > actor.y) {
+			actor.facing = "S";
+		} else {
+			actor.facing = "N";
+		}
+	} else if (player.y === actor.y) {
+		if (player.x > actor.x) {
+			actor.facing = "E";
+		} else {
+			actor.facing = "W";
+		}
+	} else {
+		found = false;
+	}
 
-				if (Math.abs(player.x - this.actor.x) <= 1) {
-					player.damage(5);
-				}
-			}
+	if (actor.state !== actor.MOVING) {
+		this.speed = -2;
+	}
+
+	if (found) {
+		actor.setState(actor.MOVING, actor.lookingAt());
+
+		if (this.speed < 4) {
+			this.speed += 0.10;
+		} else {
+			this.speed = 4;
+		}
+
+	} else {
+		if (this.speed > 0) {
+			this.speed -= 0.15;
+		}
+
+		if (this.speed <= 0) {
+			this.speed = -2;
+			actor.setState(actor.STANDING);
+
+			actor.renderOff.x = 0;
+			actor.renderOff.y = 0;
 		}
 	}
 
-	return(this._direction);
+	var movingto = actor.lookingAt();
+
+	if (!actor.canMove()) {
+		if (found) {
+			actor.setState(actor.STUCK);
+		} else {
+			actor.setState(actor.STANDING);
+		}
+
+		this.speed = -2;
+		actor.renderOff.x = 0;
+		actor.renderOff.y = 0;
+	} else if (this.speed > 0 && actor.state === actor.MOVING) {
+		var x = 0;
+		var y = 0;
+
+		switch (actor.facing) {
+			case 'N': y--; break;
+			case 'E': x++; break;
+			case 'S': y++; break;
+			case 'W': x--; break;
+		}
+
+		actor.renderOff.x += Math.floor(x * this.speed);
+		actor.renderOff.y += Math.floor(y * this.speed);
+
+		if (Math.abs(actor.renderOff.x) >= (TILE_SIZE / 2) ||
+			Math.abs(actor.renderOff.y) >= (TILE_SIZE / 2)
+		) {
+			actor.x = movingto.x;
+			actor.y = movingto.y;
+
+			actor.renderOff.x = - actor.renderOff.x;
+			actor.renderOff.y = - actor.renderOff.y;
+		}
+	}
+
+	if (player.isAt(movingto.x, movingto.y)) {
+		player.damage(5);
+	}
 };
 
 
