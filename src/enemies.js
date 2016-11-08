@@ -43,12 +43,19 @@ RotaVirusControls.prototype.tick = function tick()
 
 	if (actor.state !== actor.MOVING) {
 		this.speed = this.minSpeed;
+		actor.renderOff.x = 0;
+		actor.renderOff.y = 0;
+
 		actor.facing = facing;
 	}
 
 	var movingto = actor.lookingAt();
-	if (found && actor.canMove(actor.facing, TILE_SIZE * 0.75)) {
-		actor.setState(actor.MOVING, movingto);
+	if (found && facing === actor.facing) {
+		if (actor.canMove(actor.facing, TILE_SIZE * 0.75)) {
+			actor.setState(actor.MOVING, movingto);
+		} else {
+			actor.setState(actor.MOVING);
+		}
 
 		if (this.speed < this.maxSpeed) {
 			this.speed += this.accelRate;
