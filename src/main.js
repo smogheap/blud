@@ -202,23 +202,29 @@ function render(ctx)
 	level.render(ctx);
 
 	/* HUD */
-	var x = 10, y = 10;
-	drawBorder(ctx, x, y, 64 + 12, 8 + 12, 'black');
+	var dx = 10, dy = 10;
+	drawBorder(ctx, dx, dy, 64 + 12, 8 + 12, 'black');
+
+	dx += 6;
+	dy += 6;
 
 	/* Scale the player's health to a 64 pixel long bar */
-	var health = player.health * 64 / 100;
+	var health	= player.health * 64 / 100;
+	var w		= 64 - health;
 
-	ctx.drawImage(hud,
-			0, 0,
-			health, 8,
-			6 + x, 6 + y,
-			health, 8);
-	if (64 - health > 0) {
+	ctx.drawImage(hud, 0, 0, health, 8, dx, dy, health, 8);
+
+	if (w > 0) {
+		w = Math.min(w, 8);
+		if (health < 8) {
+			w = health;
+		}
+
 		ctx.drawImage(hud,
 				64, 0,
-				64 - health, 8,
-				6 + x + health - 8, 6 + y,
-				64 - health, 8);
+				w, 8,
+				health > 8 ? dx + health - 8 : dx, dy,
+				w, 8);
 	}
 }
 

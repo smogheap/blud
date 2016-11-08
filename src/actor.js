@@ -30,7 +30,7 @@ function Actor(world, id, level, controls)
 	this.x			= this.definition.x;
 	this.y			= this.definition.y;
 
-	this.health		= WRand() % 100;
+	this.health		= 100;
 
 	this.newpos		= {
 		x:			this.x,
@@ -165,6 +165,13 @@ Actor.prototype.talk = function talk()
 
 Actor.prototype.tick = function tick()
 {
+	if (0 === (this.ticks % 10)) {
+		this.health--;
+		if (this.health < 0) {
+			this.health = 100;
+		}
+	}
+
 	/*
 		Keep some information about the current state that may be referenced
 		below after the state has changed.
