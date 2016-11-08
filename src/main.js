@@ -184,13 +184,16 @@ function render(ctx)
 	var health	= player.health * 64 / 100;
 	var w		= 64 - health;
 
-	ctx.drawImage(hud, 0, 0, health, 8, dx, dy, health, 8);
+	if (health < 8) {
+		w = health;
+	}
+
+	if (health > 0) {
+		ctx.drawImage(hud, 0, 0, health, 8, dx, dy, health, 8);
+	}
 
 	if (w > 0) {
 		w = Math.min(w, 8);
-		if (health < 8) {
-			w = health;
-		}
 
 		ctx.drawImage(hud,
 				64, 0,
