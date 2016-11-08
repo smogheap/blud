@@ -153,12 +153,12 @@ if (actor.facing !== facing) {
 	)) {
 		var a;
 
-		for (a = 0; actors[a]; a++) {
-			if (actors[a] === actor) {
+		for (a = 0; level.actors[a]; a++) {
+			if (level.actors[a] === actor) {
 				continue;
 			}
-			if (actor.distance(actors[a]) < (TILE_SIZE)) {
-				actors[a].damage(5);
+			if (actor.distance(level.actors[a]) < (TILE_SIZE)) {
+				level.actors[a].damage(5);
 				this.speed = 0;
 			}
 		}

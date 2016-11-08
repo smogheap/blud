@@ -1,18 +1,16 @@
-/*
-	Keep a global list of all active actors, since many actors need to find
-	others that may be nearby.
-*/
-// TODO Find a better way to track this. Perhaps keep a list of actors on the
-//		level that only includes those that are in the current area?
-var actors = [];
-var player = null;
+var player		= null;
 var actornum	= 0;
 
-function Actor(world, id, level, area, x, y)
+function Actor(id, definition, level, area, x, y)
 {
-	if (!id || !world.actors[id]) {
+	if (!id || !definition) {
 		console.log("Could not find definition for actor:" + id);
 		return(null);
+	}
+
+	if (id === "blud" && player) {
+		/* There is only one player */
+		return(player);
 	}
 
 	this.num		= ++actornum;
@@ -22,7 +20,7 @@ function Actor(world, id, level, area, x, y)
 
 	this.ticks		= 0;
 	this.frame		= 0;
-	this.definition	= world.actors[id];
+	this.definition	= definition;
 
 	this.width		= this.definition.width  || TILE_SIZE;
 	this.height		= this.definition.height || TILE_SIZE;
@@ -53,7 +51,6 @@ function Actor(world, id, level, area, x, y)
 
 	switch (id) {
 		case "blud":
-			player = this;
 			this.player	= true;
 			this.level.scrollTo(true, this.x * TILE_SIZE, this.y * TILE_SIZE);
 			this.controls = new PlayerControls(this);
@@ -65,7 +62,6 @@ function Actor(world, id, level, area, x, y)
 	}
 
 	this.setState(this.STANDING);
-	actors.push(this);
 };
 
 Actor.prototype.STANDING		= "standing";
@@ -223,7 +219,7 @@ Actor.prototype.canMove = function canMove(direction, mindistance)
 		case 'W': x--; break;
 	}
 
-	for (var a = 0, actor; actor = actors[a]; a++) {
+	for (var a = 0, actor; actor = level.actors[a]; a++) {
 		if (actor === this || actor.area !== this.area) {
 			continue;
 		}

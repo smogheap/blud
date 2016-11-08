@@ -12,7 +12,7 @@ var firstframe		= true;
 
 function actorAt(x, y)
 {
-	for (var a = 0, actor; actor = actors[a]; a++) {
+	for (var a = 0, actor; actor = level.actors[a]; a++) {
 		if (actor.isAt(x, y)) {
 			return(actor);
 		}
@@ -344,20 +344,6 @@ window.addEventListener('load', function()
 		/* Load the town center */
 		level.loadArea("towncenter");
 		level.resize(buffer.width, buffer.height);
-
-		/* Load the actors; Only the first gets input */
-		(player = new Actor(world, "blud", level));
-		new Actor(world, "abby", level);
-		new Actor(world, "saul", level);
-
-		new Actor(world, "rotavirus", level, "towncenter", 37, 10);
-		new Actor(world, "rotavirus", level, "towncenter", 39, 10);
-		new Actor(world, "rotavirus", level, "towncenter", 10, 20);
-
-		/* The level is responsible for rendering the actors */
-		for (var a = 0, actor; actor = actors[a]; a++) {
-			level.addChild(actor);
-		}
 
 		requestAnimationFrame(doAnimationFrame);
 	});

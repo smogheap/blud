@@ -355,10 +355,12 @@ var world = {
 		},
 
 		"rotavirus": {
-			x:				37,
-			y:				10,
-			facing:			"S",
-			area:			"towncenter",
+			at: [
+				{ x: 37, y: 10, area: "towncenter" },
+				{ x: 39, y: 10, area: "towncenter" },
+				{ x: 10, y: 20, area: "towncenter" },
+			],
+
 			src:			"images/enemy.png",
 
 			standing: {

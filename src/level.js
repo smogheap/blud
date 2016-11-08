@@ -507,6 +507,43 @@ Level.prototype.loadArea = function loadArea(name)
 
 	this.bake();
 
+	/* Load the new set of actors */
+	this.actors		= [];
+
+	if (!player) {
+		player = new Actor("blud", this.def.actors["blud"], this, name);
+	}
+	player.area = name;
+	this.actors.push(player);
+
+	var ids = Object.keys(this.def.actors);
+	for (var i = 0, id; id = ids[i]; i++) {
+		var def	= this.def.actors[id];
+
+		if (id === "blud") {
+			/* The player was added above */
+			continue;
+		}
+
+		if (def.area && def.area !== name) {
+			continue;
+		}
+
+		if (def.area && !isNaN(def.x) && !isNaN(def.y)) {
+			this.actors.push(new Actor(id, def, this, name));
+		}
+
+		if (def.at) {
+			for (var x = 0; x < def.at.length; x++) {
+				if (def.at[x].area !== name) {
+					continue;
+				}
+
+				this.actors.push(new Actor(id, def, this, name, def.at[x].x, def.at[x].y));
+			}
+		}
+	}
+
 	return(true);
 }
 
@@ -686,6 +723,12 @@ Level.prototype.tick = function tick()
 		}
 	}
 
+	for (var c = 0, child; child = this.actors[c]; c++) {
+		if (child.player || !child.area || child.area === this.area) {
+			child.tick();
+		}
+	}
+
 	return(true);
 };
 
@@ -718,6 +761,11 @@ Level.prototype.render = function render(ctx)
 
 		/* Draw the children (NPCs, other non-static objects) */
 		for (var c = 0, child; child = this.children[c]; c++) {
+			if (!child.area || child.area === this.area) {
+				child.render(ctx, this.viewport.x, this.viewport.y);
+			}
+		}
+		for (var c = 0, child; child = this.actors[c]; c++) {
 			if (!child.area || child.area === this.area) {
 				child.render(ctx, this.viewport.x, this.viewport.y);
 			}
