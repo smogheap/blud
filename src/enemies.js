@@ -24,17 +24,18 @@ RotaVirusControls.prototype.tick = function tick()
 		return;
 	}
 
+	var facing = actor.facing;
 	if (player.x === actor.x) {
 		if (player.y > actor.y) {
-			actor.facing = "S";
+			facing = "S";
 		} else {
-			actor.facing = "N";
+			facing = "N";
 		}
 	} else if (player.y === actor.y) {
 		if (player.x > actor.x) {
-			actor.facing = "E";
+			facing = "E";
 		} else {
-			actor.facing = "W";
+			facing = "W";
 		}
 	} else {
 		found = false;
@@ -42,6 +43,7 @@ RotaVirusControls.prototype.tick = function tick()
 
 	if (actor.state !== actor.MOVING) {
 		this.speed = this.minSpeed;
+		actor.facing = facing;
 	}
 
 	if (found) {
