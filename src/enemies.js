@@ -10,6 +10,35 @@ function RotaVirusControls(actor)
 	this.speed		= this.minSpeed;
 }
 
+RotaVirusControls.prototype.isActive = function isActive(state)
+{
+	switch (state || this.actor.state) {
+		case this.actor.MOVING:
+		case this.actor.STUCK:
+			return(true);
+
+		default:
+			return(false);
+	}
+};
+
+RotaVirusControls.prototype.accel = function accel()
+{
+	this.speed += this.accelRate;
+	if (this.speed > this.maxSpeed) {
+		this.speed = this.maxSpeed;
+	}
+};
+
+RotaVirusControls.prototype.decel = function decel()
+{
+	this.speed -= this.decelRate;
+	if (this.speed <= 0) {
+		this.speed = this.minSpeed;
+		this.actor.setState(this.actor.STANDING);
+	}
+};
+
 RotaVirusControls.prototype.tick = function tick()
 {
 	/*
@@ -28,13 +57,13 @@ RotaVirusControls.prototype.tick = function tick()
 	if (player.x === actor.x) {
 		if (player.y > actor.y) {
 			facing = "S";
-		} else {
+		} else if (player.y < actor.y) {
 			facing = "N";
 		}
 	} else if (player.y === actor.y) {
 		if (player.x > actor.x) {
 			facing = "E";
-		} else {
+		} else if (player.x < actor.x) {
 			facing = "W";
 		}
 	} else {
@@ -42,33 +71,22 @@ RotaVirusControls.prototype.tick = function tick()
 	}
 
 	if (actor.state !== actor.MOVING) {
-		this.speed = this.minSpeed;
+if (actor.facing !== facing) {
+	console.log('Turning to', facing);
+}
 		actor.facing = facing;
 	}
 
-	var movingto = actor.lookingAt();
 	if (found && facing === actor.facing) {
 		if (actor.canMove(actor.facing, TILE_SIZE * 0.75)) {
-			actor.setState(actor.MOVING, movingto);
+			actor.setState(actor.MOVING, actor.lookingAt());
 		} else {
 			actor.setState(actor.MOVING);
 		}
 
-		if (this.speed < this.maxSpeed) {
-			this.speed += this.accelRate;
-		} else {
-			this.speed = this.maxSpeed;
-		}
-
+		this.accel();
 	} else {
-		if (this.speed > 0) {
-			this.speed -= this.decelRate;
-		}
-
-		if (this.speed <= 0) {
-			this.speed = this.minSpeed;
-			actor.setState(actor.STANDING);
-		}
+		this.decel();
 	}
 
 	if (this.speed > 0 && actor.state === actor.MOVING) {
@@ -82,35 +100,35 @@ RotaVirusControls.prototype.tick = function tick()
 			case 'W': x--; break;
 		}
 
-		if (x !== 0) {
-			actor.renderOff.x += Math.floor(x * this.speed);
-		} else {
-			actor.renderOff.x = 0;
-		}
-		if (y !== 0) {
-			actor.renderOff.y += Math.floor(y * this.speed);
-		} else {
-			actor.renderOff.y  = 0;
-		}
+		var rx = x ? actor.renderOff.x + Math.floor(x * this.speed) : 0;
+		var ry = y ? actor.renderOff.y + Math.floor(y * this.speed) : 0;
 
-		if (Math.abs(actor.renderOff.x) >= (TILE_SIZE * 0.5) ||
-			Math.abs(actor.renderOff.y) >= (TILE_SIZE * 0.5)
+		if (Math.abs(rx) >= (TILE_SIZE * 0.5) ||
+			Math.abs(ry) >= (TILE_SIZE * 0.5)
 		) {
-			if (actor.canMove(actor.facing, TILE_SIZE * 0.75)) {
-				actor.x = movingto.x;
-				actor.y = movingto.y;
+			/* The character has moved far enough to reach another square */
+			if (actor.canMove(actor.facing, TILE_SIZE * 0.5)) {
+				actor.x = actor.newpos.x;
+				actor.y = actor.newpos.y;
 
-				actor.renderOff.x -= x * TILE_SIZE;
-				actor.renderOff.y -= y * TILE_SIZE;
-			} else {
-				if (found) {
-					actor.setState(actor.STUCK);
+				actor.renderOff.x = rx - (x * TILE_SIZE);
+				actor.renderOff.y = ry - (y * TILE_SIZE);
+
+				if (actor.canMove(actor.facing, TILE_SIZE * 0.5)) {
+					actor.setState(actor.MOVING, actor.lookingAt());
 				} else {
 					actor.setState(actor.STANDING);
 				}
-
-				this.speed = this.minSpeed;
+			} else {
+				/*
+					Simply skip moving the character this turn because something
+					was in the way.
+				*/
+				;
 			}
+		} else {
+			actor.renderOff.x = rx;
+			actor.renderOff.y = ry;
 		}
 	}
 
@@ -136,8 +154,12 @@ RotaVirusControls.prototype.tick = function tick()
 		var a;
 
 		for (a = 0; actors[a]; a++) {
+			if (actors[a] === actor) {
+				continue;
+			}
 			if (actor.distance(actors[a]) < (TILE_SIZE)) {
 				actors[a].damage(5);
+				this.speed = 0;
 			}
 		}
 	}

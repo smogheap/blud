@@ -6,6 +6,7 @@
 //		level that only includes those that are in the current area?
 var actors = [];
 var player = null;
+var actornum	= 0;
 
 function Actor(world, id, level, area, x, y)
 {
@@ -13,6 +14,8 @@ function Actor(world, id, level, area, x, y)
 		console.log("Could not find definition for actor:" + id);
 		return(null);
 	}
+
+	this.num		= ++actornum;
 
 	this.id			= id;
 	this.level		= level;
@@ -141,7 +144,7 @@ Actor.prototype.distance = function distance(actor)
 
 Actor.prototype.setState = function setState(state, dest)
 {
-	if (state && this.state !== state) {
+	if (state && (this.state !== state || dest)) {
 		this.state = state;
 		this.frame = 0;
 
@@ -208,8 +211,10 @@ Actor.prototype.canMove = function canMove(direction, mindistance)
 	var tile;
 	var x	= this.x;
 	var y	= this.y;
+	var ax;
+	var ay;
 
-	direction	= direction || this.facing;
+	direction = direction || this.facing;
 
 	switch (direction) {
 		case 'N': y--; break;
@@ -223,7 +228,19 @@ Actor.prototype.canMove = function canMove(direction, mindistance)
 			continue;
 		}
 
-		if (actor.newpos.x === x && actor.newpos.y === y) {
+		switch (actor.state) {
+			case actor.MOVING:
+				ax = actor.newpos.x;
+				ay = actor.newpos.y;
+				break;
+
+			default:
+				ax = actor.x;
+				ay = actor.y;
+				break;
+		}
+
+		if (ax === x && ay === y) {
 			/*
 				Regardless of mindistance you can never take the exact same
 				spot that another actor is moving to.
