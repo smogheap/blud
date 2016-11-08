@@ -71,8 +71,16 @@ RotaVirusControls.prototype.tick = function tick()
 			case 'W': x--; break;
 		}
 
-		actor.renderOff.x += Math.floor(x * this.speed);
-		actor.renderOff.y += Math.floor(y * this.speed);
+		if (x !== 0) {
+			actor.renderOff.x += Math.floor(x * this.speed);
+		} else {
+			actor.renderOff.x = 0;
+		}
+		if (y !== 0) {
+			actor.renderOff.y += Math.floor(y * this.speed);
+		} else {
+			actor.renderOff.y  = 0;
+		}
 
 		if (Math.abs(actor.renderOff.x) >= (TILE_SIZE * 0.75) ||
 			Math.abs(actor.renderOff.y) >= (TILE_SIZE * 0.75)
