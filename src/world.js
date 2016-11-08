@@ -20,7 +20,7 @@ var world = {
 
 		" ": {
 			name:			"ground",
-			src:			"images/blud.png",
+			src:			"images/floor.png",
 
 			/* This number is added to all offsets defined for this tile */
 			baseOffset:		[ 1, 6 ],
@@ -31,7 +31,7 @@ var world = {
 		},
 		"o": {
 			name:			"plasma",
-			src:			"images/blud.png",
+			src:			"images/floor.png",
 			solid:			true,
 
 			/* This number is added to all offsets defined for this tile */
