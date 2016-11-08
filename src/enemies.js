@@ -55,9 +55,6 @@ RotaVirusControls.prototype.tick = function tick()
 		if (this.speed <= 0) {
 			this.speed = -2;
 			actor.setState(actor.STANDING);
-
-			actor.renderOff.x = 0;
-			actor.renderOff.y = 0;
 		}
 	}
 
@@ -94,9 +91,22 @@ RotaVirusControls.prototype.tick = function tick()
 				}
 
 				this.speed = -2;
-				actor.renderOff.x = 0;
-				actor.renderOff.y = 0;
 			}
+		}
+	}
+
+	if (actor.state !== actor.MOVING) {
+		if (actor.renderOff.x > 0) {
+			actor.renderOff.x--;
+		}
+		if (actor.renderOff.x < 0) {
+			actor.renderOff.x++
+		}
+		if (actor.renderOff.y > 0) {
+			actor.renderOff.y--;
+		}
+		if (actor.renderOff.y < 0) {
+			actor.renderOff.y++
 		}
 	}
 
