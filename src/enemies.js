@@ -100,8 +100,12 @@ RotaVirusControls.prototype.tick = function tick()
 		}
 	}
 
-	if (player.isAt(movingto.x, movingto.y)) {
-		player.damage(5);
+	if (actor.state === actor.MOVING) {
+		var a;
+
+		if ((a = actorAt(movingto.x, movingto.y))) {
+			a.damage(5);
+		}
 	}
 };
 
