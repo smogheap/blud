@@ -25,9 +25,19 @@ function Actor(world, id, level, controls)
 	this.height		= this.definition.height || TILE_SIZE;
 
 	/* Set defaults from the definition */
+	this.facing		= this.definition.facing;
 	this.x			= this.definition.x;
 	this.y			= this.definition.y;
-	this.facing		= this.definition.facing;
+
+	this.newpos		= {
+		x:			this.x,
+		y:			this.y
+	};
+
+	this._lookingAt	= {
+		x:			0,
+		y:			0
+	};
 
 	this.renderOff	= {
 		x:			0,
@@ -93,6 +103,19 @@ Actor.prototype.getDefinition = function getDefinition(state, direction)
 	return(def);
 };
 
+Actor.prototype.isAt = function isAt(x, y)
+{
+	if (x === this.x && y === this.y) {
+		return(true);
+	}
+
+	if (x === this.newpos.x && y === this.newpos.y) {
+		return(true);
+	}
+
+	return(false);
+};
+
 Actor.prototype.setState = function setState(state)
 {
 	if (state && this.state !== state) {
@@ -150,6 +173,9 @@ Actor.prototype.tick = function tick()
 
 	this.ticks++;
 
+	this.newpos.x	= this.x;
+	this.newpos.y	= this.y;
+
 	switch (this.state) {
 		case this.STUCK:
 		case this.MOVING:
@@ -174,11 +200,13 @@ Actor.prototype.tick = function tick()
 			}
 
 			/* Calculate the destination coordinates */
-			var newpos = null;
+			var movingto = null;
 
 			if (this.MOVING === orgstate) {
-				newpos = this.lookingAt();
+				movingto = this.lookingAt();
 
+				this.newpos.x = movingto.x;
+				this.newpos.y = movingto.y;
 			}
 
 			if (Math.floor(this.ticks * rate) <= frames) {
@@ -194,9 +222,9 @@ Actor.prototype.tick = function tick()
 				}
 			} else {
 				/* The animation has completed */
-				if (newpos) {
-					this.x = newpos[0];
-					this.y = newpos[1];
+				if (movingto) {
+					this.x = movingto.x;
+					this.y = movingto.y;
 
 					/* Did that movement take us to a different area? */
 					if (this.player) {
@@ -385,17 +413,17 @@ Actor.prototype.renderRow = function renderRow(y)
 
 Actor.prototype.lookingAt = function lookingAt()
 {
-	var x = this.x;
-	var y = this.y;
+	this._lookingAt.x = this.x;
+	this._lookingAt.y = this.y;
 
 	switch (this.facing) {
-		case 'N': y--; break;
-		case 'E': x++; break;
-		case 'S': y++; break;
-		case 'W': x--; break;
+		case 'N': this._lookingAt.y--; break;
+		case 'E': this._lookingAt.x++; break;
+		case 'S': this._lookingAt.y++; break;
+		case 'W': this._lookingAt.x--; break;
 	}
 
-	return([ x, y ]);
+	return(this._lookingAt);
 }
 
 Actor.prototype.render = function render(ctx, wx, wy)

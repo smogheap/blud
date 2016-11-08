@@ -13,12 +13,9 @@ var firstframe		= true;
 function actorAt(x, y)
 {
 	for (var a = 0, actor; actor = actors[a]; a++) {
-		if (x === actor.x && y === actor.y) {
+		if (actor.isAt(x, y)) {
 			return(actor);
 		}
-
-		// TODO Check the position the character is moving to (regardless of the
-		//		direction it is moving)?
 	}
 
 	return(null);
