@@ -2,7 +2,7 @@ var TILE_SIZE	= 16;
 var input;
 var level;
 
-var player		= null;
+var hud = loadImage('images/hud.png');
 
 /*
 	This will be true for the first frame only, and can be used for debug
@@ -184,7 +184,7 @@ function tick(ticks)
 
 	if (input.getButton(input.A, true) & input.PRESSED) {
 		var pos		= player.lookingAt();
-		var actor	= actorAt(pos[0], pos[1]);
+		var actor	= actorAt(pos.x, pos.y);
 
 		if (actor) {
 			actor.talk();
@@ -200,6 +200,26 @@ function tick(ticks)
 function render(ctx)
 {
 	level.render(ctx);
+
+	/* HUD */
+	var x = 10, y = 10;
+	drawBorder(ctx, x, y, 64 + 12, 8 + 12, 'black');
+
+	/* Scale the player's health to a 64 pixel long bar */
+	var health = player.health * 64 / 100;
+
+	ctx.drawImage(hud,
+			0, 0,
+			health, 8,
+			6 + x, 6 + y,
+			health, 8);
+	if (64 - health > 0) {
+		ctx.drawImage(hud,
+				64, 0,
+				64 - health, 8,
+				6 + x + health - 8, 6 + y,
+				64 - health, 8);
+	}
 }
 
 function debug(msg)

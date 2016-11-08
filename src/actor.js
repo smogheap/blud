@@ -5,6 +5,7 @@
 // TODO Find a better way to track this. Perhaps keep a list of actors on the
 //		level that only includes those that are in the current area?
 var actors = [];
+var player = null;
 
 function Actor(world, id, level, controls)
 {
@@ -29,6 +30,8 @@ function Actor(world, id, level, controls)
 	this.x			= this.definition.x;
 	this.y			= this.definition.y;
 
+	this.health		= WRand() % 100;
+
 	this.newpos		= {
 		x:			this.x,
 		y:			this.y
@@ -48,6 +51,7 @@ function Actor(world, id, level, controls)
 
 	switch (id) {
 		case "blud":
+			player = this;
 			this.player	= true;
 			this.level.scrollTo(true, this.x * TILE_SIZE, this.y * TILE_SIZE);
 			break;

@@ -32,6 +32,83 @@ loadImage('images/text.png', function(img) {
 	font = img;
 });
 
+function drawText(ctx, str, x, y, scale, noclear)
+{
+	if (isNaN(scale)) {
+		scale = 1;
+	}
+
+	for (var i = 0; i < str.length; i++) {
+		var c;
+
+		if ('string' === typeof str) {
+			 c = str.charAt(i);
+		} else {
+			c = "pointer" + str[i];
+		}
+
+		if (!noclear) {
+			// ctx.fillStyle = '#666666';
+			ctx.fillRect(x, y,
+						fontSizeX * scale, fontSizeY * scale);
+		}
+
+		if (fontOffsets[c]) {
+			ctx.drawImage(font,
+					fontOffsets[c][0], fontOffsets[c][1],
+					fontSizeX, fontSizeY,
+					x, y,
+					fontSizeX * scale, fontSizeY * scale);
+		}
+		x += fontSizeX * scale;
+	}
+}
+
+/*
+	Draw a border inside the specified square. The border itself is 6 pixels
+	wide, but generally a 2 pixel padding is desired.
+*/
+function drawBorder(ctx, dx, dy, w, h, fillStyle)
+{
+	ctx.save();
+	ctx.fillStyle = fillStyle;
+
+	/*
+		Borders are in the image at 272x0, in a 3x3 grid of images that are
+		each 8x8 pixels.
+	*/
+	for (var x = 0; x < w; x+= fontSizeX) {
+		for (var y = 0; y < h; y += fontSizeY) {
+			var sx = 272;
+			var sy = 0;
+
+			if (x > 0) {
+				sx += 8;
+			}
+			if (x + fontSizeX >= w) {
+				x = w - fontSizeX;
+				sx += 8;
+			}
+
+			if (y > 0) {
+				sy += 8;
+			}
+			if (y + fontSizeY >= h) {
+				y = h - fontSizeY;
+				sy += 8;
+			}
+
+			ctx.drawImage(font,
+					sx, sy, fontSizeX, fontSizeY,
+					dx + x,  dy + y,  fontSizeX, fontSizeY);
+		}
+	}
+	ctx.fillRect(dx + 6, dy + 6, w - 12, h - 12);
+	ctx.restore();
+}
+
+
+
 /*
 	Supported options:
 		icon	An image to display to the left of the msg. This can either be
@@ -197,35 +274,7 @@ function Dialog(options)
 		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 	} else {
 		this.ctx.fillStyle = '#666666';
-
-		/*
-			Borders are in the image at 272x0, in a 3x3 grid of images that are
-			each 8x8 pixels.
-		*/
-		for (var x = 0; x < this.canvas.width; x += fontSizeX) {
-			for (var y = 0; y < this.canvas.height; y += fontSizeY) {
-				var sx = 272;
-				var sy = 0;
-
-				if (x > 0) {
-					sx += 8;
-				}
-				if (x + fontSizeX >= this.canvas.width) {
-					sx += 8;
-				}
-
-				if (y > 0) {
-					sy += 8;
-				}
-				if (y + fontSizeY >= this.canvas.height) {
-					sy += 8;
-				}
-
-				this.ctx.drawImage(font,
-						sx, sy, fontSizeX, fontSizeY,
-						x,  y,  fontSizeX, fontSizeY);
-			}
-		}
+		drawBorder(this.ctx, 0, 0, this.canvas.width, this.canvas.height, '#666666');
 	}
 
 	if (this.icon) {
@@ -240,38 +289,6 @@ function Dialog(options)
 
 	dialog = this;
 	return(this);
-}
-
-function drawText(str, ctx, x, y, scale, noclear)
-{
-	if (isNaN(scale)) {
-		scale = 1;
-	}
-
-	for (var i = 0; i < str.length; i++) {
-		var c;
-
-		if ('string' === typeof str) {
-			 c = str.charAt(i);
-		} else {
-			c = "pointer" + str[i];
-		}
-
-		if (!noclear) {
-			// ctx.fillStyle = '#666666';
-			ctx.fillRect(x, y,
-						fontSizeX * scale, fontSizeY * scale);
-		}
-
-		if (fontOffsets[c]) {
-			ctx.drawImage(font,
-					fontOffsets[c][0], fontOffsets[c][1],
-					fontSizeX, fontSizeY,
-					x, y,
-					fontSizeX * scale, fontSizeY * scale);
-		}
-		x += fontSizeX * scale;
-	}
 }
 
 Dialog.prototype.close = function close()
@@ -519,11 +536,11 @@ Dialog.prototype.tick = function tick()
 					o += " ";
 				}
 
-				drawText(i === this.selected ? [ 0 ] : " ", this.ctx,
+				drawText(this.ctx, i === this.selected ? [ 0 ] : " ",
 					fontSizeX * (1 + this.width - longest),
 					fontSizeY * (this.height + 2 + i));
 
-				drawText(o, this.ctx,
+				drawText(this.ctx, o,
 					fontSizeX * (2 + this.width - longest),
 					fontSizeY * (this.height + 2 + i));
 			}
@@ -531,19 +548,18 @@ Dialog.prototype.tick = function tick()
 			var i = 0;
 
 			for (var x = 0; x < this.maxLength; x++) {
-				drawText(this.value.charAt(x) || ' ', this.ctx,
+				drawText(this.ctx, this.value.charAt(x) || ' ',
 					(x + 3) * fontSizeX, (this.lineCount + 2) * fontSizeY);
 			}
 
 			for (y = 0; y < kbkeys.length; y++) {
 				for (x = 0; x < kbkeys[y].length; x++) {
-					drawText(i === this.selected ? [ 0 ] : " ", this.ctx,
+					drawText(this.ctx, i === this.selected ? [ 0 ] : " ",
 						((x * 2) + 2) * fontSizeX,
 						(fontSizeY * (y + this.lineCount + 4)));
 
-					drawText(this.upper ?
+					drawText(this.ctx, this.upper ?
 							kbkeys[y].charAt(x) : kbkeys[y].charAt(x).toLowerCase(),
-						this.ctx,
 						((x * 2) + 3) * fontSizeX,
 						(fontSizeY * (y + this.lineCount + 4)));
 
@@ -555,10 +571,10 @@ Dialog.prototype.tick = function tick()
 
 			var x = 8;
 			for (var o = 0; o < choices.length; o++) {
-				drawText(i === this.selected ? [ 0 ] : " ", this.ctx,
+				drawText(this.ctx, i === this.selected ? [ 0 ] : " ",
 					(x++) * fontSizeX,
 					(fontSizeY * (kbkeys.length + this.lineCount + 4)));
-				drawText(choices[o], this.ctx,
+				drawText(this.ctx, choices[o],
 					(x) * fontSizeX,
 					(fontSizeY * (kbkeys.length + this.lineCount + 4)));
 				i++;
@@ -590,7 +606,7 @@ Dialog.prototype.tick = function tick()
 			oy = (this.height - 1) * fontSizeY / 2;
 		}
 
-		drawText(c, this.ctx,
+		drawText(this.ctx, c,
 			fontSizeX * (x + 1 + this.iconWidth), (fontSizeY * (y + 1)) + oy);
 		this.drawn++;
 	}
