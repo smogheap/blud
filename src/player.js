@@ -42,7 +42,7 @@ PlayerControls.prototype.tick = function tick()
 			var rate	= 1;
 
 			if (def && !isNaN(def.steps)) {
-				frames = def.steps
+				frames = def.steps;
 			} else if (def && !isNaN(def.frames)) {
 				frames = def.frames;
 			}
@@ -71,14 +71,6 @@ PlayerControls.prototype.tick = function tick()
 				}
 			} else {
 				/* The animation has completed */
-				if (movingto) {
-					actor.x = movingto.x;
-					actor.y = movingto.y;
-
-					/* Did that movement take us to a different area? */
-					actor.level.switchArea(actor.x, actor.y, actor);
-				}
-
 				actor.setState(actor.STANDING);
 				/* Fallthrough to handle input again */
 			}
@@ -187,7 +179,7 @@ PlayerControls.prototype.tick = function tick()
 	var rate	= 1;
 
 	if (def && !isNaN(def.steps)) {
-		frames = def.steps
+		frames = def.steps;
 	} else if (def && !isNaN(def.frames)) {
 		frames = def.frames;
 	}
@@ -208,6 +200,20 @@ PlayerControls.prototype.tick = function tick()
 				case 'E': actor.renderOff.x += Math.floor(actor.frame * steps * rate); break;
 				case 'S': actor.renderOff.y += Math.floor(actor.frame * steps * rate); break;
 				case 'W': actor.renderOff.x -= Math.floor(actor.frame * steps * rate); break;
+			}
+
+			if (Math.abs(actor.renderOff.x) >= (TILE_SIZE * 0.5) ||
+				Math.abs(actor.renderOff.y) >= (TILE_SIZE * 0.5)
+			) {
+				actor.x = actor.newpos.x;
+				actor.y = actor.newpos.y;
+
+				switch (actor.facing) {
+					case 'N': actor.renderOff.y += TILE_SIZE; break;
+					case 'E': actor.renderOff.x -= TILE_SIZE; break;
+					case 'S': actor.renderOff.y -= TILE_SIZE; break;
+					case 'W': actor.renderOff.x += TILE_SIZE; break;
+				}
 			}
 
 			actor.level.scrollTo(false,
