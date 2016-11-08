@@ -1,7 +1,13 @@
 function RotaVirusControls(actor)
 {
-	this.actor	= actor;
-	this.speed	= -2;
+	this.actor		= actor;
+
+	this.maxSpeed	= 3;
+	this.minSpeed	= -2;
+	this.accelRate	= 0.05;
+	this.decelRate	= 0.03;
+
+	this.speed		= this.minSpeed;
 }
 
 RotaVirusControls.prototype.tick = function tick()
@@ -35,25 +41,25 @@ RotaVirusControls.prototype.tick = function tick()
 	}
 
 	if (actor.state !== actor.MOVING) {
-		this.speed = -2;
+		this.speed = this.minSpeed;
 	}
 
 	if (found) {
 		actor.setState(actor.MOVING, actor.lookingAt());
 
-		if (this.speed < 4) {
-			this.speed += 0.10;
+		if (this.speed < this.maxSpeed) {
+			this.speed += this.accelRate;
 		} else {
-			this.speed = 4;
+			this.speed = this.maxSpeed;
 		}
 
 	} else {
 		if (this.speed > 0) {
-			this.speed -= 0.15;
+			this.speed -= this.decelRate;
 		}
 
 		if (this.speed <= 0) {
-			this.speed = -2;
+			this.speed = this.minSpeed;
 			actor.setState(actor.STANDING);
 		}
 	}
@@ -98,7 +104,7 @@ RotaVirusControls.prototype.tick = function tick()
 					actor.setState(actor.STANDING);
 				}
 
-				this.speed = -2;
+				this.speed = this.minSpeed;
 			}
 		}
 	}
@@ -108,13 +114,13 @@ RotaVirusControls.prototype.tick = function tick()
 			actor.renderOff.x--;
 		}
 		if (actor.renderOff.x < 0) {
-			actor.renderOff.x++
+			actor.renderOff.x++;
 		}
 		if (actor.renderOff.y > 0) {
 			actor.renderOff.y--;
 		}
 		if (actor.renderOff.y < 0) {
-			actor.renderOff.y++
+			actor.renderOff.y++;
 		}
 	}
 
