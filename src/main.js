@@ -21,34 +21,6 @@ function actorAt(x, y)
 	return(null);
 }
 
-function canMove(actor, direction)
-{
-	var tile;
-	var x	= actor.x;
-	var y	= actor.y;
-
-	switch (direction) {
-		case 'N': y--; break;
-		case 'E': x++; break;
-		case 'S': y++; break;
-		case 'W': x--; break;
-	}
-
-	var a;
-
-	if ((a = actorAt(x, y)) && a !== actor)  {
-		return(false);
-	}
-
-	tile = level.tileAt(x, y);
-
-	if (!tile || !level.tiles[tile]) {
-		return(false);
-	}
-
-	return(!level.tiles[tile].solid);
-}
-
 function tick(ticks)
 {
 	/* Paused? */

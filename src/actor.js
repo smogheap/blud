@@ -121,11 +121,19 @@ Actor.prototype.isAt = function isAt(x, y)
 	return(false);
 };
 
-Actor.prototype.setState = function setState(state)
+Actor.prototype.setState = function setState(state, dest)
 {
 	if (state && this.state !== state) {
 		this.state = state;
 		this.frame = 0;
+
+		if (dest) {
+			this.newpos.x = dest.x;
+			this.newpos.y = dest.y;
+		} else {
+			this.newpos.x = this.x;
+			this.newpos.y = this.y;
+		}
 	}
 };
 
@@ -189,6 +197,36 @@ Actor.prototype.talk = function talk()
 	});
 };
 
+Actor.prototype.canMove = function canMove(direction)
+{
+	var tile;
+	var x	= this.x;
+	var y	= this.y;
+
+	direction	= direction || this.direction;
+
+	switch (direction) {
+		case 'N': y--; break;
+		case 'E': x++; break;
+		case 'S': y++; break;
+		case 'W': x--; break;
+	}
+
+	var a;
+
+	if ((a = actorAt(x, y)) && a !== this)  {
+		return(false);
+	}
+
+	tile = this.level.tileAt(x, y);
+
+	if (!tile || !this.level.tiles[tile]) {
+		return(false);
+	}
+
+	return(!this.level.tiles[tile].solid);
+}
+
 Actor.prototype.tick = function tick()
 {
 /*
@@ -213,9 +251,6 @@ Actor.prototype.tick = function tick()
 	/* this.frames resets when the state changes, this.ticks does not */
 	this.ticks++;
 	this.frame++;
-
-	this.newpos.x	= this.x;
-	this.newpos.y	= this.y;
 
 	switch (this.state) {
 		case this.STUCK:
@@ -245,9 +280,6 @@ Actor.prototype.tick = function tick()
 
 			if (this.MOVING === orgstate) {
 				movingto = this.lookingAt();
-
-				this.newpos.x = movingto.x;
-				this.newpos.y = movingto.y;
 			}
 
 			if (Math.floor(this.frame * rate) <= frames) {
@@ -298,7 +330,7 @@ Actor.prototype.tick = function tick()
 					nothing blocking the path.
 			*/
 			for (var i = 0, d; (d = nesw.charAt(i)) && d.length === 1; i++) {
-				if (canMove(this, d)) {
+				if (this.canMove(d)) {
 					if (d !== this.facing) {
 						order = d + order;
 					} else {
@@ -339,7 +371,7 @@ Actor.prototype.tick = function tick()
 				if (dirs[d]) {
 					this.facing = d;
 
-					if (!canMove(this, d)) {
+					if (!this.canMove(d)) {
 						/*
 							Change to the stuck state (pushing against a solid
 							block) right away. There is no need to change to
@@ -359,7 +391,7 @@ Actor.prototype.tick = function tick()
 						break;
 					} else {
 						/* Start moving */
-						this.setState(this.MOVING);
+						this.setState(this.MOVING, this.lookingAt());
 						break;
 					}
 				}
@@ -390,7 +422,7 @@ Actor.prototype.tick = function tick()
 					The directional input was held long enough to complete the
 					turn and start moving in the new direction.
 				*/
-				this.setState(this.MOVING);
+				this.setState(this.MOVING, this.lookingAt());
 				break;
 			}
 			break;
