@@ -205,15 +205,18 @@ PlayerControls.prototype.tick = function tick()
 			if (Math.abs(actor.renderOff.x) >= (TILE_SIZE * 0.5) ||
 				Math.abs(actor.renderOff.y) >= (TILE_SIZE * 0.5)
 			) {
-				actor.x = actor.newpos.x;
-				actor.y = actor.newpos.y;
-
 				switch (actor.facing) {
 					case 'N': actor.renderOff.y += TILE_SIZE; break;
 					case 'E': actor.renderOff.x -= TILE_SIZE; break;
 					case 'S': actor.renderOff.y -= TILE_SIZE; break;
 					case 'W': actor.renderOff.x += TILE_SIZE; break;
 				}
+
+				actor.x = actor.newpos.x;
+				actor.y = actor.newpos.y;
+
+				/* Did that movement take us to a different area? */
+				actor.level.switchArea(actor.x, actor.y, actor);
 			}
 
 			actor.level.scrollTo(false,

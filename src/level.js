@@ -432,24 +432,20 @@ Level.prototype.switchArea = function switchArea(x, y, player)
 
 	/* And position everything properly */
 	if (player) {
-		/*
-			Set the player position so that the call to player.tick() below will
-			cause the player to move into the correct new spot.
-		*/
 		if (oy < 0) {
 			/* Move player to bottom of new area */
-			player.y = this.height;
+			player.newpos.y = player.y = this.height - 1;
 		} else if (oy > 0) {
 			/* Move player to top of new area */
-			player.y = -1;
+			player.newpos.y = player.y = 0;
 		}
 
 		if (ox < 0) {
 			/* Move player to right edge of new area */
-			player.x = this.width;
+			player.newpos.x = player.x = this.width - 1;
 		} else if (ox > 0) {
 			/* Move player to left edge of new area */
-			player.x = -1;
+			player.newpos.x = player.x = 0;
 		}
 
 		player.tick();
