@@ -380,8 +380,8 @@ var world = {
 		},
 
 		"phage": {
-			x:				37,
-			y:				10,
+			x:				20,
+			y:				15,
 			facing:			"S",
 			area:			"towncenter",
 			src:			"images/enemy.png",
