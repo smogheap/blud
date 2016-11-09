@@ -377,6 +377,25 @@ var world = {
 			moving: {
 				S: { x: 0, y: 0, rate: 0.25, steps: 8, frames: 2, ox: 1, oy: 0 }
 			}
+		},
+
+		"phage": {
+			x:				37,
+			y:				10,
+			facing:			"S",
+			area:			"towncenter",
+			src:			"images/enemy.png",
+
+			standing: {
+				S: { x: 0, y: 1, rate: 0.01, steps: 8, frames: 2, ox: 1, oy: 0 }
+			},
+
+			crouch: {
+				S: { x: 2, y: 1 }
+			},
+			jump: {
+				S: { x: 3, y: 1 }
+			}
 		}
 	},
 
