@@ -378,6 +378,23 @@ var world = {
 				S: { x: 0, y: 0, rate: 0.25, steps: 8, frames: 2, ox: 1, oy: 0 }
 			}
 		}
+	},
+
+	items: {
+		"eyeball": {
+			src:			"images/blud.png",
+
+			standing: {
+				S: { x: 3, y: 5 }
+			},
+
+			moving: {
+				N: { x: 0, y: 6, rate: 0.5, frames: 6, ox:  1, oy: 0 },
+				E: { x: 0, y: 5, rate: 0.5, frames: 6, ox:  1, oy: 0 },
+				S: { x: 6, y: 6, rate: 0.5, frames: 6, ox: -1, oy: 0 },
+				W: { x: 6, y: 5, rate: 0.5, frames: 6, ox: -1, oy: 0 }
+			}
+		}
 	}
 };
 

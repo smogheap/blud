@@ -56,12 +56,17 @@ function Actor(id, definition, level, area, x, y)
 			this.controls = new PlayerControls(this);
 			break;
 
+		case "eyeball":
+			this.controls = new EyeballControls(this);
+			break;
+
 		case "rotavirus":
 			this.controls = new RotaVirusControls(this);
 			break;
 	}
 
 	this.setState(this.STANDING);
+	this.children	= [];
 };
 
 Actor.prototype.STANDING		= "standing";
@@ -155,6 +160,7 @@ Actor.prototype.setState = function setState(state, dest)
 	}
 };
 
+// TODO Add a direction arg
 Actor.prototype.damage = function damage(ammount)
 {
 	// TODO Knock back?
@@ -176,6 +182,11 @@ Actor.prototype.damage = function damage(ammount)
 		this.setState(this.DEAD);
 
 		if (this.player) {
+			this.children.push(new Actor("eyeball", this.level.def.items["eyeball"], this.level, this.area, this.x, this.y));
+			this.children.push(new Actor("eyeball", this.level.def.items["eyeball"], this.level, this.area, this.x, this.y));
+
+
+			if (false)
 			new Dialog({
 				msg:		"You died",
 				noinput:	true
@@ -279,7 +290,7 @@ Actor.prototype.tick = function tick()
 	}
 
 	/* Grab the definition for this character's current action and direction */
-	var def			= this.getDefinition(this.state, this.facing);
+	var def = this.getDefinition(this.state, this.facing);
 
 
 	switch (this.state) {
@@ -299,6 +310,10 @@ Actor.prototype.tick = function tick()
 				}
 			}
 			break;
+	}
+
+	for (var c = 0, child; child = this.children[c]; c++) {
+		child.tick();
 	}
 };
 
@@ -338,6 +353,10 @@ Actor.prototype.render = function render(ctx, wx, wy)
 	y += this.renderOff.y;
 
 	this.renderState(ctx, this.state, this.facing, this.frame, x, y);
+
+	for (var c = 0, child; child = this.children[c]; c++) {
+		child.render(ctx, wx, wy);
+	}
 };
 
 Actor.prototype.renderState = function renderState(ctx, state, facing, ticks, x, y)

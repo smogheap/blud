@@ -54,7 +54,10 @@ RotaVirusControls.prototype.tick = function tick()
 	}
 
 	var facing = actor.facing;
-	if (player.x === actor.x) {
+
+	if (player.state === player.DEAD) {
+		found = false;
+	} else if (player.x === actor.x) {
 		if (player.y > actor.y) {
 			facing = "S";
 		} else if (player.y < actor.y) {
@@ -71,9 +74,6 @@ RotaVirusControls.prototype.tick = function tick()
 	}
 
 	if (actor.state !== actor.MOVING) {
-if (actor.facing !== facing) {
-	console.log('Turning to', facing);
-}
 		actor.facing = facing;
 	}
 
