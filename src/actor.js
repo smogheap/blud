@@ -236,7 +236,7 @@ Actor.prototype.canMove = function canMove(direction, mindistance)
 	}
 
 	for (var a = 0, actor; actor = level.actors[a]; a++) {
-		if (actor === this || actor.area !== this.area) {
+		if (actor === this || actor.area !== this.area || actor.state === actor.DEAD) {
 			continue;
 		}
 
@@ -277,7 +277,7 @@ Actor.prototype.canMove = function canMove(direction, mindistance)
 	}
 
 	return(!this.level.tiles[tile].solid);
-}
+};
 
 Actor.prototype.tick = function tick()
 {
@@ -296,10 +296,10 @@ Actor.prototype.tick = function tick()
 	switch (this.state) {
 		case this.BLINKING:
 		case this.STANDING:
-			if (0 == (this.ticks % 3)) {
+			if (0 === (this.ticks % 3)) {
 				switch (this.state) {
 					case this.STANDING:
-						if (0 == (WRand() % 40)) {
+						if (0 === (WRand() % 40)) {
 							this.setState(this.BLINKING);
 						}
 						break;
@@ -340,7 +340,7 @@ Actor.prototype.lookingAt = function lookingAt()
 	}
 
 	return(this._lookingAt);
-}
+};
 
 Actor.prototype.render = function render(ctx, wx, wy)
 {
