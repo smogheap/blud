@@ -247,8 +247,7 @@ function EyeballControls(actor)
 		}
 	}
 
-
-console.log(this.speedX, this.speedY);
+	// console.log(this.speedX, this.speedY);
 
 	this.x = actor.x;
 	this.y = actor.y;
@@ -258,7 +257,7 @@ console.log(this.speedX, this.speedY);
 		y: actor.renderOff.y
 	};
 
-	if (this.speedX > this.speedY) {
+	if (Math.abs(this.speedX) > Math.abs(this.speedY)) {
 		if (this.speedX > 0) {
 			actor.facing = "E";
 		} else {
@@ -272,11 +271,7 @@ console.log(this.speedX, this.speedY);
 		}
 	}
 
-	if (actor.canMove(actor.facing, TILE_SIZE * 0.5)) {
-		actor.setState(actor.MOVING, actor.lookingAt());
-	} else {
-		actor.setState(actor.MOVING);
-	}
+	actor.setState(actor.MOVING);
 }
 
 EyeballControls.prototype.updateLocation = function updateLocation()
@@ -319,7 +314,7 @@ EyeballControls.prototype.tick = function tick()
 	this.renderOff.y += this.speedY;
 	this.updateLocation();
 
-	if (!actor.canMove(null) || (Math.abs(this.speedX) < 0.1 && Math.abs(this.speedY) < 0.1)) {
+	if (!actor.canMove("-") || (Math.abs(this.speedX) < 0.1 && Math.abs(this.speedY) < 0.1)) {
 		this.renderOff.x -= this.speedX;
 		this.renderOff.y -= this.speedY;
 		this.updateLocation();
