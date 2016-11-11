@@ -146,17 +146,17 @@ Actor.prototype.distance = function distance(actor)
 
 Actor.prototype.setState = function setState(state, dest)
 {
-	if (state && (this.state !== state || dest)) {
+	if (state && this.state !== state) {
 		this.state = state;
 		this.frame = 0;
+	}
 
-		if (dest) {
-			this.newpos.x = dest.x;
-			this.newpos.y = dest.y;
-		} else {
-			this.newpos.x = this.x;
-			this.newpos.y = this.y;
-		}
+	if (dest) {
+		this.newpos.x = dest.x;
+		this.newpos.y = dest.y;
+	} else {
+		this.newpos.x = this.x;
+		this.newpos.y = this.y;
 	}
 };
 
