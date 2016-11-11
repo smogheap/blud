@@ -49,6 +49,7 @@ function Actor(id, definition, level, area, x, y)
 
 	this.area		= area || this.definition.area;
 
+	this.setState(this.STANDING);
 	switch (id) {
 		case "blud":
 			this.player	= true;
@@ -65,7 +66,6 @@ function Actor(id, definition, level, area, x, y)
 			break;
 	}
 
-	this.setState(this.STANDING);
 	this.children	= [];
 };
 
@@ -184,6 +184,9 @@ Actor.prototype.damage = function damage(ammount)
 		if (this.player) {
 			this.children.push(new Actor("eyeball", this.level.def.items["eyeball"], this.level, this.area, this.x, this.y));
 			this.children.push(new Actor("eyeball", this.level.def.items["eyeball"], this.level, this.area, this.x, this.y));
+
+			this.children[0].renderOff.x -= 4;
+			this.children[1].renderOff.x += 4;
 
 
 			if (false)

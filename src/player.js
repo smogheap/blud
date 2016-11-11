@@ -230,26 +230,36 @@ function EyeballControls(actor)
 {
 	this.actor			= actor;
 
-	this.actor.setState(this.actor.MOVING);
+	this.speedX = ((WRand() / 10) % 6) - 3;
+	this.speedY = ((WRand() / 10) % 6) - 3;
+console.log(this.speedX, this.speedY);
 
-	actor.renderOff.x = (WRand() % TILE_SIZE) - (TILE_SIZE / 2);
-	actor.renderOff.y = (WRand() % TILE_SIZE) - (TILE_SIZE / 2);
+	this.x = actor.x;
+	this.y = actor.y;
 
-	this.speedX = (WRand() % 3) + 1;
-	this.speedY = (WRand() % 3) + 1;
+	this.renderOff = {
+		x: actor.renderOff.x,
+		y: actor.renderOff.y
+	};
 
 	if (this.speedX > this.speedY) {
 		if (this.speedX > 0) {
-			this.facing = "E";
+			actor.facing = "E";
 		} else {
-			this.facing = "W";
+			actor.facing = "W";
 		}
 	} else {
-		if (this.speedY > 0) {
-			this.facing = "N";
+		if (this.speedY < 0) {
+			actor.facing = "N";
 		} else {
-			this.facing = "S";
+			actor.facing = "S";
 		}
+	}
+
+	if (actor.canMove(actor.facing, TILE_SIZE * 0.5)) {
+		actor.setState(actor.MOVING, actor.lookingAt());
+	} else {
+		actor.setState(actor.MOVING);
 	}
 }
 
@@ -257,32 +267,32 @@ EyeballControls.prototype.tick = function tick()
 {
 	var actor	= this.actor;
 
-	var rx = x ? actor.renderOff.x + Math.floor(x * this.speedX) : 0;
-	var ry = y ? actor.renderOff.y + Math.floor(y * this.speedY) : 0;
-
 	if (actor.state !== actor.MOVING) {
 		/* This does nothing onces it stops */
 		return;
 	}
 
-	if (Math.abs(rx) >= (TILE_SIZE * 0.5) ||
-		Math.abs(ry) >= (TILE_SIZE * 0.5)
-	) {
-		if (actor.canMove(actor.facing, TILE_SIZE * 0.5)) {
-			actor.x = actor.newpos.x;
-			actor.y = actor.newpos.y;
+	this.renderOff.x += this.speedX;
+	this.renderOff.y += this.speedY;
 
-			actor.renderOff.x = rx - (x * TILE_SIZE);
-			actor.renderOff.y = ry - (y * TILE_SIZE);
+	actor.x = this.x + Math.floor(this.renderOff.x / TILE_SIZE);
+	actor.y = this.y + Math.floor(this.renderOff.y / TILE_SIZE);
 
-			if (actor.canMove(actor.facing, TILE_SIZE * 0.5)) {
-				actor.setState(actor.MOVING, actor.lookingAt());
-			} else {
-				actor.setState(actor.STANDING);
-			}
-		} else {
-			actor.setState(actor.STANDING);
-		}
+	actor.renderOff.x = this.renderOff.x % TILE_SIZE;
+	actor.renderOff.y = this.renderOff.y % TILE_SIZE;
+
+	if (!actor.canMove(null)) {
+		actor.setState(actor.STANDING);
+
+		/* Undo this move */
+		this.renderOff.x -= this.speedX;
+		this.renderOff.y -= this.speedY;
+
+		actor.x = this.x + Math.floor(this.renderOff.x / TILE_SIZE);
+		actor.y = this.y + Math.floor(this.renderOff.y / TILE_SIZE);
+
+		actor.renderOff.x = this.renderOff.x % TILE_SIZE;
+		actor.renderOff.y = this.renderOff.y % TILE_SIZE;
 	}
 };
 

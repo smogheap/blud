@@ -163,6 +163,10 @@ function tick(ticks)
 		}
 	}
 
+	if (input.getButton(input.SELECT, true) & input.PRESSED) {
+		player.damage(1000);
+	}
+
 	if (!level.tick()) {
 		/* Nothing else is active while the level is sliding */
 		return(false);
