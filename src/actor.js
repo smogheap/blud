@@ -182,8 +182,10 @@ Actor.prototype.damage = function damage(ammount)
 		this.setState(this.DEAD);
 
 		if (this.player) {
-			this.children.push(new Actor("eyeball", this.level.def.items["eyeball"], this.level, this.area, this.x, this.y));
-			this.children.push(new Actor("eyeball", this.level.def.items["eyeball"], this.level, this.area, this.x, this.y));
+			this.children = [
+				new Actor("eyeball", this.level.def.items["eyeball"], this.level, this.area, this.x, this.y),
+				new Actor("eyeball", this.level.def.items["eyeball"], this.level, this.area, this.x, this.y)
+			];
 
 			this.children[0].renderOff.x -= 4;
 			this.children[1].renderOff.x += 4;

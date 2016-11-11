@@ -230,8 +230,24 @@ function EyeballControls(actor)
 {
 	this.actor			= actor;
 
-	this.speedX = ((WRand() / 10) % 6) - 3;
-	this.speedY = ((WRand() / 10) % 6) - 3;
+	for (;;) {
+		this.speedX = ((WRand() / 10) % 6) - 3;
+		this.speedY = ((WRand() / 10) % 6) - 3;
+
+		/*
+			Keep grabbing random values for speed until the eyeball is moving in
+			one clear main direction.
+
+			The intent is for the eyeballs to appear to move in any direction
+			but to avoid things close to a 45 degree angle because we don't have
+			an appropriate animation for that case.
+		*/
+		if (Math.abs(Math.abs(this.speedX) - Math.abs(this.speedY)) > 1.5) {
+			break;
+		}
+	}
+
+
 console.log(this.speedX, this.speedY);
 
 	this.x = actor.x;
@@ -263,6 +279,33 @@ console.log(this.speedX, this.speedY);
 	}
 }
 
+EyeballControls.prototype.updateLocation = function updateLocation()
+{
+	var actor	= this.actor;
+
+	var x = this.renderOff.x;
+	var y = this.renderOff.y;
+	var mx = x > 0 ? 1 : -1;
+	var my = y > 0 ? 1 : -1;
+
+	actor.x = this.x;
+	actor.y = this.y;
+
+	actor.renderOff.y = 0;
+
+	while (Math.abs(x) > (TILE_SIZE / 2)) {
+		actor.x += mx;
+		x -= mx * TILE_SIZE;
+	}
+	actor.renderOff.x = x;
+
+	while (Math.abs(y) > (TILE_SIZE / 2)) {
+		actor.y += my;
+		y -= my * TILE_SIZE;
+	}
+	actor.renderOff.y = y;
+}
+
 EyeballControls.prototype.tick = function tick()
 {
 	var actor	= this.actor;
@@ -274,25 +317,17 @@ EyeballControls.prototype.tick = function tick()
 
 	this.renderOff.x += this.speedX;
 	this.renderOff.y += this.speedY;
+	this.updateLocation();
 
-	actor.x = this.x + Math.floor(this.renderOff.x / TILE_SIZE);
-	actor.y = this.y + Math.floor(this.renderOff.y / TILE_SIZE);
-
-	actor.renderOff.x = this.renderOff.x % TILE_SIZE;
-	actor.renderOff.y = this.renderOff.y % TILE_SIZE;
-
-	if (!actor.canMove(null)) {
-		actor.setState(actor.STANDING);
-
-		/* Undo this move */
+	if (!actor.canMove(null) || (Math.abs(this.speedX) < 0.1 && Math.abs(this.speedY) < 0.1)) {
 		this.renderOff.x -= this.speedX;
 		this.renderOff.y -= this.speedY;
+		this.updateLocation();
 
-		actor.x = this.x + Math.floor(this.renderOff.x / TILE_SIZE);
-		actor.y = this.y + Math.floor(this.renderOff.y / TILE_SIZE);
-
-		actor.renderOff.x = this.renderOff.x % TILE_SIZE;
-		actor.renderOff.y = this.renderOff.y % TILE_SIZE;
+		actor.setState(actor.STANDING);
 	}
+
+	this.speedX = this.speedX * 0.99;
+	this.speedY = this.speedY * 0.99;
 };
 
