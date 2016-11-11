@@ -297,7 +297,7 @@ EyeballControls.prototype.updateLocation = function updateLocation()
 		y -= my * TILE_SIZE;
 	}
 	actor.renderOff.y = y;
-}
+};
 
 EyeballControls.prototype.tick = function tick()
 {
@@ -320,7 +320,7 @@ EyeballControls.prototype.tick = function tick()
 		actor.setState(actor.STANDING);
 	}
 
-	this.speedX = this.speedX * 0.99;
-	this.speedY = this.speedY * 0.99;
+	this.speedX = this.speedX * 0.92;
+	this.speedY = this.speedY * 0.92;
 };
 
