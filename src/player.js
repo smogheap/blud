@@ -272,6 +272,7 @@ function EyeballControls(actor)
 	}
 
 	actor.setState(actor.MOVING);
+	this.frame = 0;
 }
 
 EyeballControls.prototype.updateLocation = function updateLocation()
@@ -303,6 +304,19 @@ EyeballControls.prototype.tick = function tick()
 {
 	var actor	= this.actor;
 
+	/*
+		Overwrite the frame on the actor with our own frame counter so we can
+		adjust the animation speed based on the movement speed.
+	*/
+	var fc = (Math.abs(this.speedX) + Math.abs(this.speedY)) * 1;
+
+	if (fc < 0.01) {
+		/* This has effectively stopped */
+	}
+
+	this.frame += Math.min(1, fc);
+	actor.frame = Math.floor(this.frame);
+
 	if (actor.state !== actor.MOVING) {
 		/* This does nothing onces it stops */
 		return;
@@ -317,7 +331,7 @@ EyeballControls.prototype.tick = function tick()
 		this.renderOff.y -= this.speedY;
 		this.updateLocation();
 
-		actor.setState(actor.STANDING);
+		this.speedX = this.speedY = 0;
 	}
 
 	this.speedX = this.speedX * 0.92;
