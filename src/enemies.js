@@ -3,7 +3,7 @@ function RotaVirusControls(actor)
 	this.actor		= actor;
 
 	this.maxSpeed	= 3;
-	this.minSpeed	= -1;
+	this.minSpeed	= -1.5;
 	this.accelRate	= 0.075;
 	this.decelRate	= 0.075;
 
