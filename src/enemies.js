@@ -86,7 +86,7 @@ RotaVirusControls.prototype.tick = function tick()
 			actor.setState(actor.MOVING, actor.lookingAt());
 		} else {
 			actor.setState(actor.MOVING);
-			this.decel();
+			// this.decel();
 		}
 	} else {
 		this.decel();
@@ -139,7 +139,7 @@ RotaVirusControls.prototype.tick = function tick()
 		}
 	}
 
-	if (actor.state !== actor.MOVING) {
+	if (this.speed <= 0) {
 		if (actor.renderOff.x > 0) {
 			actor.renderOff.x--;
 		}
