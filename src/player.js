@@ -286,8 +286,6 @@ EyeballControls.prototype.updateLocation = function updateLocation()
 	actor.x = this.x;
 	actor.y = this.y;
 
-	actor.renderOff.y = 0;
-
 	while (Math.abs(x) > (TILE_SIZE / 2)) {
 		actor.x += mx;
 		x -= mx * TILE_SIZE;
