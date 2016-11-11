@@ -35,7 +35,6 @@ RotaVirusControls.prototype.decel = function decel()
 	this.speed -= this.decelRate;
 	if (this.speed <= 0) {
 		this.speed = this.minSpeed;
-		this.actor.setState(this.actor.STANDING);
 	}
 };
 
@@ -48,6 +47,10 @@ RotaVirusControls.prototype.tick = function tick()
 	*/
 	var actor	= this.actor;
 	var found	= true;
+
+	if (actor.state === actor.DEAD) {
+		return;
+	}
 
 	if (!player || player.area !== actor.area) {
 		return;
@@ -79,14 +82,18 @@ RotaVirusControls.prototype.tick = function tick()
 
 	if (found && facing === actor.facing) {
 		if (actor.canMove(actor.facing, TILE_SIZE * 0.75)) {
+			this.accel();
 			actor.setState(actor.MOVING, actor.lookingAt());
 		} else {
 			actor.setState(actor.MOVING);
+			this.decel();
 		}
-
-		this.accel();
 	} else {
 		this.decel();
+
+		if (this.speed <= 0) {
+			actor.setState(actor.STANDING);
+		}
 	}
 
 	if (this.speed > 0 && actor.state === actor.MOVING) {
@@ -117,7 +124,7 @@ RotaVirusControls.prototype.tick = function tick()
 				if (actor.canMove(actor.facing, TILE_SIZE * 0.5)) {
 					actor.setState(actor.MOVING, actor.lookingAt());
 				} else {
-					actor.setState(actor.STANDING);
+					actor.setState(actor.MOVING);
 				}
 			} else {
 				/*

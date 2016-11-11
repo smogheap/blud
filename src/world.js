@@ -279,7 +279,7 @@ var world = {
 			},
 
 			dead: {
-				S: { x: 0, y: 4 }
+				S: { x: 0, y: 4, src: "images/blud.png" }
 			}
 		},
 
@@ -312,6 +312,10 @@ var world = {
 
 			blinking: {
 				S: { x: 0, y: 2 }
+			},
+
+			dead: {
+				S: { x: 0, y: 4, src: "images/blud.png" }
 			},
 
 			talking: {
@@ -351,6 +355,10 @@ var world = {
 				S: { x: 5, y: 0, rate: 0.1, frames: 2, ox: 0, oy: 1 }
 			},
 
+			dead: {
+				S: { x: 0, y: 4, src: "images/blud.png" }
+			},
+
 			dialog: [
 				"Howdy",
 				"What do you want?",
@@ -376,6 +384,10 @@ var world = {
 			},
 			moving: {
 				S: { x: 0, y: 0, rate: 0.25, steps: 8, frames: 2, ox: 1, oy: 0 }
+			},
+
+			dead: {
+				S: { x: 0, y: 4, src: "images/blud.png" }
 			}
 		},
 
