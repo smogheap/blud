@@ -178,7 +178,7 @@ function render(ctx)
 	level.render(ctx);
 
 	/* HUD */
-	var dx = 10, dy = 10;
+	var dx = 8, dy = 8;
 	drawBorder(ctx, dx, dy, 64 + 12, 8 + 12, 'black');
 
 	dx += 6;
