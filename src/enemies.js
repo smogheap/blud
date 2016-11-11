@@ -82,12 +82,11 @@ RotaVirusControls.prototype.tick = function tick()
 
 	if (found && facing === actor.facing) {
 		if (actor.canMove(actor.facing, TILE_SIZE * 0.75)) {
-			this.accel();
 			actor.setState(actor.MOVING, actor.lookingAt());
 		} else {
 			actor.setState(actor.MOVING);
-			// this.decel();
 		}
+		this.accel();
 	} else {
 		this.decel();
 
@@ -139,6 +138,22 @@ RotaVirusControls.prototype.tick = function tick()
 		}
 	}
 
+	if (actor.state === actor.MOVING && (
+		Math.abs(actor.renderOff.x) > 2 ||
+		Math.abs(actor.renderOff.y) > 2
+	)) {
+		for (var i = 0, a; a = level.actors[i]; i++) {
+			if (a === actor || a.area !== actor.area || a.state === a.DEAD) {
+				continue;
+			}
+
+			if (actor.distance(a) < (TILE_SIZE)) {
+				a.damage(5);
+				this.speed = 0;
+			}
+		}
+	}
+
 	if (this.speed <= 0) {
 		if (actor.renderOff.x > 0) {
 			actor.renderOff.x--;
@@ -154,22 +169,6 @@ RotaVirusControls.prototype.tick = function tick()
 		}
 	}
 
-	if (actor.state === actor.MOVING && (
-		Math.abs(actor.renderOff.x) > 2 ||
-		Math.abs(actor.renderOff.y) > 2
-	)) {
-		var a;
-
-		for (a = 0; level.actors[a]; a++) {
-			if (level.actors[a] === actor) {
-				continue;
-			}
-			if (actor.distance(level.actors[a]) < (TILE_SIZE)) {
-				level.actors[a].damage(5);
-				this.speed = 0;
-			}
-		}
-	}
 };
 
 
