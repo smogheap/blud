@@ -368,7 +368,7 @@ var world = {
 			src:			"images/enemy.png",
 
 			standing: {
-				S: { x: 2, y: 0 }
+				S: { x: 3, y: 0 }
 			},
 
 			stuck: {
