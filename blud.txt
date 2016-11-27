@@ -160,6 +160,48 @@ that he is willing to fight them for you but will only do so if you give him a
 VERY hard to obtain item.
 
 
+Progression
+================================================================================
+
+Blud will start out with very limited abilities and must unlock various new
+abilities by obtaining items. These items will unlock new areas, and allow
+progression through the game.
+
+Some of these items will also be weapons that can be used in combat against
+viruses. Access to some areas will require wiping out large numbers of viruses
+in order to cure the host of a viral infection. Access to some parts of the
+host's body will not be possible until these infections have been cursed.
+
+Blud will also be able to start a farm (or some analogous concept) where items
+can be planted and tended until ready to pick, and livestock (viruses for which
+the host has been vaccinated?) in order to obtain various resources.
+
+Resources may also be collected in specific places, such as oxygen in the
+oxygen mines (lungs). Access to some areas, may require the collection of a
+large amount of specific resources.
+
+It may be possible for the player to kill all of the viruses that are part of
+the infections (but maybe not because they will reproduce) and to collect all
+of the required resources, but doing so would take a ridiculous amount of time.
+
+So, instead, once Blud has gained an ability, and recruited another blood cell
+to help that blud cell can be taught that ability.
+
+Recruiting will require finding a blood cell that likes Blud a great deal. Early
+on this will mean spending a lot of time helping individual blood cells. As Blud
+helps in a particular organ all of the blood cells living in that organ will
+become easier and easier to recruit.
+
+Each blood cell can be recruited for a single task. Prior to being recruited
+each cell (without specific hand written quests) will have randomly generated
+quests that can be done to make that cell like you more.
+
+Possible tasks that cells can be recruited for:
+	- Defense of an organ (fighting infection).
+	- Mining
+	- Farming
+
+
 
 Rough Ideas
 ================================================================================
