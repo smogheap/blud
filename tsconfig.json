@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"outFile":			"blud.js",
+		"inlineSourceMap":	true
+	},
+
+	"files": [
+		"src/main.ts",
+		"src/util.ts",
+		"src/dialog.ts",
+		"src/actor.ts",
+		"src/enemies.ts",
+		"src/input.ts",
+		"src/level.ts",
+		"src/player.ts",
+		"src/world.ts",
+		"src/wrand.ts"
+	]
+}
+

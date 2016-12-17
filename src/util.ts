@@ -23,7 +23,7 @@
 
             lastTime = currTime + timeToCall;
             return id;
-        };
+        } as any;
 	}
 
     if (!window.cancelAnimationFrame) {
@@ -48,7 +48,11 @@ function disableSmoothing(ctx)
 	ctx.imageSmoothingEnabled			= false;
 }
 
-function loadImage(src, cb)
+interface ImageLoadedCB {
+	(image: HTMLImageElement): void;
+}
+
+function loadImage(src: string, cb?: ImageLoadedCB): HTMLImageElement
 {
 	var img = new Image();
 

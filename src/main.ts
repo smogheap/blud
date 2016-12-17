@@ -1,14 +1,20 @@
-var TILE_SIZE	= 16;
-var input;
-var level;
+let TILE_SIZE	= 16;
+let input;
+let level;
 
-var hud = loadImage('images/hud.png');
+let hud = loadImage('images/hud.png');
 
 /*
 	This will be true for the first frame only, and can be used for debug
 	purposes to avoid printing debug messages at 60fps.
 */
-var firstframe		= true;
+let firstframe		= true;
+
+class coord
+{
+	x: number;
+	y: number;
+}
 
 function actorAt(x, y)
 {
@@ -81,7 +87,7 @@ function tick(ticks)
 						break;
 
 					case 3: /* New Game */
-						var arnold		= new Actor(world, "arnold", level);
+						var arnold		= new Actor("arnold", world.actors["arnold"], level);
 
 						arnold.state	= "standing";
 
@@ -235,7 +241,7 @@ window.addEventListener('load', function()
 
 	var w = 0;
 	var h = 0;
-	var resizeCanvas = function(force)
+	var resizeCanvas = function(force?:boolean)
 	{
 		if (force || w != window.innerWidth || h != window.innerHeight) {
 			w = window.innerWidth;
@@ -262,11 +268,11 @@ window.addEventListener('load', function()
 			h = Math.min(scale * TILE_SIZE * world.viewport.height, window.innerHeight);;
 			// console.log(scale, w, h, window.innerWidth, window.innerHeight);
 
-			canvas.setAttribute('width',  w);
-			canvas.setAttribute('height', h);
+			canvas.setAttribute('width',  '' + w);
+			canvas.setAttribute('height', '' + h);
 
-			buffer.setAttribute('width',  world.viewport.width  * TILE_SIZE);
-			buffer.setAttribute('height', world.viewport.height * TILE_SIZE);
+			buffer.setAttribute('width',  '' + (world.viewport.width  * TILE_SIZE));
+			buffer.setAttribute('height', '' + (world.viewport.height * TILE_SIZE));
 
 			/* Restore the initial saved state, and save it again */
 			ctx.restore();

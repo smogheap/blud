@@ -3,9 +3,9 @@ function Level(definition, loadedcb)
 	this.def		= definition;
 	this.images		= {};
 
-	var tilenames	= Object.keys(this.def.tiles);
-	var loadCount	= 1;
-	var src;
+	let tilenames	= Object.keys(this.def.tiles);
+	let loadCount	= 1;
+	let src;
 
 	this.slideFrames= 30;
 	this.marginX	= TILE_SIZE * 10;
@@ -16,7 +16,7 @@ function Level(definition, loadedcb)
 
 	this.children	= [];
 
-	var imageLoaded = function()
+	let imageLoaded = function()
 	{
 		loadCount--;
 
@@ -31,7 +31,7 @@ function Level(definition, loadedcb)
 	}.bind(this);
 
 	/* Preload all images for tiles */
-	for (var i = 0, tile; tile = tilenames[i]; i++) {
+	for (let i = 0, tile; tile = tilenames[i]; i++) {
 		if ((src = this.def.tiles[tile].src)) {
 			loadCount++;
 			this.images[src] = loadImage(src, imageLoaded);
@@ -39,8 +39,8 @@ function Level(definition, loadedcb)
 	}
 
 	/* Preload all images for actors */
-	for (var i = 0, actor; actor = this.def.actors[i]; i++) {
-		if ((src = this.def.tiles[tile].src)) {
+	for (let i = 0, actor; actor = this.def.actors[i]; i++) {
+		if ((src = actor.definition.src)) {
 			loadCount++;
 			this.images[src] = loadImage(src, imageLoaded);
 		}
@@ -68,7 +68,7 @@ Level.prototype.resize = function resize(w, h)
 
 Level.prototype.tileAt = function tileAt(x, y, deftile, ignoreVariants, rows, tiles)
 {
-	var tile;
+	let tile;
 
 	rows	= rows	|| this.rows;
 	tiles	= tiles	|| this.tiles;
@@ -111,27 +111,27 @@ Level.prototype.squareAt = function squareAt(x, y, rows)
 
 Level.prototype._loadAreaData = function _loadAreaData(name)
 {
-	var rows = [];
+	let rows = [];
 
-	var	c = this.def.areas[name];
+	let	c = this.def.areas[name];
 
 	if (!c) {
 		return;
 	}
 
-	var n = this.def.areas[this.findNearbyArea( 0, -1, name)];
-	var e = this.def.areas[this.findNearbyArea( 1,  0, name)];
-	var s = this.def.areas[this.findNearbyArea( 0,  1, name)];
-	var w = this.def.areas[this.findNearbyArea(-1,  0, name)];
-	var row;
+	let n = this.def.areas[this.findNearbyArea( 0, -1, name)];
+	let e = this.def.areas[this.findNearbyArea( 1,  0, name)];
+	let s = this.def.areas[this.findNearbyArea( 0,  1, name)];
+	let w = this.def.areas[this.findNearbyArea(-1,  0, name)];
+	let row;
 
 	/*
 		Build the rows for the current area with a border filled out from the
 		surrounding areas.
 	*/
 	row = [];
-	for (var x = -1; x <= c[0].length; x++) {
-		var tmp;
+	for (let x = -1; x <= c[0].length; x++) {
+		let tmp;
 
 		if (n && (tmp = n[n.length - 1].charAt(x))) {
 			row.push(tmp);
@@ -141,11 +141,11 @@ Level.prototype._loadAreaData = function _loadAreaData(name)
 	}
 	rows.push(row);
 
-	for (var y = 0; y < c.length; y++) {
+	for (let y = 0; y < c.length; y++) {
 		row = [];
 
 		row.push(w ? w[y].charAt(w[y].length - 1) : '-');
-		for (var x = 0; x < c[y].length; x++) {
+		for (let x = 0; x < c[y].length; x++) {
 			row.push(c[y].charAt(x));
 		}
 		row.push(e ? e[y].charAt(0) : '-');
@@ -154,8 +154,8 @@ Level.prototype._loadAreaData = function _loadAreaData(name)
 	}
 
 	row = [];
-	for (var x = -1; x <= c[0].length; x++) {
-		var tmp;
+	for (let x = -1; x <= c[0].length; x++) {
+		let tmp;
 
 		if (s && (tmp = s[0].charAt(x))) {
 			row.push(tmp);
@@ -186,39 +186,40 @@ Level.prototype._prepareLevelData = function _prepareLevelData()
 		Insert a dummy value in the tiles array because it is easier to check
 		the validity of a tile value with 'if (tile)' than 'if (!isNaN(tile))'
 	*/
-	var newtiles	= [ {} ];
-	var newareas	= {};
-	var tilenames	= Object.keys(this.def.tiles);
-	var areanames	= Object.keys(this.def.areas);
-	var tilemap		= {};
+	let newtiles:any[]	= [ {} ];
+	let newareas		= {};
+	let tilenames		= Object.keys(this.def.tiles);
+	let areanames		= Object.keys(this.def.areas);
+	let tilemap			= {};
 
-	WRand.setSeed((new Date()).getTime());
+	/* Set the seed */
+	WRand((new Date()).getTime());
 
 	/* Move the tiles into an indexed array */
-	for (var i = 0, tile; tile = tilenames[i]; i++) {
+	for (let i = 0, tile; tile = tilenames[i]; i++) {
 		tilemap[tile] = newtiles.length;
 		newtiles.push(this.def.tiles[tile]);
 	}
 
 	/* Adjust the variantOf values */
-	for (var i = 0; i < newtiles.length; i++) {
-		var v;
+	for (let i = 0; i < newtiles.length; i++) {
+		let v;
 
 		if ((v = newtiles[i].variantOf)) {
 			newtiles[i].variantOf = tilemap[v];
 		}
 	}
 
-	for (var a = 0, name; name = areanames[a]; a++) {
+	for (let a = 0, name; name = areanames[a]; a++) {
 		/*
 			Convert the area into an array of arrays (from an array of strings)
 			and load the border (from surrounding areas).
 		*/
-		var data	= this._loadAreaData(name);
+		let data	= this._loadAreaData(name);
 
 		/* Replace the tile names with an index */
-		for (var y = 0; y < data.length; y++) {
-			for (var x = 0; x < data[y].length; x++) {
+		for (let y = 0; y < data.length; y++) {
+			for (let x = 0; x < data[y].length; x++) {
 				data[y][x] = [ tilemap[data[y][x]] ];
 			}
 		}
@@ -228,14 +229,14 @@ Level.prototype._prepareLevelData = function _prepareLevelData()
 			tiles surrounding it. This is used for things like edges on
 			water/walls etc.
 		*/
-		var key, edges = [], vedges, options, tile, offsets;
+		let key, edges = [], vedges, options, tile, offsets;
 
 		newareas[name] = [];
 
-		for (var y = 0; y < data.length; y++) {
+		for (let y = 0; y < data.length; y++) {
 			newareas[name][y] = [];
 
-			for (var x = 0; x < data[y].length; x++) {
+			for (let x = 0; x < data[y].length; x++) {
 				tile = data[y][x][0];
 
 				/*
@@ -276,7 +277,7 @@ Level.prototype._prepareLevelData = function _prepareLevelData()
 					edges[6] = this.tileAt(x - 1 - 1, y + 1 - 1, tile, false, data, newtiles);
 					edges[7] = this.tileAt(x + 1 - 1, y + 1 - 1, tile, false, data, newtiles);
 
-					for (var i = 0; i < edges.length; i++) {
+					for (let i = 0; i < edges.length; i++) {
 						if (vedges && "1" === vedges.charAt(i)) {
 							key += "1";
 						} else {
@@ -299,9 +300,9 @@ Level.prototype._prepareLevelData = function _prepareLevelData()
 					offsets = options[WRand() % options.length];
 				} else {
 					/* Pick any tile in the image */
-					var src = newtiles[tile].src;
+					let src = newtiles[tile].src;
 
-					img = src ? this.images[src] : null;
+					let img = src ? this.images[src] : null;
 
 					offsets = [
 						WRand() % ((img ? img.width  : 0) / TILE_SIZE),
@@ -325,7 +326,7 @@ Level.prototype._prepareLevelData = function _prepareLevelData()
 		}
 	}
 
-	for (var i = 0; i < newtiles.length; i++) {
+	for (let i = 0; i < newtiles.length; i++) {
 		if (newtiles[i].src) {
 			newtiles[i].img = this.images[newtiles[i].src];
 		}
@@ -337,12 +338,12 @@ Level.prototype._prepareLevelData = function _prepareLevelData()
 
 Level.prototype.findNearbyArea = function findNearbyArea(ox, oy, area)
 {
-	var name	= null;
+	let name	= null;
 
 	area = area || this.area;
 
-	for (var y = 0; y < this.def.layout.length; y++) {
-		for (var x = 0; x < this.def.layout[y].length; x++) {
+	for (let y = 0; y < this.def.layout.length; y++) {
+		for (let x = 0; x < this.def.layout[y].length; x++) {
 			if (this.def.layout[y][x] === area) {
 				if (this.def.layout[y + oy] &&
 					this.def.layout[y + oy][x + ox]
@@ -370,13 +371,12 @@ Level.prototype.findNearbyArea = function findNearbyArea(ox, oy, area)
 */
 Level.prototype.switchArea = function switchArea(x, y, player)
 {
-	var name;
+	let name;
+	let ox = 0;
+	let oy = 0;
 
 	switch (typeof x) {
 		case 'number':
-			var ox = 0;
-			var oy = 0;
-
 			if (y < 0) {
 				/* Top edge of area */
 				oy = -1;
@@ -412,11 +412,11 @@ Level.prototype.switchArea = function switchArea(x, y, player)
 		Prepare an image to display containing both the old and new area to
 		allow sliding from one to the other.
 	*/
-	var canvas	= document.createElement('canvas');
-	var ctx		= canvas.getContext('2d');
+	let canvas	= document.createElement('canvas');
+	let ctx		= canvas.getContext('2d');
 
-	canvas.setAttribute('width',	this.viewport.w	* (ox === 0 ? 1 : 2));
-	canvas.setAttribute('height',	this.viewport.h * (oy === 0 ? 1 : 2));
+	canvas.setAttribute('width',	'' + (this.viewport.w * (ox === 0 ? 1 : 2)));
+	canvas.setAttribute('height',	'' + (this.viewport.h * (oy === 0 ? 1 : 2)));
 	disableSmoothing(ctx);
 
 	ctx.save();
@@ -516,9 +516,9 @@ Level.prototype.loadArea = function loadArea(name)
 	player.area = name;
 	this.actors.push(player);
 
-	var ids = Object.keys(this.def.actors);
-	for (var i = 0, id; id = ids[i]; i++) {
-		var def	= this.def.actors[id];
+	let ids = Object.keys(this.def.actors);
+	for (let i = 0, id; id = ids[i]; i++) {
+		let def	= this.def.actors[id];
 
 		if (id === "blud") {
 			/* The player was added above */
@@ -534,7 +534,7 @@ Level.prototype.loadArea = function loadArea(name)
 		}
 
 		if (def.at) {
-			for (var x = 0; x < def.at.length; x++) {
+			for (let x = 0; x < def.at.length; x++) {
 				if (def.at[x].area !== name) {
 					continue;
 				}
@@ -573,10 +573,10 @@ Level.prototype.scrollTo = function scrollTo(instant, x, y)
 		y = this.playerpos.y;
 	}
 
-	var minX = this.viewport.x + this.marginX;
-	var maxX = this.viewport.x + this.viewport.w - this.marginX;
-	var minY = this.viewport.y + this.marginY;
-	var maxY = this.viewport.y + this.viewport.h - this.marginY;
+	let minX = this.viewport.x + this.marginX;
+	let maxX = this.viewport.x + this.viewport.w - this.marginX;
+	let minY = this.viewport.y + this.marginY;
+	let maxY = this.viewport.y + this.viewport.h - this.marginY;
 
 	// console.log("x:", x, minX, maxX);
 	// console.log("y:", y, minY, maxY);
@@ -637,19 +637,19 @@ Level.prototype.scrollTo = function scrollTo(instant, x, y)
 /* Build an image containing the entire loaded area */
 Level.prototype.bake = function bake()
 {
-	var canvas	= document.createElement('canvas');
-	var ctx		= canvas.getContext('2d');
+	let canvas	= document.createElement('canvas');
+	let ctx		= canvas.getContext('2d');
 
-	canvas.setAttribute('width',	this.width	* TILE_SIZE);
-	canvas.setAttribute('height',	this.height * TILE_SIZE);
+	canvas.setAttribute('width',	'' + (this.width  * TILE_SIZE));
+	canvas.setAttribute('height',	'' + (this.height * TILE_SIZE));
 	disableSmoothing(ctx);
 
 	ctx.fillStyle = 'black';
 
-	var square, img;
+	let square, img;
 
-	for (var y = 0; y < this.height; y++) {
-		for (var x = 0; x < this.width; x++) {
+	for (let y = 0; y < this.height; y++) {
+		for (let x = 0; x < this.width; x++) {
 			if (!(square = this.squareAt(x, y))) {
 				continue;
 			}
@@ -698,7 +698,7 @@ Level.prototype.tick = function tick()
 			Math.abs(this.slide.y) >= this.viewport.h
 		) {
 			/* done */
-			var player = this.slide.player;
+			let player = this.slide.player;
 
 			this.area = this.slide.area;
 			this.slide = null;
@@ -717,13 +717,13 @@ Level.prototype.tick = function tick()
 	this.scrollTo(false);
 
 	/* Update the children (NPCs, other non-static objects) */
-	for (var c = 0, child; child = this.children[c]; c++) {
+	for (let c = 0, child; child = this.children[c]; c++) {
 		if (child.player || !child.area || child.area === this.area) {
 			child.tick();
 		}
 	}
 
-	for (var c = 0, child; child = this.actors[c]; c++) {
+	for (let c = 0, child; child = this.actors[c]; c++) {
 		if (child.player || !child.area || child.area === this.area) {
 			child.tick();
 		}
@@ -736,8 +736,8 @@ Level.prototype.render = function render(ctx)
 {
 	if (this.slide) {
 		/* Sliding from one area to another */
-		var x = Math.abs(this.slide.ox) * Math.floor(this.slide.x);
-		var y = Math.abs(this.slide.oy) * Math.floor(this.slide.y);
+		let x = Math.abs(this.slide.ox) * Math.floor(this.slide.x);
+		let y = Math.abs(this.slide.oy) * Math.floor(this.slide.y);
 
 		if (x < 0) {
 			x += this.viewport.w;
@@ -760,12 +760,12 @@ Level.prototype.render = function render(ctx)
 			this.viewport.w, this.viewport.h);
 
 		/* Draw the children (NPCs, other non-static objects) */
-		for (var c = 0, child; child = this.children[c]; c++) {
+		for (let c = 0, child; child = this.children[c]; c++) {
 			if (!child.area || child.area === this.area) {
 				child.render(ctx, this.viewport.x, this.viewport.y);
 			}
 		}
-		for (var c = 0, child; child = this.actors[c]; c++) {
+		for (let c = 0, child; child = this.actors[c]; c++) {
 			if (!child.area || child.area === this.area) {
 				child.render(ctx, this.viewport.x, this.viewport.y);
 			}

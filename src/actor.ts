@@ -1,7 +1,50 @@
-var player		= null;
-var actornum	= 0;
+let player		= null;
+let actornum	= 0;
 
-function Actor(id, definition, level, area, x, y)
+class Actor
+{
+
+// TODO Turn these into an enum and use numbers instead of strings so we can
+//		have the state be defined as the actor state type.
+readonly STANDING				= "standing";
+readonly BLINKING				= "blinking";
+readonly STUCK					= "stuck";
+readonly TURNING				= "turning";
+readonly MOVING					= "moving";
+readonly TALKING				= "talking";
+readonly DEAD					= "dead";
+
+readonly id:			string;
+readonly player:		boolean	= false;
+state:					string;
+children:				Actor[];
+
+// TODO Set this to a controls class type
+readonly controls:		any;
+
+level:					any;
+readonly definition:	any;
+area:					string;
+
+private num:			number;
+private ticks:			number;
+private frame:			number;
+
+readonly width:			number;
+readonly height:		number;
+
+health:					number;
+private lastDamage:		number;
+x:						number;
+y:						number;
+facing:					string;
+
+renderOff:				coord;
+newpos:					coord;
+private _lookingAt:		coord;
+
+// TODO Set the right type for level
+constructor(id: string, definition: any, level: any, area?: string, x?: number, y?: number)
 {
 	if (!id || !definition) {
 		console.log("Could not find definition for actor:" + id);
@@ -67,22 +110,14 @@ function Actor(id, definition, level, area, x, y)
 	}
 
 	this.children	= [];
-};
+}
 
-Actor.prototype.STANDING		= "standing";
-Actor.prototype.BLINKING		= "blinking";
-Actor.prototype.STUCK			= "stuck";
-Actor.prototype.TURNING			= "turning";
-Actor.prototype.MOVING			= "moving";
-Actor.prototype.TALKING			= "talking";
-Actor.prototype.DEAD			= "dead";
-
-Actor.prototype.getDefinition = function getDefinition(state, direction)
+getDefinition(state?: string, direction?: string)
 {
-	var def = null;
+	let def = null;
 
-	state = state || this.state;
-	direction = direction || this.facing;
+	state		= state		|| this.state;
+	direction	= direction	|| this.facing;
 
 	if (this.definition[state]) {
 		def = this.definition[state][direction] || this.definition[state]['S'];
@@ -114,9 +149,9 @@ Actor.prototype.getDefinition = function getDefinition(state, direction)
 	}
 
 	return(def);
-};
+}
 
-Actor.prototype.isAt = function isAt(x, y)
+isAt(x, y)
 {
 	if (x === this.x && y === this.y) {
 		return(true);
@@ -127,24 +162,24 @@ Actor.prototype.isAt = function isAt(x, y)
 	}
 
 	return(false);
-};
+}
 
 /*
 	Return the distance between this actor and the one specified in pixels
 	taking into account the rendering offset.
 */
-Actor.prototype.distance = function distance(actor)
+distance(actor: Actor)
 {
-	var x1 = (this.x * TILE_SIZE) + this.renderOff.x;
-	var y1 = (this.y * TILE_SIZE) + this.renderOff.y;
-	var x2 = (actor.x * TILE_SIZE) + actor.renderOff.x;
-	var y2 = (actor.y * TILE_SIZE) + actor.renderOff.y;
+	let x1 = (this.x  * TILE_SIZE) + this.renderOff.x;
+	let y1 = (this.y  * TILE_SIZE) + this.renderOff.y;
+	let x2 = (actor.x * TILE_SIZE) + actor.renderOff.x;
+	let y2 = (actor.y * TILE_SIZE) + actor.renderOff.y;
 
 	// console.log(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
 	return(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)));
-};
+}
 
-Actor.prototype.setState = function setState(state, dest)
+setState(state: string, dest?: coord)
 {
 	if (state && this.state !== state) {
 		this.state = state;
@@ -158,13 +193,12 @@ Actor.prototype.setState = function setState(state, dest)
 		this.newpos.x = this.x;
 		this.newpos.y = this.y;
 	}
-};
+}
 
 // TODO Add a direction arg
-Actor.prototype.damage = function damage(ammount)
+// TODO Knock back?
+damage(ammount: number)
 {
-	// TODO Knock back?
-
 	/* Invinsibility frames */
 	if (this.ticks - this.lastDamage < 30) {
 		return;
@@ -190,27 +224,27 @@ Actor.prototype.damage = function damage(ammount)
 			this.children[0].renderOff.x -= 4;
 			this.children[1].renderOff.x += 4;
 
-
-			if (false)
+/*
 			new Dialog({
 				msg:		"You died",
 				noinput:	true
 			});
+*/
 		}
 	}
-};
+}
 
-Actor.prototype.talk = function talk()
+talk()
 {
 	// TODO Add actual logic to control what the actor can say
 	if (!this.definition.dialog) {
 		return;
 	}
 
-	var def	= this.getDefinition(this.STANDING, "S");
-	var msg = this.definition.dialog[this.frame % this.definition.dialog.length];
-	var src = def.src || this.definition.src;
-	var img;
+	let def	= this.getDefinition(this.STANDING, "S");
+	let msg = this.definition.dialog[this.frame % this.definition.dialog.length];
+	let src = def.src || this.definition.src;
+	let img;
 
 	if (!(img = this.level.images[src])) {
 		img = this.level.images[src] = loadImage(src);
@@ -221,15 +255,15 @@ Actor.prototype.talk = function talk()
 		msg:		msg,
 		spoken:		true
 	});
-};
+}
 
-Actor.prototype.canMove = function canMove(direction, mindistance)
+canMove(direction, mindistance)
 {
-	var tile;
-	var x	= this.x;
-	var y	= this.y;
-	var ax;
-	var ay;
+	let tile;
+	let x	= this.x;
+	let y	= this.y;
+	let ax;
+	let ay;
 
 	direction = direction || this.facing;
 
@@ -240,7 +274,7 @@ Actor.prototype.canMove = function canMove(direction, mindistance)
 		case 'W': x--; break;
 	}
 
-	for (var a = 0, actor; actor = level.actors[a]; a++) {
+	for (let a = 0, actor; actor = level.actors[a]; a++) {
 		if (actor === this || actor.area !== this.area || actor.state === actor.DEAD) {
 			continue;
 		}
@@ -282,9 +316,9 @@ Actor.prototype.canMove = function canMove(direction, mindistance)
 	}
 
 	return(!this.level.tiles[tile].solid);
-};
+}
 
-Actor.prototype.tick = function tick()
+tick()
 {
 	/* this.frames resets when the state changes, this.ticks does not */
 	this.ticks++;
@@ -295,7 +329,7 @@ Actor.prototype.tick = function tick()
 	}
 
 	/* Grab the definition for this character's current action and direction */
-	var def = this.getDefinition(this.state, this.facing);
+	let def = this.getDefinition(this.state, this.facing);
 
 
 	switch (this.state) {
@@ -317,13 +351,13 @@ Actor.prototype.tick = function tick()
 			break;
 	}
 
-	for (var c = 0, child; child = this.children[c]; c++) {
+	for (let c = 0, child; child = this.children[c]; c++) {
 		child.tick();
 	}
-};
+}
 
 /* Return true if this actor should be rendered on the specified row */
-Actor.prototype.renderRow = function renderRow(y)
+renderRow(y: number)
 {
 	if ('S' === this.facing && this.MOVING === this.state) {
 		return(y === this.y + 1);
@@ -332,7 +366,7 @@ Actor.prototype.renderRow = function renderRow(y)
 	}
 };
 
-Actor.prototype.lookingAt = function lookingAt()
+lookingAt(): coord
 {
 	this._lookingAt.x = this.x;
 	this._lookingAt.y = this.y;
@@ -345,13 +379,13 @@ Actor.prototype.lookingAt = function lookingAt()
 	}
 
 	return(this._lookingAt);
-};
+}
 
-Actor.prototype.render = function render(ctx, wx, wy)
+render(ctx: CanvasRenderingContext2D, wx, wy)
 {
 	/* Which tile (relative to the viewport) is the actor on */
-	var x		= (this.x * TILE_SIZE) - wx;
-	var y		= (this.y * TILE_SIZE) - wy;
+	let x		= (this.x * TILE_SIZE) - wx;
+	let y		= (this.y * TILE_SIZE) - wy;
 
 	/* Add the offset if the character is moving between tiles */
 	x += this.renderOff.x;
@@ -359,17 +393,17 @@ Actor.prototype.render = function render(ctx, wx, wy)
 
 	this.renderState(ctx, this.state, this.facing, this.frame, x, y);
 
-	for (var c = 0, child; child = this.children[c]; c++) {
+	for (let c = 0, child; child = this.children[c]; c++) {
 		child.render(ctx, wx, wy);
 	}
 };
 
-Actor.prototype.renderState = function renderState(ctx, state, facing, ticks, x, y)
+renderState(ctx: CanvasRenderingContext2D, state: string, facing: string, ticks: number, x: number, y: number)
 {
 	/* Grab the definition for this character's current action and direction */
-	var def	= this.getDefinition(state, facing);
-	var src = def.src || this.definition.src;
-	var img;
+	let def	= this.getDefinition(state, facing);
+	let src = def.src || this.definition.src;
+	let img;
 
 	if (!src) {
 		return;
@@ -380,9 +414,9 @@ Actor.prototype.renderState = function renderState(ctx, state, facing, ticks, x,
 	}
 
 	/* How many frames are there for this state? */
-	var frames	= 1;
-	var rate	= 1;
-	var frame;
+	let frames	= 1;
+	let rate	= 1;
+	let frame;
 
 	if (def && !isNaN(def.frames)) {
 		frames = def.frames;
@@ -392,8 +426,8 @@ Actor.prototype.renderState = function renderState(ctx, state, facing, ticks, x,
 	}
 
 	/* Determine which frame to use */
-	var sx = def.x;
-	var sy = def.y;
+	let sx = def.x;
+	let sy = def.y;
 
 	frame = Math.floor(ticks * rate);
 	if (def.repeat !== undefined && !def.repeat && frame >= frames) {
@@ -408,5 +442,7 @@ Actor.prototype.renderState = function renderState(ctx, state, facing, ticks, x,
 			this.width, this.height,
 			x, y,
 			this.width, this.height);
-};
+}
+
+} /* End of Actor class */
 

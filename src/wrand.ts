@@ -15,47 +15,20 @@
 */
 
 /* Mimick the random number generator used by windows */
-WRand = function()
+let _seed:number = (new Date()).getTime();
+
+function WRand(seed?: number)
 {
-	return(WRand.randint());
-};
-
-WRand.LCRand = function()
-{
-	var seed = WRand.getSeed(NaN);
-
-	seed = seed * 214013 + 2531011;
-	seed = seed & 4294967295;
-	var r = ((seed >> 16) & 32767);
-
-	WRand.seed = seed;
-
-	return(r);
-};
-WRand.randint = WRand.LCRand;
-
-WRand.setSeed = function(seed)
-{
-	if (!isNaN(seed)) {
-		WRand.seed = seed;
+	if (isNaN(seed)) {
+		seed = _seed;
 	}
 
 	seed = seed % 32000;
+	seed = seed * 214013 + 2531011;
+	seed = seed & 4294967295;
 
-	WRand.randint	= WRand.LCRand;
-	WRand.shuffle	= WRand.LCShuffle;
-};
+	_seed = seed;
 
-WRand.getSeed = function(seed)
-{
-	if (!isNaN(seed)) {
-		return(seed);
-	}
-
-	if (!isNaN(WRand.seed)) {
-		return(WRand.seed);
-	}
-
-	return((new Date()).getTime());
-};
+	return((seed >> 16) & 32767);
+}
 
