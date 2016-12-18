@@ -19,8 +19,7 @@ readonly player:		boolean	= false;
 state:					string;
 children:				Actor[];
 
-// TODO Set this to a controls class type
-readonly controls:		any;
+readonly controls:		Controls;
 
 level:					any;
 readonly definition:	any;
@@ -28,7 +27,7 @@ area:					string;
 
 private num:			number;
 private ticks:			number;
-private frame:			number;
+frame:					number;
 
 readonly width:			number;
 readonly height:		number;
@@ -257,7 +256,7 @@ talk()
 	});
 }
 
-canMove(direction, mindistance)
+canMove(direction?:string, mindistance?:number)
 {
 	let tile;
 	let x	= this.x;
