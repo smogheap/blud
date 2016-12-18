@@ -2,11 +2,17 @@
     "version": "0.1.0",
     "configurations": [
         {
-            "name": "Launch index.html",
+            "name": "Launch index.html with chromium",
             "type": "chrome",
             "request": "launch",
             "file": "${workspaceRoot}/index.html",
 			"runtimeExecutable": "chromium"
+        },
+		 {
+            "name": "Launch index.html with firefox",
+            "type": "firefox",
+            "request": "launch",
+            "file": "${workspaceRoot}/index.html"
         }
     ]
 }
