@@ -16,6 +16,8 @@ readonly DEAD					= "dead";
 
 readonly id:			string;
 readonly player:		boolean	= false;
+name:					string;
+
 state:					string;
 children:				Actor[];
 
@@ -95,6 +97,8 @@ constructor(id: string, definition: any, level: any, area?: string, x?: number, 
 	switch (id) {
 		case "blud":
 			this.player	= true;
+			this.name = "Sue"; /* Default name for the player */
+
 			this.level.scrollTo(true, this.x * TILE_SIZE, this.y * TILE_SIZE);
 			this.controls = new PlayerControls(this);
 			break;
@@ -223,14 +227,80 @@ damage(ammount: number)
 			this.children[0].renderOff.x -= 4;
 			this.children[1].renderOff.x += 4;
 
-/*
-			new Dialog({
-				msg:		"You died",
-				noinput:	true
-			});
-*/
+			setTimeout(function() {
+				this.rebirth();
+			}.bind(this), 3000);
 		}
 	}
+}
+
+rebirth()
+{
+	this.health = 100;
+	this.setState(this.STANDING);
+
+	var arnold		= new Actor("arnold", world.actors["arnold"], level);
+	arnold.state	= "standing";
+
+	new Dialog([
+		{ actor: player, msg: [
+			"Uh, I thought this game was about",
+			player.name + "... but " + player.name + " is dead."
+		].join('\n')},
+
+		{ actor: player, msg: [
+			"Luckily this story isn't really about " + player.name + "."
+		].join('\n')},
+
+		{
+			actor: {
+				actor:		arnold,
+				action:		"dividing",
+				delay:		20,
+				rate:		0.25
+			},
+			msg: [
+				"Remember Arnold?  Arnold divided again",
+				"and a new cell was born. The new cell",
+				"was named Blud as well, but everyone",
+				"called it...",
+			].join('\n')
+		},
+
+		{
+			msg: [
+				"Uh, Help me out here...",
+				"What did they call the",
+				"new cell?"
+			].join('\n'),
+			actor: player,
+			kb: true,
+			closecb: function(name) {
+				if (!name) {
+					name = "Sue";
+				}
+				player.name = name;
+
+				new Dialog([
+					{
+						actor: player,
+						msg: [
+							"The new cell was named Blud and",
+							"everyone called them " + name + "."
+						].join('\n')
+					},
+
+					{
+						actor: player,
+						msg: [
+							"This is a story about " + name + "."
+						].join('\n')
+					},
+				]);
+			}
+		}
+	]);
+
 }
 
 talk()

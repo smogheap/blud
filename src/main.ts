@@ -133,8 +133,11 @@ function tick(ticks)
 								kb: true,
 								closecb: function(name) {
 									if (!name) {
-										name = "Sue";
+										name = player.name;
+									} else {
+										player.name = name;
 									}
+
 									new Dialog([
 										{
 											actor: player,
