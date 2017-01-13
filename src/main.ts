@@ -139,8 +139,8 @@ function MenuAction(name: any, value?: string)
 			break;
 
 		case "respawn":
-			this.health = 100;
-			this.setState(this.STANDING);
+			player.health = 100;
+			player.setState(player.STANDING);
 
 			var arnold		= new Actor("arnold", world.actors["arnold"], level);
 			arnold.state	= "standing";
@@ -148,7 +148,7 @@ function MenuAction(name: any, value?: string)
 			p = Ask([
 				{
 					actor: player,
-					msg: "Uh, I thought this game was about" + player.name +
+					msg: "Uh, I thought this game was about " + player.name +
 							"... but " + player.name + " is dead."
 				},
 
@@ -165,7 +165,7 @@ function MenuAction(name: any, value?: string)
 						rate:		0.25
 					},
 					msg: [
-						"Remember Arnold?  Arnold divided again",
+						"Remember Arnold?\n\nArnold divided again",
 						"and a new cell was born. The new cell",
 						"was named Blud as well, but everyone",
 						"called them...",
