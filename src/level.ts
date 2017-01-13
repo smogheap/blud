@@ -765,9 +765,12 @@ Level.prototype.render = function render(ctx)
 				child.render(ctx, this.viewport.x, this.viewport.y);
 			}
 		}
+
 		for (let c = 0, child; child = this.actors[c]; c++) {
 			if (!child.area || child.area === this.area) {
-				child.render(ctx, this.viewport.x, this.viewport.y);
+				if (!editor || child === player) {
+					child.render(ctx, this.viewport.x, this.viewport.y);
+				}
 			}
 		}
 	}

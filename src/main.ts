@@ -1,4 +1,5 @@
 let TILE_SIZE	= 16;
+let editor		= false;
 let input;
 let level;
 
@@ -34,22 +35,27 @@ function tick(ticks)
 		MenuAction("pause");
 	}
 
-	if (input.getButton(input.A, true) & input.PRESSED) {
-		var pos		= player.lookingAt();
-		var actor	= actorAt(pos.x, pos.y);
+	if (!editor) {
+		if (input.getButton(input.A, true) & input.PRESSED) {
+			var pos		= player.lookingAt();
+			var actor	= actorAt(pos.x, pos.y);
 
-		if (actor) {
-			actor.talk();
+			if (actor) {
+				actor.talk();
+			}
 		}
-	}
 
-	if (input.getButton(input.SELECT, true) & input.PRESSED) {
-		player.damage(1000);
-	}
+		if (input.getButton(input.SELECT, true) & input.PRESSED) {
+			player.damage(1000);
+		}
 
-	if (!level.tick()) {
-		/* Nothing else is active while the level is sliding */
-		return(false);
+		if (!level.tick()) {
+			/* Nothing else is active while the level is sliding */
+			return(false);
+		}
+	} else {
+		/* No ticks while editting except the player */
+		player.tick();
 	}
 }
 
@@ -57,33 +63,39 @@ function render(ctx)
 {
 	level.render(ctx);
 
-	/* HUD */
-	var dx = 8, dy = 8;
-	drawBorder(ctx, dx, dy, 64 + 12, 8 + 12, 'black');
+	if (!editor) {
+		/* HUD */
+		var dx = 8, dy = 8;
+		drawBorder(ctx, dx, dy, 64 + 12, 8 + 12, 'black');
 
-	dx += 6;
-	dy += 6;
+		dx += 6;
+		dy += 6;
 
-	/* Scale the player's health to a 64 pixel long bar */
-	var health	= player.health * 64 / 100;
-	var w		= 64 - health;
+		/* Scale the player's health to a 64 pixel long bar */
+		var health	= player.health * 64 / 100;
+		var w		= 64 - health;
 
-	if (health < 8) {
-		w = health;
-	}
+		if (health < 8) {
+			w = health;
+		}
 
-	if (health > 0) {
-		ctx.drawImage(hud, 0, 0, health, 8, dx, dy, health, 8);
-	}
+		if (health > 0) {
+			ctx.drawImage(hud, 0, 0, health, 8, dx, dy, health, 8);
+		}
 
-	if (w > 0) {
-		w = Math.min(w, 8);
+		if (w > 0) {
+			w = Math.min(w, 8);
 
-		ctx.drawImage(hud,
-				64, 0,
-				w, 8,
-				health > 8 ? dx + health - 8 : dx, dy,
-				w, 8);
+			ctx.drawImage(hud,
+					64, 0,
+					w, 8,
+					health > 8 ? dx + health - 8 : dx, dy,
+					w, 8);
+		}
+	} else {
+		// TODO Draw a row of tiles that can be used at the bottom of the screen
+		// TODO Draw a border around the selected tile
+		// TODO Allow picking a tile and applying it to the level
 	}
 }
 

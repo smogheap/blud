@@ -265,6 +265,11 @@ canMove(direction?:string, mindistance?:number)
 	let ax;
 	let ay;
 
+	if (editor) {
+		/* Allow moving anywhere when in editor mode */
+		return(true);
+	}
+
 	direction = direction || this.facing;
 
 	switch (direction) {

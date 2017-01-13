@@ -11,20 +11,36 @@ function MenuAction(name: any, value?: string)
 	}
 
 	switch (name) {
-		case "pause":
-			p = Ask({
-				msg:		"Paused",
-
-				choices: {
-					"continue":		"Continue",
-					"about":		"About",
-					"options":		"Options",
-					"newgame":		"New Game"
-				}
-			});
+		case "continue":
 			break;
 
-		case "continue":
+		case "pause":
+			if (!editor) {
+				p = Ask({
+					msg:		"Paused",
+
+					choices: {
+						"continue":		"Continue",
+						"edit":			"Edit",
+						"about":		"About",
+						"options":		"Options",
+						"newgame":		"New Game"
+					}
+				});
+			} else {
+				p = Ask({
+					msg:		"Paused",
+
+					choices: {
+						"continue":		"Continue",
+						"edit":			"Play"
+					}
+				});
+			}
+			break;
+
+		case "edit":
+			editor = !editor;
 			break;
 
 		case "about":
