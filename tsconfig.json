@@ -15,6 +15,7 @@
 		"src/level.ts",
 		"src/player.ts",
 		"src/world.ts",
+		"src/menu.ts",
 		"src/wrand.ts"
 	]
 }

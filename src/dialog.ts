@@ -139,7 +139,6 @@ function splitLines(msg: string, maxWidth: number)
 		}
 	}
 
-console.log(lines);
 	return(lines);
 }
 
