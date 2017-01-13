@@ -107,6 +107,42 @@ function drawBorder(ctx: CanvasRenderingContext2D, dx: number, dy: number, w: nu
 	ctx.restore();
 }
 
+function splitLines(msg: string, maxWidth: number)
+{
+	let lines	= [];
+	let src		= msg.split('\n');
+	let line;
+
+	while ((line = src.shift())) {
+		if (line.length <= maxWidth || /^\s/.test(line)) {
+			lines.push(line);
+			continue;
+		}
+
+		let words = line.split(/\s+/);
+		let word;
+
+		line = '';
+		while ((word = words.shift())) {
+			if (line.length + word.length + 1 > maxWidth) {
+				lines.push(line);
+				line = '';
+			}
+
+			if (line.length > 0) {
+				line += ' ';
+			}
+			line += word;
+		}
+		if (line.length > 0) {
+			lines.push(line);
+		}
+	}
+
+console.log(lines);
+	return(lines);
+}
+
 interface DialogActor
 {
 	actor:		Actor;	/* The actor								*/
@@ -170,8 +206,14 @@ interface DialogOptions
 	*/
 	steps?:		number;
 
-	/* An array of choices. */
-	choices?:	string[];
+	/*
+		An object with named string values. For example:
+			{ "pause": "Pause", "quit": "Exit" }
+
+		This will display "Pause" and "Exit" as options and return "pause" or
+		"quit" as the selected value.
+	*/
+	choices?:	any;
 
 	/*
 		If specified the background will be filled with this color instead of
@@ -184,6 +226,44 @@ interface DialogOptions
 		to enter text.
 	*/
 	kb?:		boolean;
+
+	/*
+		If true then a promise created with Ask() will return the resulting
+		value as an object containing the specified key.
+	*/
+	key?:		string,
+}
+
+function Ask(options: string);
+function Ask(options: DialogOptions);
+function Ask(options: DialogOptions[]);
+function Ask(options: any)
+{
+	return(new Promise((resolve, reject) => {
+		let closecb = (value) => {
+			resolve(value);
+		};
+
+		switch (Array.isArray(options) ? "array" : (typeof options)) {
+			case "array":
+				options[options.length - 1].closecb = closecb;
+				break;
+
+			case "string":
+				let o = {
+					msg:		options,
+					closecb:	closecb
+				};
+				options = o;
+				break;
+
+			default:
+				options.closecb = closecb;
+				break;
+		}
+
+		let dialog = new Dialog(options);
+	}));
 }
 
 class Dialog
@@ -192,6 +272,7 @@ class Dialog
 	private ctx?:		CanvasRenderingContext2D;
 	private next?:		DialogOptions[];
 	private actor:		DialogActor	= null;
+	private keys?:		string[]	= null;
 	private choices?:	string[]	= null;
 	private drawn					= 0;
 	private ticks					= 0;
@@ -205,6 +286,7 @@ class Dialog
 	private selected				= 0;
 	private icon					= null;
 	private kb						= false;
+	private key						= null;
 	private upper					= 1;
 	private value					= '';
 	private maxLength				= 20;
@@ -245,9 +327,14 @@ class Dialog
 		this.spoken		= options.spoken;
 		this.icon		= options.icon;
 		this.kb			= options.kb;
-		this.msg		= options.msg		|| this.msg;
+		this.key		= options.key;
 		this.value		= options.value		|| this.value;
 		this.maxLength	= options.maxLength	|| this.maxLength;
+
+		this.msg		= options.msg		|| this.msg;
+		let lines		= splitLines(this.msg, 30);
+
+		this.msg		= lines.join('\n');
 
 		if (options.actor) {
 			if (options.actor.actor) {
@@ -264,11 +351,22 @@ class Dialog
 			this.actor.height	= this.actor.width	|| this.actor.actor.height;
 		}
 
-		if (options.choices && options.choices.length > 0) {
-			this.choices = options.choices;
-		}
+		if (options.choices) {
+			if (Array.isArray(options.choices)) {
+				this.choices = options.choices;
+			} else {
+				let keys = Object.keys(options.choices);
 
-		let lines		= this.msg.split('\n');
+				if (keys && keys.length > 0) {
+					this.keys = keys;
+					this.choices = [];
+
+					for (let i = 0; i < keys.length; i++) {
+						this.choices.push(options.choices[keys[i]]);
+					}
+				}
+			}
+		}
 
 		this.lineCount	= lines.length;
 		this.height		= lines.length;
@@ -368,11 +466,28 @@ class Dialog
 			}
 
 			if (this.closecb) {
+				let o;
+				let value;
+
 				if (this.kb) {
-					this.closecb(this.value);
+					value = this.value;
+				} else if (this.keys) {
+					value = this.keys[this.selected];
+				} else if (this.choices) {
+					value = this.selected;
 				} else {
-					this.closecb(this.selected);
+					value = null;
 				}
+
+				if (this.key) {
+					o = {};
+
+					o[this.key] = value;
+				} else {
+					o = value;
+				}
+
+				this.closecb(o);
 			}
 		} else if (!this.closing) {
 			/* Reset ticks - Count down now that we're closing */

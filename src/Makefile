@@ -1,5 +1,5 @@
 ../blud.js: *.ts
-	tsc --outFile ../blud.js
+	cd .. && tsc
 
 clean:
 	rm ../blud.js || true

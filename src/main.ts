@@ -27,140 +27,198 @@ function actorAt(x, y)
 	return(null);
 }
 
+function MenuAction(name: any, value?: string)
+{
+	let p = null;
+
+	if ('object' === typeof name) {
+		var keys	= Object.keys(name);
+
+		for (let i = 0; i < keys.length; i++) {
+			MenuAction(keys[i], name[keys[i]]);
+		}
+	}
+
+	switch (name) {
+		case "pause":
+			p = Ask({
+				msg:		"Paused",
+
+				choices: {
+					"continue":		"Continue",
+					"about":		"About",
+					"options":		"Options",
+					"newgame":		"New Game"
+				}
+			});
+			break;
+
+		case "continue":
+			break;
+
+		case "about":
+			p = Ask({
+				actor: {
+					actor:	player,
+					action:	player.MOVING,
+					facing:	"E",
+					rate:	0.5
+				},
+				msg: [
+					"Blud is a game about a blood cell who finds himself in",
+					"one odd situation after another.\n\n",
+
+					"Blud was created by Micah Gorrell and Owen Swerkstrom."
+				].join(' ')
+			});
+			break;
+
+		case "options":
+			p = Ask({
+				msg:		"Options",
+				choices: {
+					"remap":	"Remap Controller",
+					"continue":	"Cancel"
+				}
+			});
+			break;
+
+		case "remap":
+			input.remapjs();
+			break;
+
+		case "newgame":
+			var arnold		= new Actor("arnold", world.actors["arnold"], level);
+
+			arnold.state	= "standing";
+
+			p = Ask([
+				{
+					actor:			player,
+					msg: [
+						"Once upon a time there was a little blood cell named",
+						"Blud, but everyone called him Arnold."
+					].join(' ')
+				},
+				{
+					actor:			player,
+					msg: [
+						"Arnold was,",
+						"   to be blunt,",
+						"      a bit of a dick."
+					].join('\n')
+				},
+				{
+					actor:			player,
+					msg:			"Luckily this story isn't about Arnold."
+				},
+				{
+					actor: {
+						actor:		arnold,
+						action:		"dividing",
+						delay:		20,
+						rate:		0.25
+					},
+					msg: [
+						"One day, Arnold divided, as cells do and a new cell",
+						"was born. The new cell was named Blud as well, but",
+						"everyone called them...",
+					].join(' ')
+				},
+				{
+					msg: [
+						"Uh, Help me out here...",
+						"What did they call the new cell?"
+					].join('\n'),
+
+					actor:			player,
+					kb:				true,
+					key:			"nameplayer"
+				}
+			]);
+			break;
+
+		case "respawn":
+			this.health = 100;
+			this.setState(this.STANDING);
+
+			var arnold		= new Actor("arnold", world.actors["arnold"], level);
+			arnold.state	= "standing";
+
+			p = Ask([
+				{
+					actor: player,
+					msg: "Uh, I thought this game was about" + player.name +
+							"... but " + player.name + " is dead."
+				},
+
+				{
+					actor: player,
+					msg: "Luckily this story isn't really about " + player.name + "."
+				},
+
+				{
+					actor: {
+						actor:		arnold,
+						action:		"dividing",
+						delay:		20,
+						rate:		0.25
+					},
+					msg: [
+						"Remember Arnold?  Arnold divided again",
+						"and a new cell was born. The new cell",
+						"was named Blud as well, but everyone",
+						"called them...",
+					].join(' ')
+				},
+
+				{
+					msg: [
+						"Uh, Help me out here...",
+						"What did they call the new cell?"
+					].join('\n'),
+
+					actor:			player,
+					kb:				true,
+					key:			"nameplayer"
+				}
+			]);
+			break;
+
+		case "nameplayer":
+			if (!value) {
+				value = player.name;
+			} else {
+				player.name = value;
+			}
+
+			p = Ask([
+				{
+					actor: player,
+					msg: "The new cell was named Blud and everyone called them " + value + "."
+				},
+
+				{
+					actor: player,
+					msg: "This is a story about " + value + "."
+				}
+			]);
+			break;
+	}
+
+	if (p) {
+		p.then(MenuAction)
+		.catch(() => {
+			;
+		});
+	}
+}
+
 function tick(ticks)
 {
 	/* Paused? */
 	if (input.getButton(input.PAUSE, true) & input.PRESSED) {
-		new Dialog({
-			msg:		"Paused",
-			choices:	[ "Continue", "About", "Options", "New Game" ],
-
-			closecb: function(selected) {
-				/*
-					Clear any additional pause events that may have happened
-					while the game was paused.
-				*/
-				input.getButton(input.PAUSE, true);
-
-				switch (selected) {
-					default:
-					case 0:
-						break;
-
-					case 1:
-						new Dialog({
-							actor: {
-								actor:	player,
-								action:	player.MOVING,
-								facing:	"E",
-								rate:	0.5
-							},
-							msg: [
-								"Blud is a game about a blood",
-								"cell who finds himself in",
-								"one odd situation after",
-								"another.",
-								"",
-								"Blud was created by Micah",
-								"Gorrell and Owen Swerkstrom."
-							].join('\n')
-						});
-						break;
-
-					case 2:
-						new Dialog({
-							msg:		"Options",
-							choices:	[ "Remap Controller", "Cancel" ],
-
-							closecb: function(selected) {
-								switch (selected) {
-									case 0:
-										input.remapjs();
-										break;
-
-									default:
-									case 1:
-										break;
-								}
-							}
-						});
-						break;
-
-					case 3: /* New Game */
-						var arnold		= new Actor("arnold", world.actors["arnold"], level);
-
-						arnold.state	= "standing";
-
-						new Dialog([
-							{ actor: player, msg: [
-								"Once upon a time there was a little",
-								"blood cell named Blud, but everyone",
-								"called him Arnold."
-							].join('\n')},
-
-							{ actor: player, msg: [
-								"Arnold was,",
-								"   to be blunt,",
-								"      a bit of a dick."
-							].join('\n')},
-
-							{ actor: player, msg: [
-								"Luckily this story isn't about Arnold."
-							].join('\n')},
-
-							{
-								actor: {
-									actor:		arnold,
-									action:		"dividing",
-									delay:		20,
-									rate:		0.25
-								},
-								msg: [
-									"One day, Arnold divided, as cells",
-									"do and a new cell was born. The new",
-									"cell was named Blud as well, but",
-									"everyone called it...",
-								].join('\n')
-							},
-
-							{
-								msg: [
-									"Uh, Help me out here...",
-									"What did they call the",
-									"new cell?"
-								].join('\n'),
-								actor: player,
-								kb: true,
-								closecb: function(name) {
-									if (!name) {
-										name = player.name;
-									} else {
-										player.name = name;
-									}
-
-									new Dialog([
-										{
-											actor: player,
-											msg: [
-												"The new cell was named Blud and",
-												"everyone called them " + name + "."
-											].join('\n')
-										},
-
-										{
-											actor: player,
-											msg: [
-												"This is a story about " + name + "."
-											].join('\n')
-										},
-									]);
-								}
-							}
-						]);
-						break;
-				}
-			}
-		});
+		MenuAction("pause");
 	}
 
 	if (input.getButton(input.A, true) & input.PRESSED) {
