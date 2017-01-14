@@ -35,27 +35,22 @@ function tick(ticks)
 		MenuAction("pause");
 	}
 
-	if (!editor) {
-		if (input.getButton(input.A, true) & input.PRESSED) {
-			var pos		= player.lookingAt();
-			var actor	= actorAt(pos.x, pos.y);
+	if (input.getButton(input.A, true) & input.PRESSED) {
+		var pos		= player.lookingAt();
+		var actor	= actorAt(pos.x, pos.y);
 
-			if (actor) {
-				actor.talk();
-			}
+		if (actor) {
+			actor.talk();
 		}
+	}
 
-		if (input.getButton(input.SELECT, true) & input.PRESSED) {
-			player.damage(1000);
-		}
+	if (input.getButton(input.SELECT, true) & input.PRESSED) {
+		player.damage(1000);
+	}
 
-		if (!level.tick()) {
-			/* Nothing else is active while the level is sliding */
-			return(false);
-		}
-	} else {
-		/* No ticks while editting except the player */
-		player.tick();
+	if (!level.tick()) {
+		/* Nothing else is active while the level is sliding */
+		return(false);
 	}
 }
 
