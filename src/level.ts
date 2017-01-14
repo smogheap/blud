@@ -208,9 +208,6 @@ class Level
 		let areanames		= Object.keys(this.def.areas);
 		let tilemap			= {};
 
-		/* Set the seed */
-		WRand((new Date()).getTime());
-
 		/* Move the tiles into an indexed array */
 		for (let i = 0, tile; tile = tilenames[i]; i++) {
 			tilemap[tile] = newtiles.length;

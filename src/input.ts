@@ -246,6 +246,8 @@ constructor(canvas:HTMLCanvasElement)
 			} else {
 				this.devices.kb[e.code.toLowerCase()] = this.PRESSED | this.HELD;
 				this.timestamps.kb[e.code.toLowerCase()] = new Date();
+
+				WRandUpdate(e.keyCode);
 			}
 			e.preventDefault();
 		}
@@ -444,6 +446,8 @@ poll()
 				if (!this.devices.js[i][key]) {
 					this.devices.js[i][key] = this.PRESSED;
 					this.timestamps.js[i][key] = new Date();
+
+					WRandUpdate(200 + a);
 				}
 
 				this.devices.js[i][key] |= this.HELD;
@@ -468,6 +472,8 @@ poll()
 				if (!this.devices.js[i][key]) {
 					this.devices.js[i][key] = this.PRESSED;
 					this.timestamps.js[i][key] = new Date();
+
+					WRandUpdate(b);
 				}
 				this.devices.js[i][key] |= this.HELD;
 			} else {

@@ -32,3 +32,9 @@ function WRand(seed?: number)
 	return((seed >> 16) & 32767);
 }
 
+function WRandUpdate(value?: number)
+{
+	_seed = ((_seed << 8) | (value & 0xff)) >>> 0;
+	// console.log(_seed.toString(2), value);
+}
+
