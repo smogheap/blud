@@ -24,9 +24,7 @@ function MenuAction(name: any, value?: string)
 						"edit":			"Edit",
 						"about":		"About",
 						"options":		"Options",
-						"newgame":		"New Game",
-
-						"picktile":		"Tile Picker"
+						"newgame":		"New Game"
 					}
 				});
 			} else {
@@ -35,7 +33,8 @@ function MenuAction(name: any, value?: string)
 
 					choices: {
 						"continue":		"Continue",
-						"edit":			"Play"
+						"edit":			"Play",
+						"picktile":		"Tile Picker"
 					}
 				});
 			}

@@ -222,6 +222,9 @@ class TileSet
 		options.width  = this.images[0].width  + 12;
 		options.height = this.images[0].height + 12;
 
+		/* Include dummy choices so the dialog thinks it has a selected item */
+		options.choices = [];
+
 		options.inputcb = ((dialog: Dialog) => {
 			if (input.getButton(input.BACK, true) & input.PRESSED) {
 				dialog.selected = -1;

@@ -47,6 +47,13 @@ timestamps = {
 	other:	{}
 };
 
+/* Duration of the last keypress for each button */
+durations = {
+	js:		[],
+	kb:		{},
+	other:	{}
+};
+
 bindings = {
 	js: [
 		/* Left stick (usually) */
@@ -236,16 +243,18 @@ constructor(canvas:HTMLCanvasElement)
 
 	window.addEventListener('keydown', function(e)
 	{
-		if (!e.altKey && !e.ctrlKey && !e.code.match(/F[0-9]+$/)) {
+		let key = e.code.toLowerCase();
+
+		if (!e.altKey && !e.ctrlKey && !key.match(/f[0-9]+$/)) {
 			if (this.kbhandler && this.kbhandler(e.code, e.key, e.shiftKey)) {
 				/*
 					The current registered handler ate the keypress, so don't
 					bother setting that state. We still track held though.
 				*/
-				this.devices.kb[e.code.toLowerCase()] = this.HELD;
-			} else {
-				this.devices.kb[e.code.toLowerCase()] = this.PRESSED | this.HELD;
-				this.timestamps.kb[e.code.toLowerCase()] = new Date();
+				this.devices.kb[key] = this.HELD;
+			} else if (!(this.devices.kb[key] & this.HELD)) {
+				this.devices.kb[key] = this.PRESSED | this.HELD;
+				this.timestamps.kb[key] = new Date();
 
 				WRandUpdate(e.keyCode);
 			}
@@ -256,7 +265,12 @@ constructor(canvas:HTMLCanvasElement)
 	window.addEventListener('keyup', function(e)
 	{
 		if (!e.altKey && !e.ctrlKey) {
-			this.devices.kb[e.code.toLowerCase()] &= ~this.HELD;
+			let key = e.code.toLowerCase();
+
+			this.devices.kb[key] &= ~this.HELD;
+
+			this.durations.kb[key] = ((new Date()).getTime()) -
+							this.timestamps.kb[key];
 			e.preventDefault();
 		}
 	}.bind(this));
@@ -375,6 +389,88 @@ getButton(name:string, clear?:boolean)
 	return(btn);
 };
 
+/*
+	Like getButton, except that it does not return until the button is released
+	and the result is the duration of the keystroke.
+*/
+getButtonTime(name:string, maxTime: number, clear?:boolean)
+{
+	let btn	= 0;
+	let duration;
+
+	if (this.devices.other[name]) {
+		btn = this.devices.other[name];
+
+		if ((btn & this.PRESSED)) {
+			if (btn & this.HELD) {
+				duration = ((new Date()).getTime()) - this.timestamps.other[name];
+			} else {
+				duration = this.durations.other[name];
+			}
+
+			if (!(btn & this.HELD) || duration >= maxTime) {
+				if (clear) {
+					this.devices.other[name] &= ~this.PRESSED;
+				}
+				return(duration);
+			}
+		}
+	}
+
+	/* Check results from the keyboard */
+	for (let i = 0, b; b = this.bindings.kb[i]; i++) {
+		if (!b || !b.key || name !== b.action) {
+			continue;
+		}
+
+		btn = this.devices.kb[b.key];
+
+		if ((btn & this.PRESSED)) {
+			if (btn & this.HELD) {
+				duration = ((new Date()).getTime()) - this.timestamps.kb[b.key];
+			} else {
+				duration = this.durations.kb[b.key];
+			}
+
+			if (!(btn & this.HELD) || duration >= maxTime) {
+				if (clear) {
+					this.devices.kb[b.key] &= ~this.PRESSED;
+				}
+				return(duration);
+			}
+		}
+	}
+
+	/* Merge results from gamepads */
+	this.poll();
+	for (let i = 0, b; b = this.bindings.js[i]; i++) {
+		if (!b || !b.key || name !== b.action) {
+			continue;
+		}
+
+		for (let p = 0; p < this.devices.js.length; p++) {
+			btn = this.devices.js[p][b.key];
+
+			if ((btn & this.PRESSED)) {
+				if (btn & this.HELD) {
+					duration = ((new Date()).getTime()) - this.timestamps.js[p][b.key];
+				} else {
+					duration = this.durations.js[p][b.key];
+				}
+
+				if (!(btn & this.HELD) || duration >= maxTime) {
+					if (clear) {
+						this.devices.js[p][b.key] &= ~this.PRESSED;
+					}
+					return(duration);
+				}
+			}
+		}
+	}
+
+	return(0);
+};
+
 clearPressed(device)
 {
 	let keys	= Object.keys(device);
@@ -425,6 +521,9 @@ poll()
 		}
 		if (!this.timestamps.js[i]) {
 			this.timestamps.js[i] = {};
+		}
+		if (!this.durations.js[i]) {
+			this.durations.js[i] = {};
 		}
 
 		for (let a = 0; a < pad.axes.length; a++) {
@@ -478,6 +577,9 @@ poll()
 				this.devices.js[i][key] |= this.HELD;
 			} else {
 				this.devices.js[i][key] &= ~this.HELD;
+
+				this.durations.js[i][key] = ((new Date()).getTime()) -
+								this.timestamps.js[i][key];
 			}
 		}
 	}

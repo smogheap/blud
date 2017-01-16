@@ -143,6 +143,10 @@ function splitLines(msg: string, maxWidth: number)
 		}
 	}
 
+	if (lines.length == 0) {
+		lines.push('');
+	}
+
 	return(lines);
 }
 
@@ -225,6 +229,11 @@ interface DialogOptions
 		"quit" as the selected value.
 	*/
 	choices?:	any;
+
+	/*
+		The default selected choice
+	*/
+	selected?:	number;
 
 	/*
 		If specified the background will be filled with this color instead of
@@ -341,6 +350,10 @@ class Dialog
 		*/
 		if (!isNaN(options.steps)) {
 			this.steps	= options.steps;
+		}
+
+		if (!isNaN(options.selected)) {
+			this.selected = options.selected;
 		}
 
 		this.modal		= options.modal;

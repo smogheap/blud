@@ -2,6 +2,7 @@ let TILE_SIZE	= 16;
 let editor		= false;
 let input;
 let level;
+let editorTiles	= {};
 
 let hud = loadImage('images/hud.png');
 
@@ -28,6 +29,33 @@ function actorAt(x, y)
 	return(null);
 }
 
+function pickEditorTile(name, duration, tile)
+{
+	if (-1 != tile) {
+		return(tile);
+	}
+
+	if (duration <= 0) {
+		return(-1);
+	}
+
+	if (duration < 600) {
+		return(editorTiles[name] || -1);
+	}
+
+	level.tileset.pick({
+		selected: editorTiles[name]
+	})
+	.then((value) => {
+		editorTiles[name] = value;
+	})
+	.catch(() => {
+		;
+	});
+
+	return(-1);
+}
+
 function tick(ticks)
 {
 	/* Paused? */
@@ -35,12 +63,31 @@ function tick(ticks)
 		MenuAction("pause");
 	}
 
-	if (input.getButton(input.A, true) & input.PRESSED) {
-		var pos		= player.lookingAt();
-		var actor	= actorAt(pos.x, pos.y);
+	if (!editor) {
+		if (input.getButton(input.A, true) & input.PRESSED) {
+			var pos		= player.lookingAt();
+			var actor	= actorAt(pos.x, pos.y);
 
-		if (actor) {
-			actor.talk();
+			if (actor) {
+				actor.talk();
+			}
+		}
+	} else {
+		let tile  = -1;
+		let atime = input.getButtonTime(input.A, 600, true);
+		let btime = input.getButtonTime(input.B, 600, true);
+		let xtime = input.getButtonTime(input.X, 600, true);
+		let ytime = input.getButtonTime(input.Y, 600, true);
+
+		tile = pickEditorTile(input.A, atime, tile);
+		tile = pickEditorTile(input.B, btime, tile);
+		tile = pickEditorTile(input.X, xtime, tile);
+		tile = pickEditorTile(input.Y, ytime, tile);
+
+		if (-1 != tile) {
+			var pos		= player.lookingAt();
+
+			console.log(`Set tile at ${pos.x},${pos.y} to ${tile}`);
 		}
 	}
 
