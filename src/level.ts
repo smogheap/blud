@@ -4,6 +4,7 @@ class Level
 def:		any;
 area?:		string;
 cake:		any;
+cakeCtx:	any;
 
 rows?:		any;
 areas?:		any;
@@ -102,11 +103,34 @@ indexAt(x: number, y: number, deftile?: number): number
 	return(tile);
 }
 
-tileAt(x, y)
+tileAt(x: number, y: number)
 {
 	let tile = this.indexAt(x, y, -1);
 
 	return(this.tileset.tiles[tile]);
+}
+
+setTile(x: number, y: number, tile: number)
+{
+	if (isNaN(tile) || tile < 0) {
+		return;
+	}
+
+	/*
+		this.rows has a border of tiles from the surrounding areas, so the
+		coords are off by one.
+	*/
+	this.rows[y - 1][x - 1] = tile;
+
+	/*
+		The tiles around this one need to be redrawn as well because they may
+		now have different edge data.
+	*/
+	for (let y2 = y - 1; y2 <= y + 1; y2++) {
+		for (let x2 = x - 1; x2 <= x + 1; x2++) {
+			this.bakeTile(this.cakeCtx, x2, y2);
+		}
+	}
 }
 
 solidAt(x, y)
@@ -515,6 +539,37 @@ scrollTo(instant, x?: number, y?: number)
 	}
 }
 
+bakeTile(ctx, x: number, y: number)
+{
+	let tile;
+
+	if (!(tile = this.tileAt(x, y))) {
+		return;
+	}
+	let idx = this.indexAt(x, y);
+
+	/*
+		Calculate the appropriate variant of the tile to be used based
+		on the tiles surrounding it, if this tile supports it.
+	*/
+	if (tile.edges) {
+		let edges = [
+			idx !== this.indexAt(x + 0, y - 1),
+			idx !== this.indexAt(x + 1, y + 0),
+			idx !== this.indexAt(x + 0, y + 1),
+			idx !== this.indexAt(x - 1, y + 0),
+			idx !== this.indexAt(x - 1, y - 1),
+			idx !== this.indexAt(x + 1, y - 1),
+			idx !== this.indexAt(x - 1, y + 1),
+			idx !== this.indexAt(x + 1, y + 1)
+		];
+
+		tile.render(ctx, x, y, edges);
+	} else {
+		tile.render(ctx, x, y, null);
+	}
+}
+
 /* Build an image containing the entire loaded area */
 bake()
 {
@@ -527,38 +582,14 @@ bake()
 
 	ctx.fillStyle = 'black';
 
-	let tile, idx, img;
-	let edges = [];
-
-	for (let y = 0; y < this.height; y++) {
-		for (let x = 0; x < this.width; x++) {
-			if (!(tile = this.tileAt(x, y))) {
-				continue;
-			}
-			idx = this.indexAt(x, y);
-
-			/*
-				Calculate the appropriate variant of the tile to be used based
-				on the tiles surrounding it, if this tile supports it.
-			*/
-			if (tile.edges) {
-				edges[0] = idx !== this.indexAt(x + 0, y - 1);
-				edges[1] = idx !== this.indexAt(x + 1, y + 0);
-				edges[2] = idx !== this.indexAt(x + 0, y + 1);
-				edges[3] = idx !== this.indexAt(x - 1, y + 0);
-				edges[4] = idx !== this.indexAt(x - 1, y - 1);
-				edges[5] = idx !== this.indexAt(x + 1, y - 1);
-				edges[6] = idx !== this.indexAt(x - 1, y + 1);
-				edges[7] = idx !== this.indexAt(x + 1, y + 1);
-
-				tile.render(ctx, x, y, edges);
-			} else {
-				tile.render(ctx, x, y, null);
-			}
+	for (let y = -1; y <= this.height; y++) {
+		for (let x = -1; x <= this.width; x++) {
+			this.bakeTile(ctx, x, y);
 		}
 	}
 
-	this.cake = canvas;
+	this.cake		= canvas;
+	this.cakeCtx	= ctx;
 }
 
 tick()

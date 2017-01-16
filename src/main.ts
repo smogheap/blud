@@ -88,6 +88,7 @@ function tick(ticks)
 			var pos		= player.lookingAt();
 
 			console.log(`Set tile at ${pos.x},${pos.y} to ${tile}`);
+			level.setTile(pos.x, pos.y, tile);
 		}
 	}
 
