@@ -1,0 +1,12 @@
+- Create a tile class that defines each tile, including logic for finding an
+alternate tile based on borders for those that support it like plasma/water and
+animations for tiles like the doors.
+
+- Better split the actor class so that player extends it as does each badguy,
+and the NPCs etc.
+
+- Draw a square around the tile that blud is facing when in editor mode
+- Make blud move twice as fast in editor mode
+- Allow changing the selected tile in editor mode by pressing one of the 4 face
+buttons. Long press on a face button to swap the tile assigned to it.
+

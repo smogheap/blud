@@ -24,7 +24,9 @@ function MenuAction(name: any, value?: string)
 						"edit":			"Edit",
 						"about":		"About",
 						"options":		"Options",
-						"newgame":		"New Game"
+						"newgame":		"New Game",
+
+						"picktile":		"Tile Picker"
 					}
 				});
 			} else {
@@ -190,6 +192,16 @@ function MenuAction(name: any, value?: string)
 					msg: "This is a story about " + value + "."
 				}
 			]);
+			break;
+
+		case "picktile":
+			if (level && level.tileset) {
+				p = level.tileset.pick();
+			} else {
+				Ask({
+					msg: "No tileset loaded"
+				});
+			}
 			break;
 	}
 

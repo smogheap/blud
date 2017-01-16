@@ -16,7 +16,9 @@
 		"src/player.ts",
 		"src/world.ts",
 		"src/menu.ts",
-		"src/wrand.ts"
+		"src/wrand.ts",
+
+		"src/tileset.ts"
 	]
 }
 

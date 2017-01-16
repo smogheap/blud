@@ -68,4 +68,25 @@ function loadImage(src: string, cb?: ImageLoadedCB): HTMLImageElement
 	return(img);
 }
 
+interface ImagesLoadedCB {
+	(images: HTMLImageElement[]): void;
+}
+
+function loadImages(src: string[], cb?: ImagesLoadedCB): void
+{
+	let loaded	= 0;
+	let images	= [];
+
+	for (let i = 0; i < src.length; i++) {
+		loadImage(src[i], (img) => {
+			loaded++;
+
+			images[i] = img;
+
+			if (loaded === src.length) {
+				cb(images);
+			}
+		});
+	}
+}
 

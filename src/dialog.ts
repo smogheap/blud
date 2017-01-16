@@ -71,7 +71,6 @@ function drawText(ctx: CanvasRenderingContext2D, str: any, x: number, y: number,
 function drawBorder(ctx: CanvasRenderingContext2D, dx: number, dy: number, w: number, h: number, fillStyle?: string)
 {
 	ctx.save();
-	ctx.fillStyle = fillStyle;
 
 	/*
 		Borders are in the image at 272x0, in a 3x3 grid of images that are
@@ -103,7 +102,12 @@ function drawBorder(ctx: CanvasRenderingContext2D, dx: number, dy: number, w: nu
 					dx + x,  dy + y,  fontSizeX, fontSizeY);
 		}
 	}
-	ctx.fillRect(dx + 6, dy + 6, w - 12, h - 12);
+
+	if (fillStyle) {
+		ctx.fillStyle = fillStyle;
+		ctx.fillRect(dx + 6, dy + 6, w - 12, h - 12);
+	}
+
 	ctx.restore();
 }
 
@@ -156,6 +160,7 @@ interface DialogActor
 
 interface CloseCB { ( value: number|string ): void; };
 interface InputCB { ( dialog: Dialog ): void; };
+interface DrawCB  { ( dialog: Dialog, ctx: CanvasRenderingContext2D ): void; };
 
 interface DialogOptions
 {
@@ -196,6 +201,13 @@ interface DialogOptions
 	*/
 	inputcb?:	InputCB;
 
+	/*
+		A function call to handle drawing the content of the dialog. If
+		specified then this will be called once a tick to update the contents of
+		the dialog.
+	*/
+	drawcb?:	DrawCB;
+
 	/* If true then ignore all input */
 	noinput?:	boolean;
 
@@ -231,6 +243,17 @@ interface DialogOptions
 		value as an object containing the specified key.
 	*/
 	key?:		string,
+
+	/*
+		If specified then the width and height of the context will be set to
+		these values instead of being set automatically. These must be set if a
+		drawcb is provided.
+
+		This size includes the border, and the consumer may draw over the border
+		if desired.
+	*/
+	width?:		number,
+	height?:	number
 }
 
 function Ask(options: string);
@@ -280,9 +303,10 @@ class Dialog
 	private noinput					= false;
 	private closecb					= null;
 	private inputcb					= null;
+	private drawcb					= null;
 	private spoken					= false;
 	private msg						= '';
-	private selected				= 0;
+	selected						= 0;
 	private icon					= null;
 	private kb						= false;
 	private key						= null;
@@ -323,6 +347,7 @@ class Dialog
 		this.noinput	= options.noinput;
 		this.closecb	= options.closecb;
 		this.inputcb	= options.inputcb;
+		this.drawcb		= options.drawcb;
 		this.spoken		= options.spoken;
 		this.icon		= options.icon;
 		this.kb			= options.kb;
@@ -418,8 +443,21 @@ class Dialog
 			this.iconWidth = 0;
 		}
 
-		this.canvas.setAttribute('width',  '' + ((this.width + 4) * fontSizeX));
-		if (this.choices) {
+		/*
+			If width and/or height were specified then ignore all the math above
+			and use those values instead.
+		*/
+		if (!isNaN(options.width)) {
+			this.width = Math.ceil((options.width - 12) / fontSizeX);
+			this.canvas.setAttribute('width',  '' + options.width);
+		} else {
+			this.canvas.setAttribute('width',  '' + ((this.width + 4) * fontSizeX));
+		}
+
+		if (!isNaN(options.height)) {
+			this.height = Math.ceil((options.height - 12) / fontSizeY);
+			this.canvas.setAttribute('height',  '' + options.height);
+		} else if (this.choices) {
 			this.canvas.setAttribute('height', '' + ((this.height + 3 + this.choices.length) * fontSizeY));
 		} else if (this.kb) {
 			/* The keyboard takes up a lot of room... */
@@ -688,6 +726,15 @@ class Dialog
 
 		this.ticks++;
 
+		if (this.drawcb) {
+			this.drawcb(this, this.ctx);
+		} else {
+			this.draw();
+		}
+	}
+
+	draw()
+	{
 		if (!font) {
 			/* Not ready */
 			return;

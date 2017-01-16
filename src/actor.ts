@@ -315,12 +315,10 @@ canMove(direction?:string, mindistance?:number)
 		}
 	}
 
-	tile = this.level.tileAt(x, y);
-	if (!tile || !this.level.tiles[tile]) {
+	if (!(tile = this.level.tileAt(x, y))) {
 		return(false);
 	}
-
-	return(!this.level.tiles[tile].solid);
+	return(!tile.solid);
 }
 
 tick()
