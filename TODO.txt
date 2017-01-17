@@ -4,6 +4,10 @@ animations for tiles like the doors.
 
 - Better split the actor class so that player extends it as does each badguy,
 and the NPCs etc.
+	- Create an editor actor class that renders a square on the screen to show
+	the spot a tile will go. This actor only displays in edit mode and handles
+	movement of the cursor, etc. When exiting edit mode the player should be
+	warped to its position if the spot is empty.
 
 - Draw a square around the tile that blud is facing when in editor mode
 - Make blud move twice as fast in editor mode
