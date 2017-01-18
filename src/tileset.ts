@@ -123,95 +123,101 @@ class TileSet
 
 	constructor(name, cb)
 	{
-		// TODO Find a good way to provide extra detail about the tileset. There
-		//		are lots of hardcoded things for the main tileset right now.
+		switch (name) {
+			case "main":
+				loadImages([
+					"tilesets/" + name + "/tiles.png",
+					"tilesets/" + name + "/plasma.png"
+				], ((images: HTMLImageElement[]) => {
+					this.images = images;
+					this.tiles = [];
 
-		loadImages([
-			"tilesets/" + name + "/tiles.png",
-			"tilesets/" + name + "/plasma.png"
-		], ((images: HTMLImageElement[]) => {
-			this.images = images;
-			this.tiles = [];
+					let image	= images[0];
+					let plasma	= images[1];
 
-			let image	= images[0];
-			let plasma	= images[1];
+					/*
+						Load the tiles starting in the top left, going to the right and
+						wrapping when the edge is reached.
 
-			/*
-				Load the tiles starting in the top left, going to the right and
-				wrapping when the edge is reached.
+						This allows adding additional tiles to the bottom of the image
+						without changing the indexes.
+					*/
+					this.width	= image.width	/ TILE_SIZE;
+					this.height	= image.height	/ TILE_SIZE;
 
-				This allows adding additional tiles to the bottom of the image
-				without changing the indexes.
-			*/
-			this.width	= image.width	/ TILE_SIZE;
-			this.height	= image.height	/ TILE_SIZE;
+					for (let y = 0; y < this.height; y++) {
+						for (let x = 0; x < this.width; x++) {
+							/* Most tiles in this tileset are walls */
+							let kind	= TileKind.wall;
 
-			for (let y = 0; y < this.height; y++) {
-				for (let x = 0; x < this.width; x++) {
-					/* Most tiles in this tileset are walls */
-					let kind	= TileKind.wall;
+							if (x == 0 && y == 5) {
+								/* Special case tile for plasma/water with edge definitions */
+								this.tiles.push(new Tile({
+									offset:		[ 0, 0 ],
+									img:		plasma,
+									kind:		TileKind.water,
 
-					if (x == 0 && y == 5) {
-						/* Special case tile for plasma/water with edge definitions */
-						this.tiles.push(new Tile({
-							offset:		[ 0, 0 ],
-							img:		plasma,
-							kind:		TileKind.water,
+									edges: {
+										/* Entirely enclosed */
+										"1111": [ [ 0, 0 ] ],
 
-							edges: {
-								/* Entirely enclosed */
-								"1111": [ [ 0, 0 ] ],
+										/* Open on one side */
+										"0111": [ [ 2, 5 ] ],
+										"1011": [ [ 0, 3 ] ],
+										"1101": [ [ 3, 0 ] ],
+										"1110": [ [ 5, 2 ] ],
 
-								/* Open on one side */
-								"0111": [ [ 2, 5 ] ],
-								"1011": [ [ 0, 3 ] ],
-								"1101": [ [ 3, 0 ] ],
-								"1110": [ [ 5, 2 ] ],
+										"1100": [ [ 4, 1 ] ],
+										"0110": [ [ 4, 4 ] ],
+										"0011": [ [ 1, 4 ] ],
+										"1001": [ [ 1, 1 ] ],
 
-								"1100": [ [ 4, 1 ] ],
-								"0110": [ [ 4, 4 ] ],
-								"0011": [ [ 1, 4 ] ],
-								"1001": [ [ 1, 1 ] ],
+										/* Open on opposite sides */
+										"0101": [ [ 2, 0 ] ],
+										"1010": [ [ 0, 2 ] ],
 
-								/* Open on opposite sides */
-								"0101": [ [ 2, 0 ] ],
-								"1010": [ [ 0, 2 ] ],
+										/* Edge on a single side */
+										"1000": [ [ 2, 1 ] ],
+										"0100": [ [ 4, 3 ] ],
+										"0010": [ [ 3, 4 ] ],
+										"0001": [ [ 1, 2 ] ],
 
-								/* Edge on a single side */
-								"1000": [ [ 2, 1 ] ],
-								"0100": [ [ 4, 3 ] ],
-								"0010": [ [ 3, 4 ] ],
-								"0001": [ [ 1, 2 ] ],
+										/* No edges */
+										"0000": [ [ 2, 2 ], [ 2, 3 ], [ 3, 2 ], [ 3, 3 ] ]
+									}
 
-								/* No edges */
-								"0000": [ [ 2, 2 ], [ 2, 3 ], [ 3, 2 ], [ 3, 3 ] ]
+								}));
+								continue;
+							} else if (y == 5) {
+								/* The bottom row (aside from the far left) is not solid */
+								// TODO Do something about the other tiles that look like ground
+								//		in this tileset...
+								kind = TileKind.floor;
 							}
 
-						}));
-						continue;
-					} else if (y == 5) {
-						/* The bottom row (aside from the far left) is not solid */
-						// TODO Do something about the other tiles that look like ground
-						//		in this tileset...
-						kind = TileKind.floor;
+							this.tiles.push(new Tile({
+								offset:		[ x, y ],
+								img:		image,
+								kind:		kind
+							}));
+						}
 					}
 
-					this.tiles.push(new Tile({
-						offset:		[ x, y ],
-						img:		image,
-						kind:		kind
-					}));
-				}
-			}
+					if (cb) {
+						cb();
+					}
+				}).bind(this));
+				break;
 
-			if (cb) {
-				cb();
-			}
-		}).bind(this));
+			default:
+				throw new Error("Unknown tileset: " + name);
+		}
 	}
 
 	pick(options?: DialogOptions)
 	{
+		let maxheight	= 250;
+
 		if (!options) {
 			options = {
 				msg: "Pick a tile"
@@ -221,6 +227,13 @@ class TileSet
 		/* Include an extra 6 pixels on all sides for the border */
 		options.width  = this.images[0].width  + 12;
 		options.height = this.images[0].height + 12;
+
+		if (options.height > maxheight) {
+			options.height = maxheight;
+		}
+
+		/* Adjust for the border size; */
+		maxheight -= 12;
 
 		/* Include dummy choices so the dialog thinks it has a selected item */
 		options.choices = [];
@@ -269,17 +282,28 @@ class TileSet
 			let x = TILE_SIZE * ((dialog.selected) % this.width);
 			let y = TILE_SIZE * (Math.floor(dialog.selected / this.width));
 
+			let offy = y - (maxheight - TILE_SIZE);
+			if (offy < 0) {
+				offy = 0;
+			}
+
 			/* Draw the base image with all the tiles */
-			ctx.drawImage(this.images[0], 6, 6);
+			ctx.drawImage(this.images[0],
+				0, offy,
+				this.images[0].width,
+				Math.min(this.images[0].height, maxheight),
+				6, 6,
+				this.images[0].width,
+				Math.min(this.images[0].height, maxheight));
 
 			/* Draw a border as a selection indicator */
-			drawBorder(ctx, x, y,
+			drawBorder(ctx, x, y - offy,
 				TILE_SIZE + 12, TILE_SIZE + 12);
 
 			/* Redraw the tile that the border wrote over */
 			ctx.drawImage(this.images[0],
-				x + 0, y + 0, TILE_SIZE, TILE_SIZE,
-				x + 6, y + 6, TILE_SIZE, TILE_SIZE);
+				x + 0, y + 0,			TILE_SIZE, TILE_SIZE,
+				x + 6, y + 6 - offy,	TILE_SIZE, TILE_SIZE);
 
 		}).bind(this);
 
