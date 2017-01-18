@@ -282,7 +282,7 @@ class TileSet
 			let x = TILE_SIZE * ((dialog.selected) % this.width);
 			let y = TILE_SIZE * (Math.floor(dialog.selected / this.width));
 
-			let offy = y - (maxheight - TILE_SIZE);
+			let offy = y - (maxheight - (3 * TILE_SIZE));
 			if (offy < 0) {
 				offy = 0;
 			}
