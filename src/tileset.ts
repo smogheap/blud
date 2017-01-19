@@ -119,8 +119,6 @@ class TileSet
 
 	private images		= [];
 
-	// TODO Show a dialog to select a tile...
-
 	constructor(name, cb)
 	{
 		switch (name) {
@@ -188,7 +186,7 @@ class TileSet
 
 								}));
 								continue;
-							} else if (y == 5) {
+							} else if (y == 5 || (x == 3 && y == 0)) {
 								/* The bottom row (aside from the far left) is not solid */
 								// TODO Do something about the other tiles that look like ground
 								//		in this tileset...
