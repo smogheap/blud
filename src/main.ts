@@ -29,18 +29,20 @@ function actorAt(x, y)
 	return(null);
 }
 
-function pickEditorTile(name, duration, tile)
+function pickEditorTile(name, duration, tile, cb?)
 {
 	if (-1 != tile) {
 		return(tile);
 	}
 
-	if (duration <= 0) {
-		return(-1);
-	}
+	if (!isNaN(duration)) {
+		if (duration <= 0) {
+			return(-1);
+		}
 
-	if (duration < 600) {
-		return(editorTiles[name] || -1);
+		if (duration < 600) {
+			return(editorTiles[name] || -1);
+		}
 	}
 
 	level.tileset.pick({
@@ -48,6 +50,10 @@ function pickEditorTile(name, duration, tile)
 	})
 	.then((value) => {
 		editorTiles[name] = value;
+
+		if (cb) {
+			cb(value);
+		}
 	})
 	.catch(() => {
 		;
@@ -73,11 +79,14 @@ function tick(ticks)
 			}
 		}
 	} else {
-		let tile  = -1;
-		let atime = input.getButtonTime(input.A, 600, true);
-		let btime = input.getButtonTime(input.B, 600, true);
-		let xtime = input.getButtonTime(input.X, 600, true);
-		let ytime = input.getButtonTime(input.Y, 600, true);
+		var pos		= player.lookingAt();
+		let tile	= -1;
+
+		/* Press and hold A,B,X,Y to select a tile, and tap to place it */
+		let atime	= input.getButtonTime(input.A, 600, true);
+		let btime	= input.getButtonTime(input.B, 600, true);
+		let xtime	= input.getButtonTime(input.X, 600, true);
+		let ytime	= input.getButtonTime(input.Y, 600, true);
 
 		tile = pickEditorTile(input.A, atime, tile);
 		tile = pickEditorTile(input.B, btime, tile);
@@ -85,16 +94,23 @@ function tick(ticks)
 		tile = pickEditorTile(input.Y, ytime, tile);
 
 		if (-1 != tile) {
-			var pos		= player.lookingAt();
-
 			console.log(`Set tile at ${pos.x},${pos.y} to ${tile}`);
 			level.setTile(pos.x, pos.y, tile);
 		}
+
+		/* Press select to pick and place a tile */
+		if (input.getButton(input.SELECT, true) & input.PRESSED) {
+			pickEditorTile(input.SELECT, NaN, -1, (tile) => {
+				level.setTile(pos.x, pos.y, tile);
+			});
+		}
 	}
 
+	/*
 	if (input.getButton(input.SELECT, true) & input.PRESSED) {
 		player.damage(1000);
 	}
+	*/
 
 	if (!level.tick()) {
 		/* Nothing else is active while the level is sliding */

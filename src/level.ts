@@ -96,7 +96,7 @@ indexAt(x: number, y: number, deftile?: number): number
 		this.rows has a border of tiles from the surrounding areas, so the
 		coords are off by one.
 	*/
-	if (!this.rows[y - 1] || isNaN(tile = this.rows[y - 1][x - 1])) {
+	if (!this.rows[y + 1] || isNaN(tile = this.rows[y + 1][x + 1])) {
 		return(deftile);
 	}
 
@@ -120,7 +120,7 @@ setTile(x: number, y: number, tile: number)
 		this.rows has a border of tiles from the surrounding areas, so the
 		coords are off by one.
 	*/
-	this.rows[y - 1][x - 1] = tile;
+	this.rows[y + 1][x + 1] = tile;
 
 	/*
 		The tiles around this one need to be redrawn as well because they may
@@ -131,6 +131,37 @@ setTile(x: number, y: number, tile: number)
 			this.bakeTile(this.cakeCtx, x2, y2);
 		}
 	}
+}
+
+dump()
+{
+	let json = [];
+	let i;
+
+	json.push('[');
+
+	for (let y = 0; y < this.height; y++) {
+		let line = [ '\t[' ];
+
+		for (let x = 0; x < this.width; x++) {
+			if (x > 0) {
+				line.push(',');
+			}
+
+			i = this.indexAt(x, y, -1);
+			if (i >= 0 && i < 10) {
+				line.push(' ');
+			}
+
+			line.push(i);
+		}
+
+		line.push('],');
+		json.push(line.join(''));
+	}
+	json.push(']');
+
+	console.log(json.join('\n'));
 }
 
 solidAt(x, y)
@@ -406,7 +437,7 @@ loadArea(name)
 	this.rows		= this.areas[name];
 	this.area		= name;
 
-	/* Do not include the border in the width/height */
+	/* Do not include the borders */
 	this.width		= this.rows[0].length - 2;
 	this.height		= this.rows.length - 2;
 
@@ -582,8 +613,8 @@ bake()
 
 	ctx.fillStyle = 'black';
 
-	for (let y = -1; y <= this.height; y++) {
-		for (let x = -1; x <= this.width; x++) {
+	for (let y = 0; y < this.height; y++) {
+		for (let x = 0; x < this.width; x++) {
 			this.bakeTile(ctx, x, y);
 		}
 	}

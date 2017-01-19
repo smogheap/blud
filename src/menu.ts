@@ -34,7 +34,7 @@ function MenuAction(name: any, value?: string)
 					choices: {
 						"continue":		"Continue",
 						"edit":			"Play",
-						"picktile":		"Tile Picker"
+						"dumplevel":	"Dump level"
 					}
 				});
 			}
@@ -197,9 +197,15 @@ function MenuAction(name: any, value?: string)
 			if (level && level.tileset) {
 				p = level.tileset.pick();
 			} else {
-				Ask({
-					msg: "No tileset loaded"
-				});
+				Ask({ msg: "No tileset loaded" });
+			}
+			break;
+
+		case "dumplevel":
+			if (level) {
+				level.dump();
+			} else {
+				Ask({ msg: "No level loaded" });
 			}
 			break;
 	}
