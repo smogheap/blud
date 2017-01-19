@@ -117,7 +117,7 @@ function splitLines(msg: string, maxWidth: number)
 	let src		= msg.split('\n');
 	let line;
 
-	while ((line = src.shift())) {
+	while ((line = src.shift()) != undefined) {
 		if (line.length <= maxWidth || /^\s/.test(line)) {
 			lines.push(line);
 			continue;
@@ -147,6 +147,7 @@ function splitLines(msg: string, maxWidth: number)
 		lines.push('');
 	}
 
+console.log(JSON.stringify(lines));
 	return(lines);
 }
 
