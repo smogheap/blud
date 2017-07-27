@@ -202,6 +202,69 @@ Possible tasks that cells can be recruited for:
 	- Farming
 
 
+Virus vs Immune System
+================================================================================
+
+A newer idea (which may conflict with some things above) is to have 2 factions
+that the player can side with. One is the host body's immune system, and the
+other is a virus or parasite of some sort.
+
+The virus' ultimate goal is to take control over the body and will result in the
+host body surviving but not in control of itself. The player will be given a
+choice of supporting the virus (which will probably be easier in the end) or
+helping the immune system and fighting the virus. Either of these outcomes will
+result in a (reasonably) health host body but it should be made clear to the
+player than if the virus is present but doesn't actually take control that the
+host body will be killed.
+
+Early in the game the player will be a fairly neutral area, and will have a
+chance to meet many NPCs from both sides of this dispute, including some that
+appear to be on one side but are secretly helping the other.
+
+Various NPCs will give the player quests that encourage them to help their side
+or hurt their opponents side. In some cases these quests will raise the player's
+standing with the side that gave the quest and in others it will lower their
+standing with the other side. The player must carefully choose which of these
+quests to do and how to do them. For example, a quest may encourage the player
+to sabotage the other side in some way, and if done without being discovered it
+will raise standing with one side but not damage it with the other.
+
+The player's standing with each side should somehow be communicated to the
+player. Ideally not with a number or a bar, but there should be a mechanism to
+convey to the player how each side feels about them. This may simply be
+expressed in dialogs with NPCs.
+
+The player may make a choice early on and strongly support one side from the
+start. This will result in a much higher standing with that side than the player
+would have if they walked the line for a long time.
+
+Eventually the player will need to trigger one side becoming hostile in order to
+proceed. This can be delayed for a very long time by keeping the standing of the
+sides roughly equivalent. An enemy of my enemy is my friend after all. It will
+likely be impossible to cause both sides to be hostile towards you since this
+would make the story impossible to complete.
+
+The player will have the opportunity (through dialogs, quests and other in game
+details) to discover the stated motives of each side, and with enough digging to
+discover the true motives of both sides. Discovering the true motives will give
+the player a chance to avoid being betrayed or used as a pawn.
+
+A player who quickly picks a side and strongly supports that side will be
+unlikely or unable to discover these motives and will likely be betrayed
+resulting in a final outcome that is very different from what they had intended.
+
+// TODO Start coming up with lore and terminology for how these cells view this
+//		war. The viruses probably don't refer to themselves as viruses and the
+//		immune system doesn't refer to themselves as such.
+//
+//		This should include basic history of the groups, their leadership, etc
+//
+//		This should also include a great deal of focus on the propaganda that
+//		each side uses to try to push their view. There will be many areas that
+//		are infected to various degrees with actual fighting going on but they
+//		use non-violent means to try to sway each other as well.
+
+
 
 Rough Ideas
 ================================================================================
@@ -227,3 +290,6 @@ Trophies:
 - I'm a lover, not a fighter: finish the game with no combat
 - Bludy mess: finish the game with no farming
 - Rebel: always do things the hard way
+
+
+
