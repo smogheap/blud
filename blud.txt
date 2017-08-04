@@ -265,6 +265,38 @@ resulting in a final outcome that is very different from what they had intended.
 //		use non-violent means to try to sway each other as well.
 
 
+DNA
+================================================================================
+
+Blud's health is displayed as a bar full of DNA. DNA is used as a catch all item
+in the game, where other games would have multiple different mechanisms. When an
+enemy is killed they will usually drop a small item with a DNA icon. Walking
+near this will automatically pick it up, and increase a DNA counter for the
+player.
+
+The DNA counter can be used for:
+	- Healing. Healing using DNA will take a fixed amount from the DNA counter
+	and add it to the player's health bar. This takes a fixed amount of time and
+	during this time the player can not move and is vulnerable.
+
+	- Purchasing upgrades. Upgrades may include things like a bigger health bar,
+	being able to heal faster, jump further, etc. These are basically a simple
+	leveling system, so in this respect DNA is used as XP.
+
+	- Purchasing items. Items may include keys, consumables such as a cure for
+	poison etc. Items may also possibly include some cosmetic items.
+
+	A player may also purchase consumable healing items. These will not be lost
+	when the player dies.
+
+When the player dies all currently held DNA is dropped with the player's corpse.
+The player then starts over with a new cell at full health, and if the player
+can get back to their corpse then they can pick up the DNA that they dropped
+when they died.
+
+Dying multiple times will not remove any dropped DNA from the world, but dropped
+DNA will slowly degrade so a player will be motivated to pick it back up quickly
+when dropped.
 
 Rough Ideas
 ================================================================================
