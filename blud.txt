@@ -275,19 +275,45 @@ near this will automatically pick it up, and increase a DNA counter for the
 player.
 
 The DNA counter can be used for:
-	- Healing. Healing using DNA will take a fixed amount from the DNA counter
-	and add it to the player's health bar. This takes a fixed amount of time and
-	during this time the player can not move and is vulnerable.
+	Healing
+	----------------------------------------------------------------------------
 
-	- Purchasing upgrades. Upgrades may include things like a bigger health bar,
-	being able to heal faster, jump further, etc. These are basically a simple
-	leveling system, so in this respect DNA is used as XP.
+	Healing using DNA will take a fixed amount from the DNA counter and add it
+	to the player's health bar. This takes a fixed amount of time and during
+	this time the player can not move and is vulnerable.
 
-	- Purchasing items. Items may include keys, consumables such as a cure for
-	poison etc. Items may also possibly include some cosmetic items.
+	A player may also purchase consumable healing items which are not lost if
+	the player dies (since regular DNA is).
 
-	A player may also purchase consumable healing items. These will not be lost
-	when the player dies.
+
+	Upgrades
+	----------------------------------------------------------------------------
+
+	Upgrades are basically a very simple leveling system, which uses DNA as most
+	games would use XP.
+
+	Upgrades may include things like increasing the size of the health bar,
+	being able to do more damage when attacking, being able to heal faster, etc.
+
+	These will generally be fairly expensive.
+
+	If a player attempts to purchase an upgrade that they can't yet afford the
+	merchant will give them the opportunity to make a partial payment. Doing so
+	will take the DNA from the player right away and reduce the price of the
+	upgrade by that amount.
+
+
+
+	Items
+	----------------------------------------------------------------------------
+
+	Items may include various consumables (healing item, cures, items that cause
+	a temporary effect, etc) as well as various single use items such as keys
+	for specific doors or key items needed for NPC quest lines.
+
+	As with upgrades, a player can pay part of the cost of any single use item
+	to reduce the price by that amount.
+
 
 When the player dies all currently held DNA is dropped with the player's corpse.
 The player then starts over with a new cell at full health, and if the player
@@ -297,6 +323,9 @@ when they died.
 Dying multiple times will not remove any dropped DNA from the world, but dropped
 DNA will slowly degrade so a player will be motivated to pick it back up quickly
 when dropped.
+
+Dying multiple times will increase the rate at which DNA from previous deaths
+decays.
 
 Rough Ideas
 ================================================================================
