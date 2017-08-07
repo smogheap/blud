@@ -354,3 +354,24 @@ Trophies:
 
 
 
+Enemies
+================================================================================
+
+Main character has NO weapons. All combat is done by learning enemy behavior and
+using enemies against themselves and each other. The player may obtain items
+that are defensive and can indirectly be used as weapons, such as some sort of
+shield that reflects attacks, etc.
+
+- Small spiny guy that rushes towards you, and will kill himself if he hits a
+wall
+
+- Snake that starts out 3 or 4 squares long. It moves by bunching up it's tail
+and then ripples that movement through it's body to telegraph an upcoming lunge.
+
+If it lunges forward and an enemy is in the way then it will devour it and grow
+longer. Growing longer will slow it down, and eventually allow you to trick it
+into crashing into itself which will kill it.
+
+
+
+
